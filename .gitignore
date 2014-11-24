@@ -1,0 +1,25 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# misc files from editor etc
+*~
+
+#build files, cfg files, generated msg files
+cfg/**
+build/**
+msg_gen/**
+
+.project
+.cproject
+.project

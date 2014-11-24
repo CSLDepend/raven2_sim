@@ -1,0 +1,33 @@
+## This is the standard BRL RAVEN doxygen config file
+## work in progress!
+## ALewis 2/2014
+
+PROJECT_NAME 			= RAVEN2
+PROJECT_BRIEF = "An open source surgical robot"
+PROJECT_NUMBER 			= 2014
+
+INPUT					= ../src \
+					  ../include \
+					   ./specialFiles \
+					  ../msg
+IMAGE_PATH				= ../include
+EXTRACT_ALL				= YES
+RECURSIVE 				= YES
+
+OUTPUT_DIRECTORY		= ../../../doxygen
+
+SOURCE_BROWSER 			= YES
+
+REFERENCED_BY_RELATION 		= YES
+REFERENCES_RELATION		= YES
+
+STRIP_CODE_COMMENTS		= NO
+
+GENERATE_HTML			= YES
+GENERATE_LATEX 			= NO
+
+GENERATE_TREEVIEW		= YES
+
+# tweaked these aliases since they seem not to work. (BH 3/27/14)
+ALIASES 				+= "question=\xrefitem question \"Questions\""
+ALIASES 				+= "reminder=\xrefitem reminder \"Reminders\""
