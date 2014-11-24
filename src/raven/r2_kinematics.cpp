@@ -68,19 +68,15 @@ double ds[2][6]           = {{0,    0,    V,          d4,  0,      0},
 double robot_thetas[2][6] = {{V,    V,    M_PI/2,     V,   V,      V},
                              {V,    V,    -M_PI/2,    V,   V,      V}};
 
-///#define fault_injection
-#ifdef fault_injection
-double golden_results[4][3] = {{0, -375.052, -264.466},
-			       {0, -1, 0},
-			       {-0.601815, 0, -0.798635},
-			       {0.798635, 0, -0.601815}};
-#endif fault_injection
+#define simulator
+
+#ifdef simulator
 /// Parameters to check for fwd_kin
 int a_fwd = 0;
 int b_fwd = 6;
 /// theta1, theta2, d3, theta4, theta5, theta6 (ignore theta4 for now)
 double thetas_fwd[6] = {35*d2r, 50*d2r, 323*0.001, 0*d2r,80*d2r, 20*d2r};
-
+# endif
 
 int printIK = 0;
 void print_btVector(tf::Vector3 vv);
