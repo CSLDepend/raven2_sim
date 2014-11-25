@@ -75,7 +75,8 @@ double robot_thetas[2][6] = {{V,    V,    M_PI/2,     V,   V,      V},
 int a_fwd = 0;
 int b_fwd = 6;
 /// theta1, theta2, d3, theta4, theta5, theta6 (ignore theta4 for now)
-double thetas_fwd[6] = {35*d2r, 50*d2r, 323*0.001, 0*d2r,80*d2r, 20*d2r};
+///double thetas_fwd[6] = {35*d2r, 50*d2r, 323*0.001, 0*d2r,80*d2r, 20*d2r};
+double thetas_fwd[6] = {20*d2r, 30*d2r, 300*0.001, 50*d2r,-80*d2r, 30*d2r};
 # endif
 
 int printIK = 0;
@@ -164,14 +165,14 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 		// convert from joint angle representation to DH theta convention
 		double lo_thetas[6];
 		joint2theta(lo_thetas, joints, arm);
-
+#ifdef simulator
                 lo_thetas[0] = thetas_fwd[0];///Added
                 lo_thetas[1] = thetas_fwd[1];///Added
                 lo_thetas[2] = thetas_fwd[2];///Added
                 lo_thetas[3] = thetas_fwd[3];///Added
                 lo_thetas[4] = thetas_fwd[4];///Added
                 lo_thetas[5] = thetas_fwd[5];///Added
- 
+#endif
 		/// execute FK
 		fwd_kin(lo_thetas, arm, xf);
 
@@ -179,29 +180,20 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 		d0->mech[m].pos.y = xf.getOrigin()[1] * (1000.0*1000.0);
 		d0->mech[m].pos.z = xf.getOrigin()[2] * (1000.0*1000.0);
 		
+		for (int i=0;i<3;i++)
+			for (int j=0; j<3; j++)
+				d0->mech[m].ori.R[i][j] = (xf.getBasis())[i][j];  
+
+#ifdef simulator		
 		//// Added
                 cout << "Arm " << m << endl;
 		cout << "Forward Kin Pos = (" << d0->mech[m].pos.x << "," << d0->mech[m].pos.y << "," << d0->mech[m].pos.z << ")" << endl;
-
-		for (int i=0;i<3;i++)
-			for (int j=0; j<3; j++)
-				d0->mech[m].ori.R[i][j] = (xf.getBasis())[i][j];           
-                
+                      
                 cout << "Forward Kin Ori = " << endl << d0->mech[m].ori.R[0][0] << "," << d0->mech[m].ori.R[0][1] << "," << d0->mech[m].ori.R[0][2] << endl<< d0->mech[m].ori.R[1][0] << "," << d0->mech[m].ori.R[1][1] << "," << d0->mech[m].ori.R[1][2] << endl << d0->mech[m].ori.R[2][0] << "," << d0->mech[m].ori.R[2][1] << "," << d0->mech[m].ori.R[2][2] <<endl << endl;
-    
+#endif
  
 	}
 
-    /// Check the fault-injection results
-#ifdef fault_injection
-    if  ((d0->mech[1].pos.x/1000.0 != golden_results[0][0]) ||(d0->mech[1].pos.y/1000.0 != golden_results[0][1]) || (d0->mech[1].pos.z/1000.0 != golden_results[0][2]))
-	cout << "FAILED POSITION !!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
-    for (int i=0;i<3;i++)
-	for (int j=0; j<3; j++)
- 	    if (fabs(d0->mech[1].ori.R[i][j]-golden_results[i+1][j])> eps)
-	    	cout << "FAILED ROTATION !!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
-#endif fault_injection
-	
     if ((runlevel != RL_PEDAL_DN) && (runlevel != RL_INIT)) {
 
         // set cartesian pos_d = pos.
@@ -363,41 +355,29 @@ int r2_inv_kin(struct device *d0, int runlevel)
 	tf::Transform xf;
 	struct orientation * ori_d;
 	struct position    * pos_d;
-        ///log_msg("1. Was here  !!!!!! %d", NUM_MECH);
+
 	//  Do FK for each mechanism
 	for (int m=0; m<NUM_MECH; m++)
 	{
 		///log_msg("1.5. Was here  !!!!!!");
 		// get arm type and wrist actuation angle
 		if (d0->mech[m].type == GOLD_ARM)
+	        {
 			arm = dh_left;
+		}
 		else{
 
 			arm = dh_right;
 		}
-
-
+#ifndef simulator
 		ori_d = &(d0->mech[m].ori_d);
-		pos_d = &(d0->mech[m].pos_d);
+		pos_d = &(d0->mech[m].pos_d);       	
+#else          
+		                
+		ori_d = &(d0->mech[m].ori);
+		pos_d = &(d0->mech[m].pos);
+#endif
 
-
-        pos_d->x = -110555;///Added
-	pos_d->y = -32184;///Added
-	pos_d->z = -38579;////Added
-
-	ori_d->R[0][0] = 0.703039;
-	ori_d->R[0][1] = -0.695198;
-	ori_d->R[0][2] = -0.149786;
-	ori_d->R[1][0] = 0.279222;
-	ori_d->R[1][1] = 0.463555;
-	ori_d->R[1][2] = -0.840923;
-	ori_d->R[2][0] = 0.654043;
-	ori_d->R[2][1] = 0.549378;
-	ori_d->R[2][2] = 0.520012;
-                ///log_msg("Desired end-effector positions used by IK: (%d,%d,%d)",        pos_d->x, pos_d->y, pos_d->z);////Added	
-                ////cout << "Desired end-effector rotations used by IK:" << ori_d->R[0][0]<< "," << ori_d->R[0][1] << "," << ori_d->R[0][2]<< endl;///Added	                 	
-		///log_msg("2. Was here  !!!!!!");
-               
 		// copy R matrix
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
@@ -407,7 +387,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
 			     ori_d->R[1][0], ori_d->R[1][1], ori_d->R[1][2],
 			     ori_d->R[2][0], ori_d->R[2][1], ori_d->R[2][2]  ) );
 		xf.setOrigin( tf::Vector3(pos_d->x/(1000.0*1000.0),pos_d->y/(1000.0*1000.0), pos_d->z/(1000.0*1000.0)));
-		///xf.setOrigin( tf::Vector3(pos_d->x,pos_d->y, pos_d->z));
+
 /*
 		const static tf::Transform zrot_l( tf::Matrix3x3 (cos(25*d2r),-sin(25*d2r),0,  sin(25*d2r),cos(25*d2r),0,  0,0,1), tf::Vector3 (0,0,0) );
 		const static tf::Transform zrot_r( tf::Matrix3x3 (cos(-25*d2r),-sin(-25*d2r),0,  sin(-25*d2r),cos(-25*d2r),0,  0,0,1), tf::Vector3 (0,0,0) );
@@ -422,15 +402,16 @@ int r2_inv_kin(struct device *d0, int runlevel)
 			xf = zrot_r.inverse() * xf;
 		}
 */
-		//		DO IK
+		// DO IK
 		ik_solution iksol[8] = {{},{},{},{},{},{},{},{}};
 		int ret = inv_kin(xf, arm, iksol);
 		if (ret < 0)
 			log_msg("ik failed gracefully (arm%d ret:%d", arm, ret);
-	        
-                ///for (int i =0; i < 8;i++)
-		////	cout << "IK Solution" << i+1 << " = "<< iksol[i].th1 * r2d<<","<<iksol[i].th2 * r2d<<","<<iksol[i].d3<< ","<<iksol[i].th4 * r2d<< ","<<iksol[i].th5 * r2d<< ","<<iksol[i].th6 * r2d<< endl;
 
+#ifdef simulator	      
+		for (int i =0; i < 8;i++)
+			cout << "Arm " << m <<" - IK Solution" << i+1 << " = "<< iksol[i].th1 * r2d<<","<<iksol[i].th2 * r2d<<","<<iksol[i].d3<< ","<<iksol[i].th4 * r2d<< ","<<iksol[i].th5 * r2d<< ","<<iksol[i].th6 * r2d<< endl;
+#endif
 		// Check solutions - compare IK solutions to current joint angles...
 		double wrist2 = (d0->mech[m].joint[GRASP2].jpos - d0->mech[m].joint[GRASP1].jpos) / 2.0; // grep "
 		double joints[6] = {
@@ -441,29 +422,27 @@ int r2_inv_kin(struct device *d0, int runlevel)
 				d0->mech[m].joint[WRIST   ].jpos,
 				wrist2
 		};
-                ///log_msg("3. Was here  !!!!!!");
+
 		// convert from joint angle representation to DH theta convention
 		double lo_thetas[6];
 
 		static int arm_check = 0;
                 
 		joint2theta(lo_thetas, joints, arm);  //this is the one that's wrong
+
+#ifdef simulator
                 lo_thetas[0] = thetas_fwd[0];///Added
                 lo_thetas[1] = thetas_fwd[1];///Added
                 lo_thetas[2] = thetas_fwd[2];///Added
                 lo_thetas[3] = thetas_fwd[3];///Added
                 lo_thetas[4] = thetas_fwd[4];///Added
                 lo_thetas[5] = thetas_fwd[5];///Added
-         	int sol_idx=0;
+#endif         	
+		int sol_idx=0;
 		double sol_err;
 		int check_result = 0;
 
-                log_msg("Current Joint Positions: (%f,%f,%f,%f,%f,%f)",
-			iksol[0].th1*r2d,iksol[0].th2*r2d,
-                        iksol[0].d3,
-                        iksol[0].th4*r2d, iksol[0].th5*r2d,
-                        iksol[0].th6*r2d);
-
+ 	
 		if ( (check_result = check_solutions(lo_thetas, iksol, sol_idx, sol_err)) < 0)
 		{
 			cout << "IK failed\n";
@@ -477,8 +456,19 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		tf::Transform xf_sat;
 		double gangle = double(d0->mech[m].ori_d.grasp) / 1000.0;
 		theta2joint(iksol[sol_idx], Js);
-		///log_msg("4. Was here  !!!!!!");
-		int limited = 0; ////= apply_joint_limits(Js,Js_sat);
+		
+#ifdef simulator
+               log_msg("Solution: (%f,%f,%f,%f,%f,%f)",
+			iksol[sol_idx].th1*r2d,iksol[sol_idx].th2*r2d,
+                        iksol[sol_idx].d3,
+                        iksol[sol_idx].th4*r2d, iksol[sol_idx].th5*r2d,
+                        iksol[sol_idx].th6*r2d);
+
+		//// To be changed back!!!
+		int limited = 0;
+#else
+		int limited = apply_joint_limits(Js,Js_sat);
+#endif
 		if (limited)
 		{
 			joint2theta(thetas_sat, Js_sat, arm);
@@ -506,8 +496,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		d0->mech[m].joint[GRASP1  ].jpos_d = -Js[5] +  gangle / 2;
 		d0->mech[m].joint[GRASP2  ].jpos_d =  Js[5] +  gangle / 2;
 		
-                ///printIK = 1; ////Add
-		if (printIK !=0 )// && d0->mech[m].type == GREEN_ARM_SERIAL )
+         	if (printIK !=0 )// && d0->mech[m].type == GREEN_ARM_SERIAL )
 		{
 			log_msg("All IK solutions for mechanism %d.  Chosen solution:%d:",m, sol_idx);
 			log_msg("Current     :\t( %3f,\t %3f,\t %3f,\t %3f,\t %3f,\t %3f (\t %3f/\t %3f))",

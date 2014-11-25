@@ -13,7 +13,7 @@ cd raven_2
 roslaunch raven_2 raven_2.launch
 
 
-Prefix for GDB:
+Prefix for GDB: should be added in ./launch/raven_2.launch
 launch-prefix="xterm -e gdb --args"
 ___________________________________________________
 

@@ -51,6 +51,8 @@
 #include "update_device_state.h"
 #include "parallel.h"
 
+#define simulator 
+
 extern int NUM_MECH; //Defined in rt_process_preempt.cpp
 extern unsigned long int gTime; //Defined in rt_process_preempt.cpp
 extern struct DOF_type DOF_types[]; //Defined in DOF_type.h
@@ -88,7 +90,6 @@ extern int initialized; //Defined in rt_process_preempt.cpp
 *
 */
 int controlRaven(struct device *device0, struct param_pass *currParams){
-    //log_msg("Control Raven");///Added
 
     int ret = 0;
     //Desired control mode
@@ -98,7 +99,9 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
     initRobotData(device0, currParams->runlevel, currParams);
 
     //Compute Mpos & Velocities
-    ///stateEstimate(device0); 
+#ifndef simulator
+    stateEstimate(device0); 
+#endif
 
     //Foward Cable Coupling
     fwdCableCoupling(device0, currParams->runlevel);
@@ -111,10 +114,9 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         //CHECK ME: what is the purpose of this mode?
         case no_control:
         {
-            log_msg("No Control");
+            ////log_msg("No Control");
 	    initialized = false;
-            //log_msg("No Control\n");///Added
-
+            
             struct DOF *_joint = NULL;
             struct mechanism* _mech = NULL;
             int i=0,j=0;
@@ -132,7 +134,6 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         //Cartesian Space Control is called to control the robot in cartesian space
         case cartesian_space_control:		
 		////log_msg("Cartesian space control");
-		//set_posd_to_pos(device0);///// Added
         	ret = raven_cartesian_space_command(device0,currParams);
         	break;
         //Motor PD control runs PD control on motor position
@@ -210,13 +211,13 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
     }
     else if (currParams->runlevel < RL_PEDAL_DN)
     {
-    	log_msg("I was at PEDAL DN");
         set_posd_to_pos(device0);
     	updateMasterRelativeOrigin(device0);
     }
 
-    ////parport_out(0x01);
-
+#ifndef simulator
+    parport_out(0x01);
+#endif
 
     //Inverse kinematics
     r2_inv_kin(device0, currParams->runlevel);

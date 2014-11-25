@@ -53,6 +53,8 @@ ROS publishing is at the bottom half of this file.
 #include "r2_kinematics.h"
 #include "reconfigure.h"
 
+#define simulator 
+
 extern int NUM_MECH;
 extern USBStruct USBBoards;
 extern unsigned long int gTime;
@@ -153,81 +155,85 @@ void teleopIntoDS1(struct u_struct *us_t)
 
     for (i=0;i<NUM_MECH;i++)
     {
-        ///armserial = USBBoards.boards[i]==GREEN_ARM_SERIAL ? GREEN_ARM_SERIAL : GOLD_ARM_SERIAL;
-        ///armidx    = USBBoards.boards[i]==GREEN_ARM_SERIAL ? 1 : 0;
-        ///armserial = (i == 1) ? GREEN_ARM_SERIAL : GOLD_ARM_SERIAL; // Added
-        ///armidx = (i == 1) ? 1 : 0; // Added
+#ifndef simulator
+        armserial = USBBoards.boards[i]==GREEN_ARM_SERIAL ? GREEN_ARM_SERIAL : GOLD_ARM_SERIAL;
+        armidx    = USBBoards.boards[i]==GREEN_ARM_SERIAL ? 1 : 0;
 
         // apply mapping to teleop data
-        ///p.x = us_t->delx[armidx];
-        ///p.y = us_t->dely[armidx];
-        ///p.z = us_t->delz[armidx];
+        p.x = us_t->delx[armidx];
+        p.y = us_t->dely[armidx];
+        p.z = us_t->delz[armidx];
 
         //set local quaternion from teleop quaternion data
-        ///q_temp.setX( us_t->Qx[armidx] );
-        ///q_temp.setY( us_t->Qy[armidx] );
-        ///q_temp.setZ( us_t->Qz[armidx] );
-        ///q_temp.setW( us_t->Qw[armidx] );
+        q_temp.setX( us_t->Qx[armidx] );
+        q_temp.setY( us_t->Qy[armidx] );
+        q_temp.setZ( us_t->Qz[armidx] );
+        q_temp.setW( us_t->Qw[armidx] );
 
-        ///fromITP(&p, q_temp, armserial);
+        fromITP(&p, q_temp, armserial);
 
-        ///data1.xd[i].x += p.x;
-        ///data1.xd[i].y += p.y;
-        ///data1.xd[i].z += p.z;
-
-        data1.xd[i].x = -351.3618;///Added
-	data1.xd[i].y = 37.3574;///Added
-	data1.xd[i].z = -169.0294;////Added
-
-        // commented debug output
-        log_msg("User desired end-effector positions: (%d,%d,%d)",
-               data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);///Added
+        data1.xd[i].x += p.x;
+        data1.xd[i].y += p.y;
+        data1.xd[i].z += p.z;
 
         //Add quaternion increment
-        ///Q_ori[armidx]= q_temp*Q_ori[armidx];
-        ///rot_mx_temp.setRotation(Q_ori[armidx]);
+        Q_ori[armidx]= q_temp*Q_ori[armidx];
+        rot_mx_temp.setRotation(Q_ori[armidx]);
 
-	int rot_mx_temp	[3][3];
-        rot_mx_temp[0][0]= -0.3028;////Added
-	rot_mx_temp[0][1]= -0.5766;
-	rot_mx_temp[0][2]= -0.7589;
-        rot_mx_temp[1][0]= -0.9513;
-	rot_mx_temp[1][1]= 0.1339;
-	rot_mx_temp[1][2]= 0.2778; 
-	rot_mx_temp[2][0]= -0.0586;
-        rot_mx_temp[2][1]= 0.8060;
-	rot_mx_temp[2][2]= -0.5890;
-
-        log_msg("Test Rotation %3f", rot_mx_temp[0][1]);
         // Set rotation command
         for (int j=0;j<3;j++)
             for (int k=0;k<3;k++)
                 data1.rd[i].R[j][k] = rot_mx_temp[j][k];
 
-        data1.rd[i].grasp = 0;
         const int graspmax = (M_PI/2 * 1000);
         const int graspmin = (-30.0 * 1000.0 DEG2RAD);
-	///	data1.rd[i].grasp -= us_t->grasp[armidx];
-	///	if (data1.rd[i].grasp>graspmax) data1.rd[i].grasp=graspmax;
-	///	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
+	data1.rd[i].grasp -= us_t->grasp[armidx];
+	if (data1.rd[i].grasp>graspmax) data1.rd[i].grasp=graspmax;
+	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
+#else
+        armserial = (i == 1) ? GREEN_ARM_SERIAL : GOLD_ARM_SERIAL; 
+        armidx = (i == 1) ? 1 : 0; 
+
+        data1.xd[i].x = us_t->delx[armidx];///-351.3618;
+	data1.xd[i].y = us_t->dely[armidx];///37.3574;
+	data1.xd[i].z = us_t->delz[armidx];////-169.0294;
+
+        // commented debug output
+        log_msg("User desired end-effector positions: (%d,%d,%d)",
+               data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);///Added
+	
+
+        data1.rd[i].R[0][0]= -0.3028;////Added
+	data1.rd[i].R[0][1]= -0.5766;
+	data1.rd[i].R[0][2]= -0.7589;
+        data1.rd[i].R[1][0]= -0.9513;
+	data1.rd[i].R[1][1]= 0.1339;
+	data1.rd[i].R[1][2]= 0.2778; 
+	data1.rd[i].R[2][0]= -0.0586;
+        data1.rd[i].R[2][1]= 0.8060;
+	data1.rd[i].R[2][2]= -0.5890;
+
+	data1.rd[i].grasp = 0;
+#endif
     }
 
+#ifndef simulator
     /// \question HK: why is this a hack?
     // HACK HACK HACK
     // HACK HACK HACK
     // HACK HACK HACK
     // HACK HACK HACK
-    ///data1.last_sequence = us_t->sequence;
-    data1.last_sequence = 0;
-
+    data1.last_sequence = us_t->sequence;
+    
     // commented debug output
         //log_msg("User desired end-effector positions: (%f,%f,%f)/(%f,%f,%f)",
                //data1.xd[0].x, data1.xd[0].y, data1.xd[0].z,
                //data1.xd[1].x, data1.xd[1].y, data1.xd[1].z);
-
-    ///data1.surgeon_mode = us_t->surgeon_mode;
-    data1.surgeon_mode = 1;///Added 
-
+    data1.surgeon_mode = us_t->surgeon_mode;
+#else
+    data1.last_sequence = 0;
+    data1.surgeon_mode = 1; 
+#endif
     pthread_mutex_unlock(&data1Mutex);
 }
 

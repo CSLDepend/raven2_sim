@@ -272,10 +272,10 @@ static void *rt_process(void* )
       //Run Safety State Machine
 #ifndef simulator
       stateMachine(&device0, &currParams, &rcvdParams);
-#endif
+
       //Update Atmel Input Pins
       // TODO: deleteme
-#ifndef simulator
+
       updateAtmelInputs(device0, currParams.runlevel);
 #endif
 
