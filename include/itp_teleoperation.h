@@ -38,6 +38,7 @@
 #define SURGEON_ENGAGED       1
 #define SURGEON_DISENGAGED    0
 
+#define simulator
 /*
 u_struct : structure passed from master to slave.
 This struct defines an incremental movment packet type.
@@ -58,6 +59,25 @@ surgeon_mode    SURGEON_ENGAGED or SURGEON_DISENGAGED  (formerly Pedal_Down or P
 checksum
 */
 
+#ifdef simulator
+struct u_struct {
+	unsigned int sequence;
+	unsigned int pactyp;
+	unsigned int version;
+
+	int delx[2];
+	int dely[2];
+	int delz[2];
+        double R_l[3][3];
+        double R_r[3][3];
+	double ljoints[6];
+	double rjoints[6];
+	int buttonstate[2];
+	int grasp[2];
+	int surgeon_mode;
+	int checksum;
+}__attribute__((__packed__));
+#else
 struct u_struct {
 	unsigned int sequence;
 	unsigned int pactyp;
@@ -75,6 +95,7 @@ struct u_struct {
 	int surgeon_mode;
 	int checksum;
 }__attribute__((__packed__));
+#endif
 
 /*
 v_struct: Return DS from slave to master.

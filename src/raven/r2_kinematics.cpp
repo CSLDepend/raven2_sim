@@ -68,7 +68,7 @@ double ds[2][6]           = {{0,    0,    V,          d4,  0,      0},
 double robot_thetas[2][6] = {{V,    V,    M_PI/2,     V,   V,      V},
                              {V,    V,    -M_PI/2,    V,   V,      V}};
 
-#define simulator
+//#define simulator
 
 #ifdef simulator
 /// Parameters to check for fwd_kin
@@ -76,7 +76,8 @@ int a_fwd = 0;
 int b_fwd = 6;
 /// theta1, theta2, d3, theta4, theta5, theta6 (ignore theta4 for now)
 ///double thetas_fwd[6] = {35*d2r, 50*d2r, 323*0.001, 0*d2r,80*d2r, 20*d2r};
-double thetas_fwd[6] = {20*d2r, 30*d2r, 300*0.001, 50*d2r,-80*d2r, 30*d2r};
+//double rthetas_fwd[6] = {30*d2r, 90*d2r, 410*0.001, 0*d2r,-90*d2r, 0*d2r};
+//double lthetas_fwd[6] = {113.39*d2r,150*d2r, 300*0.001, -64.432*d2r,-80*d2r, 30*d2r};
 # endif
 
 int printIK = 0;
@@ -166,12 +167,25 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 		double lo_thetas[6];
 		joint2theta(lo_thetas, joints, arm);
 #ifdef simulator
-                lo_thetas[0] = thetas_fwd[0];///Added
-                lo_thetas[1] = thetas_fwd[1];///Added
-                lo_thetas[2] = thetas_fwd[2];///Added
-                lo_thetas[3] = thetas_fwd[3];///Added
-                lo_thetas[4] = thetas_fwd[4];///Added
-                lo_thetas[5] = thetas_fwd[5];///Added
+	/*if (m ==0)
+	{
+                lo_thetas[0] = lthetas_fwd[0];///Added
+                lo_thetas[1] = lthetas_fwd[1];///Added
+                lo_thetas[2] = lthetas_fwd[2];///Added
+                lo_thetas[3] = lthetas_fwd[3];///Added
+                lo_thetas[4] = lthetas_fwd[4];///Added
+                lo_thetas[5] = lthetas_fwd[5];///Added
+	}	
+	else
+	{
+                lo_thetas[0] = rthetas_fwd[0];///Added
+                lo_thetas[1] = rthetas_fwd[1];///Added
+                lo_thetas[2] = rthetas_fwd[2];///Added
+                lo_thetas[3] = rthetas_fwd[3];///Added
+                lo_thetas[4] = rthetas_fwd[4];///Added
+                lo_thetas[5] = rthetas_fwd[5];///Added
+	}*/
+     		cout << "Arm " << m <<" - Current Thetas" << " = "<< lo_thetas[0] * r2d<<","<<lo_thetas[1] * r2d<<","<<lo_thetas[2]<< ","<<lo_thetas[3] * r2d<< ","<<lo_thetas[4] * r2d<< ","<<lo_thetas[5] * r2d<< endl;
 #endif
 		/// execute FK
 		fwd_kin(lo_thetas, arm, xf);
@@ -186,10 +200,11 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 
 #ifdef simulator		
 		//// Added
+
                 cout << "Arm " << m << endl;
-		cout << "Forward Kin Pos = (" << d0->mech[m].pos.x << "," << d0->mech[m].pos.y << "," << d0->mech[m].pos.z << ")" << endl;
+		cout << "FK)Current Pos = (" << d0->mech[m].pos.x << "," << d0->mech[m].pos.y << "," << d0->mech[m].pos.z << ")" << endl;
                       
-                cout << "Forward Kin Ori = " << endl << d0->mech[m].ori.R[0][0] << "," << d0->mech[m].ori.R[0][1] << "," << d0->mech[m].ori.R[0][2] << endl<< d0->mech[m].ori.R[1][0] << "," << d0->mech[m].ori.R[1][1] << "," << d0->mech[m].ori.R[1][2] << endl << d0->mech[m].ori.R[2][0] << "," << d0->mech[m].ori.R[2][1] << "," << d0->mech[m].ori.R[2][2] <<endl << endl;
+                cout << "FK)Current Ori = " << endl << d0->mech[m].ori.R[0][0] << "," << d0->mech[m].ori.R[0][1] << "," << d0->mech[m].ori.R[0][2] << endl<< d0->mech[m].ori.R[1][0] << "," << d0->mech[m].ori.R[1][1] << "," << d0->mech[m].ori.R[1][2] << endl << d0->mech[m].ori.R[2][0] << "," << d0->mech[m].ori.R[2][1] << "," << d0->mech[m].ori.R[2][2] <<endl << endl;
 #endif
  
 	}
@@ -241,8 +256,11 @@ int fwd_kin (double in_j[6], l_r in_arm, tf::Transform &out_xform)
 			dh_theta[i] = in_j[i];// *M_PI/180;
 	}
 
+#ifndef simulator
+	out_xform = getFKTransform(0,6);
+#else
 	out_xform = getFKTransform(a_fwd,b_fwd);
-
+#endif
 
 
 	// rotate to match "tilted" base
@@ -369,13 +387,16 @@ int r2_inv_kin(struct device *d0, int runlevel)
 
 			arm = dh_right;
 		}
-#ifndef simulator
+
 		ori_d = &(d0->mech[m].ori_d);
 		pos_d = &(d0->mech[m].pos_d);       	
-#else          
-		                
-		ori_d = &(d0->mech[m].ori);
-		pos_d = &(d0->mech[m].pos);
+
+#ifdef simulator
+
+		cout << "IK) Desired Pos = (" << pos_d->x << "," << pos_d->y << "," << pos_d->z << ")" << endl;
+                      
+                cout << "IK) Desired Ori = " << endl << ori_d->R[0][0] << "," << ori_d->R[0][1] << "," << ori_d->R[0][2] << endl<< ori_d->R[1][0] << "," << ori_d->R[1][1] << "," << ori_d->R[1][2] << endl << ori_d->R[2][0] << "," << ori_d->R[2][1] << "," << ori_d->R[2][2] <<endl << endl;
+
 #endif
 
 		// copy R matrix
@@ -387,6 +408,8 @@ int r2_inv_kin(struct device *d0, int runlevel)
 			     ori_d->R[1][0], ori_d->R[1][1], ori_d->R[1][2],
 			     ori_d->R[2][0], ori_d->R[2][1], ori_d->R[2][2]  ) );
 		xf.setOrigin( tf::Vector3(pos_d->x/(1000.0*1000.0),pos_d->y/(1000.0*1000.0), pos_d->z/(1000.0*1000.0)));
+
+
 
 /*
 		const static tf::Transform zrot_l( tf::Matrix3x3 (cos(25*d2r),-sin(25*d2r),0,  sin(25*d2r),cos(25*d2r),0,  0,0,1), tf::Vector3 (0,0,0) );
@@ -408,9 +431,11 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		if (ret < 0)
 			log_msg("ik failed gracefully (arm%d ret:%d", arm, ret);
 
-#ifdef simulator	      
+#ifdef simulator
+	      
 		for (int i =0; i < 8;i++)
 			cout << "Arm " << m <<" - IK Solution" << i+1 << " = "<< iksol[i].th1 * r2d<<","<<iksol[i].th2 * r2d<<","<<iksol[i].d3<< ","<<iksol[i].th4 * r2d<< ","<<iksol[i].th5 * r2d<< ","<<iksol[i].th6 * r2d<< endl;
+
 #endif
 		// Check solutions - compare IK solutions to current joint angles...
 		double wrist2 = (d0->mech[m].joint[GRASP2].jpos - d0->mech[m].joint[GRASP1].jpos) / 2.0; // grep "
@@ -429,19 +454,15 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		static int arm_check = 0;
                 
 		joint2theta(lo_thetas, joints, arm);  //this is the one that's wrong
-
-#ifdef simulator
-                lo_thetas[0] = thetas_fwd[0];///Added
-                lo_thetas[1] = thetas_fwd[1];///Added
-                lo_thetas[2] = thetas_fwd[2];///Added
-                lo_thetas[3] = thetas_fwd[3];///Added
-                lo_thetas[4] = thetas_fwd[4];///Added
-                lo_thetas[5] = thetas_fwd[5];///Added
-#endif         	
+     	
 		int sol_idx=0;
 		double sol_err;
 		int check_result = 0;
 
+
+#ifdef simulator	      
+			cout << "Arm " << m <<" - Golden Theta" << " = "<< lo_thetas[0] * r2d<<","<<lo_thetas[1] * r2d<<","<<lo_thetas[2]<< ","<<lo_thetas[3] * r2d<< ","<<lo_thetas[4] * r2d<< ","<<lo_thetas[5] * r2d<< endl;
+#endif
  	
 		if ( (check_result = check_solutions(lo_thetas, iksol, sol_idx, sol_err)) < 0)
 		{
@@ -467,7 +488,8 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		//// To be changed back!!!
 		int limited = 0;
 #else
-		int limited = apply_joint_limits(Js,Js_sat);
+		int limited = 0;		
+		//int limited = apply_joint_limits(Js,Js_sat);
 #endif
 		if (limited)
 		{
@@ -947,7 +969,6 @@ void print_btVector(tf::Vector3 vv)
 // Theta is used by the kinematics.
 // Theta convention was easier to solve the equations, while J was already coded in software.
 //-----------------------------------------------------------------------------------------
-
 const static double TH1_J0_L  = 205;//-180;//-205;   //add this to J0 to get \theta1 (in deg)
 const static double TH2_J1_L  = 180;//-180;   //add this to J1 to get \theta2 (in deg)
 const static double D3_J2_L   = 0.0;    //add this to J2 to get d3 (in meters????)
@@ -975,6 +996,7 @@ const static double TH6B_J6_R = 0;     //add this to J6 to get \theta6b (in deg)
  * \question why just remove this conversion, set theta the same as joint angle????
  *  \ingroup Kinematics
  */
+
 void joint2theta(double *out_iktheta, double *in_J, l_r in_arm)
 {
 	//convert J to theta

@@ -20,6 +20,8 @@
 #include "update_device_state.h"
 #include "log.h"
 
+#define simulator
+
 extern struct DOF_type DOF_types[];
 extern struct traj trajectory[];
 extern int NUM_MECH;
@@ -60,7 +62,27 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
     // set desired mech position in pedal_down runlevel
     if (currParams->runlevel == RL_PEDAL_DN)
     {
+#ifdef simulator 
         currParams->robotControlMode = cartesian_space_control;////Added
+
+	if (currParams->last_sequence == 1)
+	{
+	    device0->mech[0].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[0];
+     	    device0->mech[0].joint[ELBOW].jpos_d = rcvdParams->jpos_d[1];
+	    device0->mech[0].joint[Z_INS].jpos_d = rcvdParams->jpos_d[2];
+	    device0->mech[0].joint[TOOL_ROT].jpos_d = rcvdParams->jpos_d[3];
+	    device0->mech[0].joint[WRIST].jpos_d = rcvdParams->jpos_d[4];
+	    device0->mech[0].joint[GRASP1].jpos_d = rcvdParams->jpos_d[5];
+	    device0->mech[0].joint[GRASP2].jpos_d = rcvdParams->jpos_d[6];
+	    device0->mech[1].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[7];
+     	    device0->mech[1].joint[ELBOW].jpos_d = rcvdParams->jpos_d[8];
+	    device0->mech[1].joint[Z_INS].jpos_d = rcvdParams->jpos_d[9];
+	    device0->mech[1].joint[TOOL_ROT].jpos_d = rcvdParams->jpos_d[10];
+	    device0->mech[1].joint[WRIST].jpos_d = rcvdParams->jpos_d[11];
+	    device0->mech[1].joint[GRASP1].jpos_d = rcvdParams->jpos_d[12];
+	    device0->mech[1].joint[GRASP2].jpos_d = rcvdParams->jpos_d[13];
+	}
+#endif
         for (int i = 0; i < NUM_MECH; i++)
         {
             device0->mech[i].pos_d.x = rcvdParams->xd[i].x;
@@ -73,6 +95,7 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
                 for (int k=0;k<3;k++)
                 device0->mech[i].ori_d.R[j][k]  = rcvdParams->rd[i].R[j][k];
         }	
+
     }
 
      // Switch control modes only in pedal up or init.
@@ -103,10 +126,12 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
     {
         device0->surgeon_mode=rcvdParams->surgeon_mode; //store the surgeon_mode to DS0
     }
-
-    log_msg("Device desired end-effector positions: (%d,%d,%d)/(%d,%d,%d)",
+#ifdef simulator
+/*    log_msg("Device desired end-effector positions: (%d,%d,%d)/(%d,%d,%d)",
             device0->mech[0].pos_d.x, device0->mech[0].pos_d.y, device0->mech[0].pos_d.z,
             device0->mech[1].pos_d.x, device0->mech[1].pos_d.y, device0->mech[1].pos_d.z);
+*/
+#endif
     return 0;
 }
 

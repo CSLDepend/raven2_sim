@@ -28,6 +28,8 @@
 #include "log.h"
 #include "tool.h"
 
+#define simulator 
+
 extern struct DOF_type DOF_types[];
 extern int NUM_MECH;
 
@@ -177,6 +179,7 @@ void fwdMechCableCoupling(struct mechanism *mech)
 		th6 = (1.0/tr6) * (m6 - m4/GB_RATIO);
 		th7 = (1.0/tr7) * (m7 - m4/GB_RATIO);
 	}
+#ifndef simulator
 	// Now have solved for th1, th2, d3, th4, th5, th6
 	mech->joint[SHOULDER].jpos 		= th1;// - mech->joint[SHOULDER].jpos_off;
 	mech->joint[ELBOW].jpos 		= th2;// - mech->joint[ELBOW].jpos_off;
@@ -189,7 +192,19 @@ void fwdMechCableCoupling(struct mechanism *mech)
 	mech->joint[SHOULDER].jvel 		= th1_dot;// - mech->joint[SHOULDER].jpos_off;
 	mech->joint[ELBOW].jvel 		= th2_dot;// - mech->joint[ELBOW].jpos_off;
 	mech->joint[Z_INS].jvel 		= d4_dot;//  - mech->joint[Z_INS].jpos_off;
+#else
+	mech->joint[SHOULDER].jpos 		= mech->joint[SHOULDER].jpos_d;// - mech->joint[SHOULDER].jpos_off;
+	mech->joint[ELBOW].jpos 		= mech->joint[ELBOW].jpos_d;// - mech->joint[ELBOW].jpos_off;
+	mech->joint[TOOL_ROT].jpos 		= mech->joint[TOOL_ROT].jpos_d;// - mech->joint[TOOL_ROT].jpos_off;
+	mech->joint[Z_INS].jpos 		= mech->joint[Z_INS].jpos_d;//  - mech->joint[Z_INS].jpos_off;
+	mech->joint[WRIST].jpos 		= mech->joint[WRIST].jpos_d;// - mech->joint[WRIST].jpos_off;
+	mech->joint[GRASP1].jpos 		= mech->joint[GRASP1].jpos_d;// - mech->joint[GRASP1].jpos_off;
+	mech->joint[GRASP2].jpos 		= mech->joint[GRASP2].jpos_d;// - mech->joint[GRASP2].jpos_off;
 
+	mech->joint[SHOULDER].jvel 		= th1_dot;// - mech->joint[SHOULDER].jpos_off;
+	mech->joint[ELBOW].jvel 		= th2_dot;// - mech->joint[ELBOW].jpos_off;
+	mech->joint[Z_INS].jvel 		= d4_dot;//  - mech->joint[Z_INS].jpos_off;
+#endif
 	return;
 }
 

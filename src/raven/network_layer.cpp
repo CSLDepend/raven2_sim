@@ -242,10 +242,6 @@ void* network_process(void* param1)
         // Select timeout: nothing to do
         if (nfound == 0)
         {          
-#ifdef simulator
-	    log_msg("Empty Packet Sent, Size = %d - %d", sizeof(u),uSize);
-	    receiveUserspace(&u,uSize); 
-#endif
             fflush(stdout);
             continue;
         }
@@ -259,7 +255,7 @@ void* network_process(void* param1)
                                  0,
                                  NULL,
                                  NULL);
-            log_msg("Packet Size = %d - %d", bytesread,uSize);
+
             if (bytesread != uSize){
                 ROS_ERROR("ERROR: Rec'd wrong ustruct size on socket!\n");
                 FD_CLR(sock, &rmask);   // remove the descriptor sock from fdset rmask
@@ -309,7 +305,8 @@ void* network_process(void* param1)
             }
 
             else if (u.sequence > seq)       // Valid packet
-            {             
+            {    
+                log_msg("Receieved Valid Packet # %d", u.sequence);         
 		seq = u.sequence;
                 receiveUserspace(&u,uSize);   // coordinates transform from ITP frame to robot 0 frame
             }
@@ -337,10 +334,10 @@ void* network_process(void* param1)
         sendto ( sock, (void*)&v, vSize, 0,
                  (struct sockaddr *) &clientName, clientLength);
 #endif
-///#ifdef simulator
-///        sendto ( sock, "Done", 1024, 0,
-///                 (struct sockaddr *) &clientName, clientLength);
-///#endif
+#ifdef simulator
+        sendto ( sock, "Done", 1024, 0,
+                 (struct sockaddr *) &clientName, clientLength);
+#endif
 
     } // end while(ros::ok())
 

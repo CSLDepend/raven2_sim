@@ -194,30 +194,53 @@ void teleopIntoDS1(struct u_struct *us_t)
         armserial = (i == 1) ? GREEN_ARM_SERIAL : GOLD_ARM_SERIAL; 
         armidx = (i == 1) ? 1 : 0; 
 
-        data1.xd[i].x = us_t->delx[armidx];///-351.3618;
-	data1.xd[i].y = us_t->dely[armidx];///37.3574;
-	data1.xd[i].z = us_t->delz[armidx];////-169.0294;
+	// Set Position command
+        data1.xd[i].x = us_t->delx[armidx];
+	data1.xd[i].y = us_t->dely[armidx];
+	data1.xd[i].z = us_t->delz[armidx];
 
         // commented debug output
-        log_msg("User desired end-effector positions: (%d,%d,%d)",
-               data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);///Added
-	
+        log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",
+               i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);///Added
 
-        data1.rd[i].R[0][0]= -0.3028;////Added
-	data1.rd[i].R[0][1]= -0.5766;
-	data1.rd[i].R[0][2]= -0.7589;
-        data1.rd[i].R[1][0]= -0.9513;
-	data1.rd[i].R[1][1]= 0.1339;
-	data1.rd[i].R[1][2]= 0.2778; 
-	data1.rd[i].R[2][0]= -0.0586;
-        data1.rd[i].R[2][1]= 0.8060;
-	data1.rd[i].R[2][2]= -0.5890;
+        // Set rotation command
+	if (i == 0)
+	{	
+		for (int j=0;j<3;j++)
+		    for (int k=0;k<3;k++)
+		        data1.rd[0].R[j][k] = us_t->R_l[j][k];
 
-	data1.rd[i].grasp = 0;
+		double gangle = (us_t->grasp[armidx]*M_PI/180)/1000.0;		
+                data1.jpos_d[0] = (us_t->ljoints[0] - 205)*M_PI/180; 
+ 		data1.jpos_d[1] = (us_t->ljoints[1] - 180)*M_PI/180;
+		data1.jpos_d[2] = us_t->ljoints[2]*0.001; 
+		data1.jpos_d[3] = us_t->ljoints[3]*M_PI/180; 
+ 		data1.jpos_d[4] = (us_t->ljoints[4] + 90)*M_PI/180;
+		data1.jpos_d[5] = -us_t->ljoints[5]*M_PI/180 + gangle/2; 
+ 		data1.jpos_d[6] =  us_t->ljoints[5]*M_PI/180 + gangle/2;
+	}        
+	else
+	{
+		for (int j=0;j<3;j++)
+		    for (int k=0;k<3;k++)
+		        data1.rd[1].R[j][k] = us_t->R_r[j][k];
+		
+		double gangle = (us_t->grasp[armidx]*M_PI/180)/1000.0;	
+                data1.jpos_d[7] = (us_t->rjoints[0] - 25)*M_PI/180; 
+ 		data1.jpos_d[8] = us_t->rjoints[1]*M_PI/180;
+		data1.jpos_d[9] = us_t->rjoints[2]*0.001; 
+		data1.jpos_d[10] = us_t->rjoints[3]*M_PI/180; 
+ 		data1.jpos_d[11] = (us_t->rjoints[4] + 90)*M_PI/180;
+		data1.jpos_d[12] = -us_t->rjoints[5]*M_PI/180 + gangle/2;
+		data1.jpos_d[13] = us_t->rjoints[5]*M_PI/180 + gangle/2; 
+	}        
+	log_msg("Arm %d: User desired end-effector rotations (first row): (%f,%f,%f)",
+               i, data1.rd[i].R[0][0],data1.rd[i].R[0][1],data1.rd[i].R[0][2]);
+
+	data1.rd[i].grasp = us_t->grasp[armidx];
 #endif
     }
 
-#ifndef simulator
     /// \question HK: why is this a hack?
     // HACK HACK HACK
     // HACK HACK HACK
@@ -230,10 +253,6 @@ void teleopIntoDS1(struct u_struct *us_t)
                //data1.xd[0].x, data1.xd[0].y, data1.xd[0].z,
                //data1.xd[1].x, data1.xd[1].y, data1.xd[1].z);
     data1.surgeon_mode = us_t->surgeon_mode;
-#else
-    data1.last_sequence = 0;
-    data1.surgeon_mode = 1; 
-#endif
     pthread_mutex_unlock(&data1Mutex);
 }
 
