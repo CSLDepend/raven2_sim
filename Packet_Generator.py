@@ -13,9 +13,9 @@ print "UDP target port:", UDP_PORT
 
 u_struct = namedtuple("u_struct", "sequence pactyp version delx0 delx1 dely0 dely1 delz0 delz1 R_l00 R_l01 R_l02 R_l10 R_l11 R_l12 R_l20 R_l21 R_l22 R_r00 R_r01 R_r02 R_r10 R_r11 R_r12 R_r20 R_r21 R_r22 ltheta1 ltheta2 ld3 ltheta4 ltheta5 ltheta6 rtheta1, rtheta2, rd3, rtheta4, rtheta5, rtheta6 buttonstate0 buttonstate1 grasp0 grasp1 surgeon_mode checksum");
 
-csvfile1 = open('left.txt'); 
+csvfile1 = open('/home/homa/Documents/raven_2/left.txt'); 
 f_left = csv.reader(csvfile1)
-csvfile2 = open('right.txt') 
+csvfile2 = open('/home/homa/Documents/raven_2/right.txt') 
 f_right  = csv.reader(csvfile2)
 seq = 0;
 #l_line = f_left.next();

@@ -27,7 +27,6 @@
 #include "fwd_cable_coupling.h"
 #include "log.h"
 #include "tool.h"
-
 #define simulator 
 
 extern struct DOF_type DOF_types[];
@@ -48,6 +47,9 @@ void fwdCableCoupling(struct device *device0, int runlevel)
 	// This should be run in all runlevels.
 	for (int i = 0; i < NUM_MECH; i++)
 		fwdMechCableCoupling(&(device0->mech[i]));
+#ifdef simulator
+        log_file("RT_PROCESS) FWD Cable Coupling Done");         
+#endif
 }
 
 /**
@@ -188,10 +190,6 @@ void fwdMechCableCoupling(struct mechanism *mech)
 	mech->joint[WRIST].jpos 		= th5;// - mech->joint[WRIST].jpos_off;
 	mech->joint[GRASP1].jpos 		= th6;// - mech->joint[GRASP1].jpos_off;
 	mech->joint[GRASP2].jpos 		= th7;// - mech->joint[GRASP2].jpos_off;
-
-	mech->joint[SHOULDER].jvel 		= th1_dot;// - mech->joint[SHOULDER].jpos_off;
-	mech->joint[ELBOW].jvel 		= th2_dot;// - mech->joint[ELBOW].jpos_off;
-	mech->joint[Z_INS].jvel 		= d4_dot;//  - mech->joint[Z_INS].jpos_off;
 #else
 	mech->joint[SHOULDER].jpos 		= mech->joint[SHOULDER].jpos_d;// - mech->joint[SHOULDER].jpos_off;
 	mech->joint[ELBOW].jpos 		= mech->joint[ELBOW].jpos_d;// - mech->joint[ELBOW].jpos_off;
@@ -201,10 +199,12 @@ void fwdMechCableCoupling(struct mechanism *mech)
 	mech->joint[GRASP1].jpos 		= mech->joint[GRASP1].jpos_d;// - mech->joint[GRASP1].jpos_off;
 	mech->joint[GRASP2].jpos 		= mech->joint[GRASP2].jpos_d;// - mech->joint[GRASP2].jpos_off;
 
+#endif
+
 	mech->joint[SHOULDER].jvel 		= th1_dot;// - mech->joint[SHOULDER].jpos_off;
 	mech->joint[ELBOW].jvel 		= th2_dot;// - mech->joint[ELBOW].jpos_off;
 	mech->joint[Z_INS].jvel 		= d4_dot;//  - mech->joint[Z_INS].jpos_off;
-#endif
+
 	return;
 }
 

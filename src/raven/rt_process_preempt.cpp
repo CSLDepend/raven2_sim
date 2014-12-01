@@ -88,6 +88,8 @@ struct device device0 ={0};  //Declaration Moved outside rt loop for access from
 int    mech_gravcomp_done[2]={0};
 
 #ifdef simulator
+#include <fstream>
+int inject_mode;
 int NUM_MECH=2;   // Define NUM_MECH as a C variable, not a c++ variable
 #else
 int NUM_MECH=0;   // Define NUM_MECH as a C variable, not a c++ variable
@@ -272,24 +274,25 @@ static void *rt_process(void* )
       //Run Safety State Machine
 #ifndef simulator
       stateMachine(&device0, &currParams, &rcvdParams);
-
+#endif
       //Update Atmel Input Pins
       // TODO: deleteme
 
       updateAtmelInputs(device0, currParams.runlevel);
-#endif
-
-#ifdef simulator
-      currParams.runlevel = RL_PEDAL_DN;
-#endif
 
       //Get state updates from master
       if ( checkLocalUpdates() == TRUE)
       {
+#ifdef simulator
+        log_file("RT_PROCESS) Update device state based on received packet.\n");         
+#endif
  	updateDeviceState(&currParams, getRcvdParams(&rcvdParams), &device0);
       }
       else
       {
+#ifdef simulator
+        log_file("RT_PROCESS) No new packets. Use previous parameters.\n");         
+#endif
         rcvdParams.runlevel = currParams.runlevel;
       }
       //Clear DAC Values (set current_cmd to zero on all joints)
@@ -311,11 +314,12 @@ static void *rt_process(void* )
 	  showInverseKinematicsSolutions(&device0, currParams.runlevel);
 	  outputRobotState();
         }
-      //Update Atmel Output Pins
-      //updateAtmelOutputs(&device0, currParams.runlevel);
 
-      //Fill USB Packet and send it out
-#ifndef simulator      
+      //Update Atmel Output Pins
+      updateAtmelOutputs(&device0, currParams.runlevel);
+
+#ifndef simulator  
+      //Fill USB Packet and send it out   
       putUSBPackets(&device0); //disable usb for par port test
 #endif
       //Publish current raven state
@@ -375,6 +379,9 @@ int init_ros(int argc, char **argv)
    */
   ros::init(argc, argv, "r2_control", ros::init_options::NoSigintHandler);
   ros::NodeHandle n;
+#ifdef simulator
+  n.getParam("inject",inject_mode);
+#endif
   //    rosrt::init();
   init_ravenstate_publishing(n);
   init_ravengains(n, &device0);
@@ -413,6 +420,19 @@ int main(int argc, char **argv)
       cerr << "ERROR! Failed to init memory_pool.  Exiting.\n";
       exit(1);
     }
+#ifdef simulator
+  std::ofstream logfile;
+  log_msg("************** Inject mode = %d\n",inject_mode);
+  if (inject_mode == 0)
+      logfile.open("/home/homa/Documents/raven_2/sim_log.txt", std::ofstream::out);
+  else
+  {
+      char buff[50];
+      sprintf(buff,"/home/homa/Documents/raven_2/fault_log_%d.txt",inject_mode);
+      logfile.open(buff,std::ofstream::out); 
+  }
+  log_file("MAIN) Initiated ROS and Memory Pool.\n");     
+#endif
 
   // init reconfigure
   dynamic_reconfigure::Server<raven_2::MyStuffConfig> srv;
@@ -423,6 +443,10 @@ int main(int argc, char **argv)
   pthread_create(&net_thread, NULL, network_process, NULL); //Start the network thread
   pthread_create(&console_thread, NULL, console_process, NULL);
   pthread_create(&rt_thread, NULL, rt_process, NULL);
+
+#ifdef simulator
+  log_file("MAIN) Created and initiated threads.\n");         
+#endif
 
   ros::spin();
 

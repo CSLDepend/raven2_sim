@@ -32,6 +32,46 @@
 std::queue<char*> msgqueue;
 const static size_t MAX_MSG_LEN =1024;
 
+#define simulator
+//#define simulator_logging
+
+#ifdef simulator
+#include <fstream>
+extern int inject_mode;
+/**\fn int log_file(const char* fmt,...)
+*  \brief 
+*  \param fmt
+*  \return 0 on success -1 on failure
+*/
+
+int log_file(const char* fmt,...)
+{
+    std::ofstream logfile;
+    
+    if (inject_mode == 0)
+        logfile.open("/home/homa/Documents/raven_2/sim_log.txt", std::ofstream::out | std::ofstream::app);
+    else
+    {
+        char buff[50];
+        sprintf(buff,"/home/homa/Documents/raven_2/fault_log_%d.txt",inject_mode);
+        logfile.open(buff,std::ofstream::out | std::ofstream::app); 
+    }
+    static char buf[MAX_MSG_LEN];
+    va_list args;
+    va_start (args, fmt);
+    //Do somethinh
+    vsprintf(buf,fmt,args);
+    va_end(args);
+    // Log in the file
+    logfile << buf << "\n";
+    logfile.close();
+#ifdef simulator_logging
+    // Print on console
+    ROS_INFO("%s",buf);
+#endif
+    return 0;
+}
+#endif
 
 /**\fn int log_msg_later(const char* fmt,...)
 *  \brief 

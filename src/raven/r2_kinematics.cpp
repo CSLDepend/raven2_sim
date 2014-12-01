@@ -68,7 +68,7 @@ double ds[2][6]           = {{0,    0,    V,          d4,  0,      0},
 double robot_thetas[2][6] = {{V,    V,    M_PI/2,     V,   V,      V},
                              {V,    V,    -M_PI/2,    V,   V,      V}};
 
-//#define simulator
+#define simulator
 
 #ifdef simulator
 /// Parameters to check for fwd_kin
@@ -166,26 +166,9 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 		// convert from joint angle representation to DH theta convention
 		double lo_thetas[6];
 		joint2theta(lo_thetas, joints, arm);
+
 #ifdef simulator
-	/*if (m ==0)
-	{
-                lo_thetas[0] = lthetas_fwd[0];///Added
-                lo_thetas[1] = lthetas_fwd[1];///Added
-                lo_thetas[2] = lthetas_fwd[2];///Added
-                lo_thetas[3] = lthetas_fwd[3];///Added
-                lo_thetas[4] = lthetas_fwd[4];///Added
-                lo_thetas[5] = lthetas_fwd[5];///Added
-	}	
-	else
-	{
-                lo_thetas[0] = rthetas_fwd[0];///Added
-                lo_thetas[1] = rthetas_fwd[1];///Added
-                lo_thetas[2] = rthetas_fwd[2];///Added
-                lo_thetas[3] = rthetas_fwd[3];///Added
-                lo_thetas[4] = rthetas_fwd[4];///Added
-                lo_thetas[5] = rthetas_fwd[5];///Added
-	}*/
-     		cout << "Arm " << m <<" - Current Thetas" << " = "<< lo_thetas[0] * r2d<<","<<lo_thetas[1] * r2d<<","<<lo_thetas[2]<< ","<<lo_thetas[3] * r2d<< ","<<lo_thetas[4] * r2d<< ","<<lo_thetas[5] * r2d<< endl;
+     		log_file("Arm %d - Current Thetas = %f, %f, %f, %f, %f, %f\n", m, lo_thetas[0] * r2d, lo_thetas[1] * r2d, lo_thetas[2], lo_thetas[3] * r2d, lo_thetas[4] * r2d,lo_thetas[5] * r2d);
 #endif
 		/// execute FK
 		fwd_kin(lo_thetas, arm, xf);
@@ -198,17 +181,18 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 			for (int j=0; j<3; j++)
 				d0->mech[m].ori.R[i][j] = (xf.getBasis())[i][j];  
 
-#ifdef simulator		
-		//// Added
+#ifdef simulator
+        log_file("Arm %d: \nFK) Current Pos = (%d , %d, %d)", m, d0->mech[m].pos.x, d0->mech[m].pos.y, d0->mech[m].pos.z); 
+        log_file ("FK) Current Ori = \n %f, %f, %f \n %f, %f, %f \n %f, %f, %f \n", d0->mech[m].ori.R[0][0], d0->mech[m].ori.R[0][1], d0->mech[m].ori.R[0][2], d0->mech[m].ori.R[1][0], d0->mech[m].ori.R[1][1], d0->mech[m].ori.R[1][2], d0->mech[m].ori.R[2][0], d0->mech[m].ori.R[2][1], d0->mech[m].ori.R[2][2]);  
 
-                cout << "Arm " << m << endl;
-		cout << "FK)Current Pos = (" << d0->mech[m].pos.x << "," << d0->mech[m].pos.y << "," << d0->mech[m].pos.z << ")" << endl;
-                      
-                cout << "FK)Current Ori = " << endl << d0->mech[m].ori.R[0][0] << "," << d0->mech[m].ori.R[0][1] << "," << d0->mech[m].ori.R[0][2] << endl<< d0->mech[m].ori.R[1][0] << "," << d0->mech[m].ori.R[1][1] << "," << d0->mech[m].ori.R[1][2] << endl << d0->mech[m].ori.R[2][0] << "," << d0->mech[m].ori.R[2][1] << "," << d0->mech[m].ori.R[2][2] <<endl << endl;
-#endif
+#endif            
+                
  
 	}
 
+#ifdef simulator
+        log_file("RT_PROCESS) FWD Kinematics Done.\n");      
+#endif
     if ((runlevel != RL_PEDAL_DN) && (runlevel != RL_INIT)) {
 
         // set cartesian pos_d = pos.
@@ -392,10 +376,9 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		pos_d = &(d0->mech[m].pos_d);       	
 
 #ifdef simulator
-
-		cout << "IK) Desired Pos = (" << pos_d->x << "," << pos_d->y << "," << pos_d->z << ")" << endl;
-                      
-                cout << "IK) Desired Ori = " << endl << ori_d->R[0][0] << "," << ori_d->R[0][1] << "," << ori_d->R[0][2] << endl<< ori_d->R[1][0] << "," << ori_d->R[1][1] << "," << ori_d->R[1][2] << endl << ori_d->R[2][0] << "," << ori_d->R[2][1] << "," << ori_d->R[2][2] <<endl << endl;
+		log_file("IK) Desired Pos = (%d, %d, %d)\n", pos_d->x, pos_d->y, pos_d->z);
+                  
+                log_file("IK) Desired Ori = \n %f, %f, %f \n %f, %f, %f \n %f, %f, %f \n", ori_d->R[0][0], ori_d->R[0][1], ori_d->R[0][2], ori_d->R[1][0], ori_d->R[1][1], ori_d->R[1][2], ori_d->R[2][0], ori_d->R[2][1], ori_d->R[2][2]);
 
 #endif
 
@@ -429,12 +412,15 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		ik_solution iksol[8] = {{},{},{},{},{},{},{},{}};
 		int ret = inv_kin(xf, arm, iksol);
 		if (ret < 0)
+		{
 			log_msg("ik failed gracefully (arm%d ret:%d", arm, ret);
-
 #ifdef simulator
-	      
-		for (int i =0; i < 8;i++)
-			cout << "Arm " << m <<" - IK Solution" << i+1 << " = "<< iksol[i].th1 * r2d<<","<<iksol[i].th2 * r2d<<","<<iksol[i].d3<< ","<<iksol[i].th4 * r2d<< ","<<iksol[i].th5 * r2d<< ","<<iksol[i].th6 * r2d<< endl;
+			log_file("ik failed gracefully (arm%d ret:%d", arm, ret);                 	
+#endif		
+		}
+#ifdef simulator	      
+/*		for (int i =0; i < 8;i++)
+	        log_file("Arm %d - IK Solution %d = %f, %f, %f, %f, %f, %f\n", m, i+1 ,iksol[i].th1 * r2d, iksol[i].th2 * r2d, iksol[i].d3, iksol[i].th4 * r2d, iksol[i].th5 * r2d, iksol[i].th6 * r2d);*/
 
 #endif
 		// Check solutions - compare IK solutions to current joint angles...
@@ -460,13 +446,16 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		int check_result = 0;
 
 
-#ifdef simulator	      
-			cout << "Arm " << m <<" - Golden Theta" << " = "<< lo_thetas[0] * r2d<<","<<lo_thetas[1] * r2d<<","<<lo_thetas[2]<< ","<<lo_thetas[3] * r2d<< ","<<lo_thetas[4] * r2d<< ","<<lo_thetas[5] * r2d<< endl;
+#ifdef simulator
+     		log_file("Arm %d - Current Thetas = %f, %f, %f, %f, %f, %f\n", m, lo_thetas[0] * r2d, lo_thetas[1] * r2d, lo_thetas[2], lo_thetas[3] * r2d, lo_thetas[4] * r2d,lo_thetas[5] * r2d);
 #endif
  	
 		if ( (check_result = check_solutions(lo_thetas, iksol, sol_idx, sol_err)) < 0)
 		{
 			cout << "IK failed\n";
+#ifdef simulator
+			log_file("IK failed\n");                	
+#endif
 			return -1;
 		}
 
@@ -479,18 +468,13 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		theta2joint(iksol[sol_idx], Js);
 		
 #ifdef simulator
-               log_msg("Solution: (%f,%f,%f,%f,%f,%f)",
+               log_file("Solution: (%f,%f,%f,%f,%f,%f)\n",
 			iksol[sol_idx].th1*r2d,iksol[sol_idx].th2*r2d,
                         iksol[sol_idx].d3,
                         iksol[sol_idx].th4*r2d, iksol[sol_idx].th5*r2d,
                         iksol[sol_idx].th6*r2d);
-
-		//// To be changed back!!!
-		int limited = 0;
-#else
-		int limited = 0;		
-		//int limited = apply_joint_limits(Js,Js_sat);
 #endif
+		int limited = apply_joint_limits(Js,Js_sat);
 		if (limited)
 		{
 			joint2theta(thetas_sat, Js_sat, arm);
@@ -503,6 +487,9 @@ int r2_inv_kin(struct device *d0, int runlevel)
 					d0->mech[m].ori_d.R[i][j] = (xf_sat.getBasis())[i][j];
 
 			updateMasterRelativeOrigin(d0);
+#ifdef simulator
+			log_file("Applied Joint Limits\n");              	
+#endif
 		}
 		else
 		{
@@ -547,7 +534,9 @@ int r2_inv_kin(struct device *d0, int runlevel)
 	}
 
 	printIK=0;
-
+#ifdef simulator
+        log_file("RT_PROCESS) INV Kinematics Done.\n");            
+#endif	
 	return 0;
 }
 

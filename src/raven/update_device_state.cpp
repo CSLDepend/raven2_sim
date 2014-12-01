@@ -63,8 +63,8 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
     if (currParams->runlevel == RL_PEDAL_DN)
     {
 #ifdef simulator 
-        currParams->robotControlMode = cartesian_space_control;////Added
-
+        log_file("RT_PROCESS) Pedal is down. Update device state.\n");         
+        //currParams->robotControlMode = cartesian_space_control;////Added
 	if (currParams->last_sequence == 1)
 	{
 	    device0->mech[0].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[0];
@@ -131,6 +131,7 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
             device0->mech[0].pos_d.x, device0->mech[0].pos_d.y, device0->mech[0].pos_d.z,
             device0->mech[1].pos_d.x, device0->mech[1].pos_d.y, device0->mech[1].pos_d.z);
 */
+        log_file("Current Control Mode: %d\n",currParams->robotControlMode);         
 #endif
     return 0;
 }

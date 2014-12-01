@@ -123,7 +123,6 @@ int receiveUserspace(void *u,int size)
     {
         isUpdated = TRUE;        
         teleopIntoDS1((struct u_struct*)u);
-	log_msg("teleopIntoDS1");///Added
     }
     return 0;
 }
@@ -200,8 +199,8 @@ void teleopIntoDS1(struct u_struct *us_t)
 	data1.xd[i].z = us_t->delz[armidx];
 
         // commented debug output
-        log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",
-               i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);///Added
+        log_file("Arm %d : User desired end-effector positions: (%d,%d,%d)",
+               i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);      
 
         // Set rotation command
 	if (i == 0)
@@ -234,8 +233,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 		data1.jpos_d[12] = -us_t->rjoints[5]*M_PI/180 + gangle/2;
 		data1.jpos_d[13] = us_t->rjoints[5]*M_PI/180 + gangle/2; 
 	}        
-	log_msg("Arm %d: User desired end-effector rotations (first row): (%f,%f,%f)",
-               i, data1.rd[i].R[0][0],data1.rd[i].R[0][1],data1.rd[i].R[0][2]);
+	log_file("Arm %d: User desired end-effector rotations: \n(%f,%f,%f)\n(%f,%f,%f)\n(%f,%f,%f)\n",i, data1.rd[i].R[0][0],data1.rd[i].R[0][1],data1.rd[i].R[0][2],data1.rd[i].R[1][0],data1.rd[i].R[1][1],data1.rd[i].R[1][2],data1.rd[i].R[2][0],data1.rd[i].R[2][1],data1.rd[i].R[2][2]);
 
 	data1.rd[i].grasp = us_t->grasp[armidx];
 #endif
@@ -310,6 +308,9 @@ struct param_pass * getRcvdParams(struct param_pass* d1)
     memcpy(d1, &data1, sizeof(struct param_pass));
     isUpdated = 0;
     pthread_mutex_unlock(&data1Mutex);
+#ifdef simulator
+        log_file("RT_PROCESS) Copied recieved packet to local data structure.\n");         
+#endif
     return d1;
 }
 
@@ -349,11 +350,15 @@ void updateMasterRelativeOrigin(struct device *device0)
                 data1.rd[i].R[j][k] = _ori->R[j][k];
 
         // Set the local quaternion orientation rep.
+#ifndef simulator
         armidx = USBBoards.boards[i]==GREEN_ARM_SERIAL ? 1 : 0;
-        tmpmx.setValue(_ori->R[0][0], _ori->R[0][1], _ori->R[0][2],
+#else
+        armidx = (i == 1) ? 1 : 0; 
+#endif
+        /*tmpmx.setValue(_ori->R[0][0], _ori->R[0][1], _ori->R[0][2],
                         _ori->R[1][0], _ori->R[1][1], _ori->R[1][2],
                         _ori->R[2][0], _ori->R[2][1], _ori->R[2][2]);
-        tmpmx.getRotation(Q_ori[armidx]);
+        tmpmx.getRotation(Q_ori[armidx]);*/
 
     }
     pthread_mutex_unlock(&data1Mutex);

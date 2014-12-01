@@ -256,6 +256,9 @@ void* network_process(void* param1)
                                  NULL,
                                  NULL);
 
+#ifdef simulator
+                log_file("NETWORK) Receieved Data on Socket, Size = %d", uSize);         
+#endif
             if (bytesread != uSize){
                 ROS_ERROR("ERROR: Rec'd wrong ustruct size on socket!\n");
                 FD_CLR(sock, &rmask);   // remove the descriptor sock from fdset rmask
@@ -306,7 +309,10 @@ void* network_process(void* param1)
 
             else if (u.sequence > seq)       // Valid packet
             {    
-                log_msg("Receieved Valid Packet # %d", u.sequence);         
+#ifdef simulator
+                log_msg("NETWORK) Receieved Valid Packet # %d\n", u.sequence); 
+                log_file("NETWORK) Receieved Valid Packet # %d\n", u.sequence);         
+#endif
 		seq = u.sequence;
                 receiveUserspace(&u,uSize);   // coordinates transform from ITP frame to robot 0 frame
             }
@@ -334,7 +340,7 @@ void* network_process(void* param1)
         sendto ( sock, (void*)&v, vSize, 0,
                  (struct sockaddr *) &clientName, clientLength);
 #endif
-#ifdef simulator
+#ifndef simulator
         sendto ( sock, "Done", 1024, 0,
                  (struct sockaddr *) &clientName, clientLength);
 #endif

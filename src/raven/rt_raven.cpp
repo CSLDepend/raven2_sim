@@ -90,7 +90,6 @@ extern int initialized; //Defined in rt_process_preempt.cpp
 *
 */
 int controlRaven(struct device *device0, struct param_pass *currParams){
-
     int ret = 0;
     //Desired control mode
     t_controlmode controlmode = (t_controlmode)currParams->robotControlMode;
@@ -114,7 +113,9 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         //CHECK ME: what is the purpose of this mode?
         case no_control:
         {
-            ////log_msg("No Control");
+#ifdef simulator
+            log_file("RT_PROCESS) No Control");         
+#endif
 	    initialized = false;
             
             struct DOF *_joint = NULL;
@@ -132,8 +133,10 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         	break;
         }
         //Cartesian Space Control is called to control the robot in cartesian space
-        case cartesian_space_control:		
-		////log_msg("Cartesian space control");
+        case cartesian_space_control:
+#ifdef simulator
+                log_file("RT_PROCESS) Cartesian space control");         
+#endif		
         	ret = raven_cartesian_space_command(device0,currParams);
         	break;
         //Motor PD control runs PD control on motor position
@@ -148,6 +151,9 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
             break;
         //Runs homing mode
         case homing_mode:
+#ifdef simulator
+            log_file("RT_PROCESS) Homing Mode");         
+#endif	
 	    log_msg("Homing");
         	static int hom = 0;
         	if (hom==0){
@@ -156,7 +162,9 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         	}
             initialized = false;
             //initialized = robot_ready(device0) ? true:false;
+#ifndef simulator
             ret = raven_homing(device0, currParams);
+
             set_posd_to_pos(device0);
             updateMasterRelativeOrigin(device0);
 
@@ -165,6 +173,11 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
                 currParams->robotControlMode = cartesian_space_control;
                 newRobotControlMode = cartesian_space_control;
             }
+#else
+	    currParams->runlevel = RL_PEDAL_DN;
+            currParams->robotControlMode = cartesian_space_control;
+            newRobotControlMode = cartesian_space_control;
+#endif
             break;
 	//Runs applyTorque() to set torque command (tau_d) to a joint for debugging purposes
         case apply_arbitrary_torque:
@@ -182,7 +195,9 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
             ret = -1;
             break;
     }
-
+#ifdef simulator
+	log_file("_______________________________________________\n");   
+#endif
     return ret;
 }
 
