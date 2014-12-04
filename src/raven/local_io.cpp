@@ -55,6 +55,10 @@ ROS publishing is at the bottom half of this file.
 
 #define simulator 
 
+#ifdef simulator
+extern int program_state;
+#endif
+
 extern int NUM_MECH;
 extern USBStruct USBBoards;
 extern unsigned long int gTime;
@@ -102,6 +106,7 @@ int initLocalioData(void)
     }
     data1.surgeon_mode=0;
     data1.last_sequence = 111;
+
     pthread_mutex_unlock(&data1Mutex);
     return 0;
 }
@@ -147,7 +152,6 @@ void teleopIntoDS1(struct u_struct *us_t)
     tf::Quaternion q_temp;
     tf::Matrix3x3 rot_mx_temp;
 
-
     // TODO:: APPLY TRANSFORM TO INCOMING DATA
 
 
@@ -190,25 +194,25 @@ void teleopIntoDS1(struct u_struct *us_t)
 	if (data1.rd[i].grasp>graspmax) data1.rd[i].grasp=graspmax;
 	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
 #else
-        armserial = (i == 1) ? GREEN_ARM_SERIAL : GOLD_ARM_SERIAL; 
-        armidx = (i == 1) ? 1 : 0; 
+    armserial = (i == 1) ? GREEN_ARM_SERIAL : GOLD_ARM_SERIAL; 
+    armidx = (i == 1) ? 1 : 0; 
 
 	// Set Position command
-        data1.xd[i].x = us_t->delx[armidx];
+    data1.xd[i].x = us_t->delx[armidx];
 	data1.xd[i].y = us_t->dely[armidx];
 	data1.xd[i].z = us_t->delz[armidx];
 
         // commented debug output
-        log_file("Arm %d : User desired end-effector positions: (%d,%d,%d)",
+        /*log_file("Arm %d : User desired end-effector positions: (%d,%d,%d)",
                i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);      
-
+*/
         // Set rotation command
 	if (i == 0)
 	{	
 		for (int j=0;j<3;j++)
 		    for (int k=0;k<3;k++)
 		        data1.rd[0].R[j][k] = us_t->R_l[j][k];
-
+                // Just keep the golden results
 		double gangle = (us_t->grasp[armidx]*M_PI/180)/1000.0;		
                 data1.jpos_d[0] = (us_t->ljoints[0] - 205)*M_PI/180; 
  		data1.jpos_d[1] = (us_t->ljoints[1] - 180)*M_PI/180;
@@ -223,7 +227,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 		for (int j=0;j<3;j++)
 		    for (int k=0;k<3;k++)
 		        data1.rd[1].R[j][k] = us_t->R_r[j][k];
-		
+		// Just keep the golden results
 		double gangle = (us_t->grasp[armidx]*M_PI/180)/1000.0;	
                 data1.jpos_d[7] = (us_t->rjoints[0] - 25)*M_PI/180; 
  		data1.jpos_d[8] = us_t->rjoints[1]*M_PI/180;
@@ -233,7 +237,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 		data1.jpos_d[12] = -us_t->rjoints[5]*M_PI/180 + gangle/2;
 		data1.jpos_d[13] = us_t->rjoints[5]*M_PI/180 + gangle/2; 
 	}        
-	log_file("Arm %d: User desired end-effector rotations: \n(%f,%f,%f)\n(%f,%f,%f)\n(%f,%f,%f)\n",i, data1.rd[i].R[0][0],data1.rd[i].R[0][1],data1.rd[i].R[0][2],data1.rd[i].R[1][0],data1.rd[i].R[1][1],data1.rd[i].R[1][2],data1.rd[i].R[2][0],data1.rd[i].R[2][1],data1.rd[i].R[2][2]);
+	//log_file("Arm %d: User desired end-effector rotations: \n(%f,%f,%f)\n(%f,%f,%f)\n(%f,%f,%f)\n",i, data1.rd[i].R[0][0],data1.rd[i].R[0][1],data1.rd[i].R[0][2],data1.rd[i].R[1][0],data1.rd[i].R[1][1],data1.rd[i].R[1][2],data1.rd[i].R[2][0],data1.rd[i].R[2][1],data1.rd[i].R[2][2]);
 
 	data1.rd[i].grasp = us_t->grasp[armidx];
 #endif
@@ -268,6 +272,9 @@ void teleopIntoDS1(struct u_struct *us_t)
  */
 int checkLocalUpdates()
 {
+#ifdef simulator
+    program_state = 3;
+#endif
     static unsigned long int lastUpdated;
 
     if (isUpdated || lastUpdated == 0)
@@ -279,7 +286,7 @@ int checkLocalUpdates()
         // if timeout period is expired, set surgeon_mode "DISENGAGED" if currently "ENGAGED"
         log_msg("Master connection timeout.  surgeon_mode -> up.\n");
         data1.surgeon_mode = SURGEON_DISENGAGED;
- //       data1.surgeon_mode = 1;
+ //     data1.surgeon_mode = 1;
 
         lastUpdated = gTime;
         isUpdated = TRUE;
@@ -301,6 +308,9 @@ int checkLocalUpdates()
 */
 struct param_pass * getRcvdParams(struct param_pass* d1)
 {
+#ifdef simulator
+    program_state = 4;
+#endif
     // \TODO Check performance of trylock / default priority inversion scheme
     if (pthread_mutex_trylock(&data1Mutex)!=0)   //Use trylock since this function is called form rt-thread. return immediately with old values if unable to lock
         return d1;
@@ -309,7 +319,7 @@ struct param_pass * getRcvdParams(struct param_pass* d1)
     isUpdated = 0;
     pthread_mutex_unlock(&data1Mutex);
 #ifdef simulator
-        log_file("RT_PROCESS) Copied recieved packet to local data structure.\n");         
+        //log_file("RT_PROCESS) Copied recieved packet to local data structure.\n");         
 #endif
     return d1;
 }

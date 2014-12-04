@@ -91,6 +91,8 @@ int    mech_gravcomp_done[2]={0};
 #include <fstream>
 int inject_mode;
 int NUM_MECH=2;   // Define NUM_MECH as a C variable, not a c++ variable
+int program_state = -1;
+int logging = 0;
 #else
 int NUM_MECH=0;   // Define NUM_MECH as a C variable, not a c++ variable
 #endif
@@ -130,10 +132,10 @@ int initialize_rt_memory_pool()
 
   // Now lock all current and future pages from preventing of being paged
   if (mlockall(MCL_CURRENT | MCL_FUTURE ))
-    {
+  {
       perror("mlockall failed:");
       return -1;
-    }
+  }
   mallopt (M_TRIM_THRESHOLD, -1);  // Turn off malloc trimming.
   mallopt (M_MMAP_MAX, 0);         // Turn off mmap usage.
 
@@ -219,7 +221,7 @@ static void *rt_process(void* )
   // --- Main robot control loop ---
   // TODO: Break when board becomes disconnected.
   while (ros::ok() && !r2_kill)
-    {
+  {
 
       // Initiate USB Read
 #ifndef simulator
@@ -284,14 +286,16 @@ static void *rt_process(void* )
       if ( checkLocalUpdates() == TRUE)
       {
 #ifdef simulator
-        log_file("RT_PROCESS) Update device state based on received packet.\n");         
+   	    logging = 1;  
+        //log_file("RT_PROCESS) Update device state based on received packet.\n");         
 #endif
- 	updateDeviceState(&currParams, getRcvdParams(&rcvdParams), &device0);
+ 	     updateDeviceState(&currParams, getRcvdParams(&rcvdParams), &device0);
       }
       else
       {
 #ifdef simulator
-        log_file("RT_PROCESS) No new packets. Use previous parameters.\n");         
+   	    logging = 0;  
+        //log_file("RT_PROCESS) No new packets. Use previous parameters.\n");         
 #endif
         rcvdParams.runlevel = currParams.runlevel;
       }
@@ -302,6 +306,9 @@ static void *rt_process(void* )
       //////////////// SURGICAL ROBOT CODE //////////////////////////
       if (deviceType == SURGICAL_ROBOT)
         {
+#ifdef simulator
+	    program_state = 6;
+#endif
 	  // Calculate Raven control
 	  controlRaven(&device0, &currParams);
         }
@@ -326,24 +333,20 @@ static void *rt_process(void* )
       publish_ravenstate_ros(&device0,&currParams);   // from local_io
 
       //Done for this cycle
-    }
+#ifdef simulator
+	  if ((currParams.surgeon_mode == 0) && (currParams.last_sequence > 380))
+	  {
+          log_msg("no more packets - r2_control terminating\n");
+          ros::shutdown();
+		  return 0;	
+	  }
+#endif
+
+  }
 
   log_msg("Raven Control is shutdown");
   return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
 * Initializes USB boards.
@@ -431,7 +434,7 @@ int main(int argc, char **argv)
       sprintf(buff,"/home/homa/Documents/raven_2/fault_log_%d.txt",inject_mode);
       logfile.open(buff,std::ofstream::out); 
   }
-  log_file("MAIN) Initiated ROS and Memory Pool.\n");     
+  //log_file("MAIN) Initiated ROS and Memory Pool.\n");     
 #endif
 
   // init reconfigure
@@ -445,7 +448,7 @@ int main(int argc, char **argv)
   pthread_create(&rt_thread, NULL, rt_process, NULL);
 
 #ifdef simulator
-  log_file("MAIN) Created and initiated threads.\n");         
+  //log_file("MAIN) Created and initiated threads.\n");         
 #endif
 
   ros::spin();

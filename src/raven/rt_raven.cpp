@@ -52,7 +52,9 @@
 #include "parallel.h"
 
 #define simulator 
-
+#ifdef simulator
+extern int program_state;
+#endif
 extern int NUM_MECH; //Defined in rt_process_preempt.cpp
 extern unsigned long int gTime; //Defined in rt_process_preempt.cpp
 extern struct DOF_type DOF_types[]; //Defined in DOF_type.h
@@ -90,10 +92,13 @@ extern int initialized; //Defined in rt_process_preempt.cpp
 *
 */
 int controlRaven(struct device *device0, struct param_pass *currParams){
+#ifdef simulator
+    program_state = 7;
+#endif
     int ret = 0;
     //Desired control mode
     t_controlmode controlmode = (t_controlmode)currParams->robotControlMode;
-    
+
 #ifndef simulator
     //Initialization code
     initRobotData(device0, currParams->runlevel, currParams);
@@ -102,9 +107,15 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
     stateEstimate(device0); 
 #endif
 
+#ifdef simulator
+    program_state = 8;
+#endif
     //Foward Cable Coupling
     fwdCableCoupling(device0, currParams->runlevel);
 
+#ifdef simulator
+    program_state = 9;
+#endif
     //Forward kinematics
     r2_fwd_kin(device0, currParams->runlevel);
 
@@ -114,7 +125,8 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         case no_control:
         {
 #ifdef simulator
-            log_file("RT_PROCESS) No Control");         
+	    program_state = 10;
+        //log_file("RT_PROCESS) No Control");         
 #endif
 	    initialized = false;
             
@@ -135,7 +147,8 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         //Cartesian Space Control is called to control the robot in cartesian space
         case cartesian_space_control:
 #ifdef simulator
-                log_file("RT_PROCESS) Cartesian space control");         
+	        program_state = 11;
+            //log_file("RT_PROCESS) Cartesian space control");         
 #endif		
         	ret = raven_cartesian_space_command(device0,currParams);
         	break;
@@ -152,7 +165,8 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         //Runs homing mode
         case homing_mode:
 #ifdef simulator
-            log_file("RT_PROCESS) Homing Mode");         
+	    program_state = 12;
+        //log_file("RT_PROCESS) Homing Mode");         
 #endif	
 	    log_msg("Homing");
         	static int hom = 0;
@@ -196,7 +210,7 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
             break;
     }
 #ifdef simulator
-	log_file("_______________________________________________\n");   
+	//log_file("_______________________________________________\n");   
 #endif
     return ret;
 }
@@ -234,12 +248,21 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
     parport_out(0x01);
 #endif
 
+#ifdef simulator
+    program_state = 13;
+#endif
     //Inverse kinematics
     r2_inv_kin(device0, currParams->runlevel);
 
+#ifdef simulator
+    program_state = 14;
+#endif
     //Inverse Cable Coupling
     invCableCoupling(device0, currParams->runlevel);
 
+#ifdef simulator
+    program_state = 15;
+#endif
     // Set all joints to zero torque
     _mech = NULL;  _joint = NULL;
     while (loop_over_joints(device0, _mech, _joint, i,j) )

@@ -71,13 +71,14 @@ double robot_thetas[2][6] = {{V,    V,    M_PI/2,     V,   V,      V},
 #define simulator
 
 #ifdef simulator
+int check_collision(ik_solution * iksols, double * gangels);
 /// Parameters to check for fwd_kin
-int a_fwd = 0;
-int b_fwd = 6;
+//int a_fwd = 0;
+//int b_fwd = 6;
 /// theta1, theta2, d3, theta4, theta5, theta6 (ignore theta4 for now)
 ///double thetas_fwd[6] = {35*d2r, 50*d2r, 323*0.001, 0*d2r,80*d2r, 20*d2r};
-//double rthetas_fwd[6] = {30*d2r, 90*d2r, 410*0.001, 0*d2r,-90*d2r, 0*d2r};
-//double lthetas_fwd[6] = {113.39*d2r,150*d2r, 300*0.001, -64.432*d2r,-80*d2r, 30*d2r};
+//double rthetas_fwd[6] = {30*d2r, 90*d2r, 435*0.001, 50*d2r,-80*d2r, 30*d2r};
+//double lthetas_fwd[6] = {-150*d2r,-90*d2r, 430*0.001, 0*d2r,-90*d2r,-30*d2r};
 # endif
 
 int printIK = 0;
@@ -124,7 +125,121 @@ tf::Transform getFKTransform(int a, int b)
 	return xf;
 }
 
+int check_collision(ik_solution *iksols, double *gangels)
+{
+    //gangels[0] = 10*d2r;
+    //gangels[1] = 20*d2r;
+    //l_r arm;
 
+    tf::Transform xf;
+    tf::Matrix3x3 R_T0; 
+    tf::Matrix3x3 L_T0; 
+    tf::Matrix3x3 T6_b; 
+    tf::Matrix3x3 T6;   
+    tf::Matrix3x3 env_r; 
+
+	// Constant Matrices for Transformation to Base Frame
+    R_T0.setValue(0, 0, -1, 0, 1, 0, 1, 0, 0);
+    L_T0.setValue(0, 0, 1, 0, -1, 0, 1, 0, 0);
+    tf::Vector3 R_disp(-300710,61000,-7000);
+    tf::Vector3 L_disp(-379290,61000,-7000); 
+
+    double R[3][3];
+    double posx, posy, posz;
+	double radius[2];
+    double cen[2][3];
+
+    for (int m = 0; m < NUM_MECH; m++)
+	{    
+		double iksol_thetas[6]= {iksols[m].th1, iksols[m].th2, iksols[m].d3, iksols[m].th4, iksols[m].th5, iksols[m].th6};
+
+       /*if (m == 0) 
+	   {
+		   arm = dh_left;
+	       iksol_thetas[0] = lthetas_fwd[0];
+	       iksol_thetas[1] = lthetas_fwd[1];
+	       iksol_thetas[2] = lthetas_fwd[2];
+	       iksol_thetas[3] = lthetas_fwd[3];
+	       iksol_thetas[4] = lthetas_fwd[4];
+	       iksol_thetas[5] = lthetas_fwd[5];
+       }
+       else
+	   {
+           arm = dh_right;
+     	   iksol_thetas[0] = rthetas_fwd[0];
+	       iksol_thetas[1] = rthetas_fwd[1];
+	       iksol_thetas[2] = rthetas_fwd[2];
+	       iksol_thetas[3] = rthetas_fwd[3];
+	       iksol_thetas[4] = rthetas_fwd[4];
+	       iksol_thetas[5] = rthetas_fwd[5];
+		}  
+        iksols[m].arm = arm;*/
+
+		fwd_kin(iksol_thetas, iksols[m].arm, xf); 
+		posx = xf.getOrigin()[0] * (1000.0*1000.0);
+		posy = xf.getOrigin()[1] * (1000.0*1000.0);
+		posz = xf.getOrigin()[2] * (1000.0*1000.0);
+        //cout << "Arm " << m << ":\n";
+		//cout << "Position = ("<< posx << "," << posy << ","<< posz << ")\n";
+		
+        for (int i=0;i<3;i++)
+		{
+			for (int j=0; j<3; j++)
+			{		
+				R[i][j] = (xf.getBasis())[i][j];  
+                //cout << R[i][j] << ",";
+			}
+			//cout << "\n";
+		}
+		T6_b.setValue(R[0][0], R[0][1], R[0][2], R[1][0], R[1][1], R[1][2], R[2][0], R[2][1], R[2][2]);
+
+
+		radius[m] = 10.5/cos(gangels[m])*1000; 
+	    //cout << "Radius = " << radius[m] << "\n";
+
+		tf::Vector3 tmp;		
+		if (iksols[m].arm == dh_left)
+		{
+			T6 = L_T0 * T6_b;
+            tmp = L_T0*tf::Vector3(posx,posy,posz)+L_disp;  
+		}		
+		else
+		{		
+			T6 = R_T0 * T6_b;	
+            tmp = R_T0*tf::Vector3(posx,posy,posz)+R_disp;  
+		}
+        posx = tmp[0];
+        posy = tmp[1];
+        posz = tmp[2]; 	
+
+		//cout << "TPosition = ("<< posx << "," << posy << ","<< posz << ")\n";
+		for (int i=0;i<3;i++)
+		{
+			for (int j=0; j<3; j++)
+			{		
+                //cout << T6[i][j] << ",";
+			}
+			//cout << "\n";
+		}
+
+	    tf::Vector3 env = T6.getColumn(0) * radius[m];
+		cen[m][0] = posx+env[0];
+        cen[m][1] = posy+env[1];
+        cen[m][2] = posz+env[2];
+        //cout << "env: "<< env[0] << "," << env[1] << "," << env[2]<<"\n";
+        //cout << "center: "<< cen[m][0] << "," << cen[m][1] << "," <<cen[m][2]<<"\n";
+	}
+   
+	double dis1 = radius[0]+radius[1];
+    double sum_dev = pow((cen[0][0]-cen[1][0]),2)+pow((cen[0][1]-cen[1][1]),2)+pow((cen[0][2]-cen[1][2]),2);
+    double dis2 = sqrt(sum_dev);
+
+    //cout << dis2 << "---" << dis1 << "\n";
+    if (dis2 < dis1)
+		return -1;
+	else 
+		return 0;
+}
 
 //--------------------------------------------------------------------------------
 //  Forward kinematics
@@ -167,8 +282,8 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 		double lo_thetas[6];
 		joint2theta(lo_thetas, joints, arm);
 
-#ifdef simulator
-     		log_file("Arm %d - Current Thetas = %f, %f, %f, %f, %f, %f\n", m, lo_thetas[0] * r2d, lo_thetas[1] * r2d, lo_thetas[2], lo_thetas[3] * r2d, lo_thetas[4] * r2d,lo_thetas[5] * r2d);
+#ifdef simulator  	
+//log_file("Arm %d - Current Thetas = %f, %f, %f, %f, %f, %f\n", m, lo_thetas[0] * r2d, lo_thetas[1] * r2d, lo_thetas[2], lo_thetas[3] * r2d, lo_thetas[4] * r2d,lo_thetas[5] * r2d);
 #endif
 		/// execute FK
 		fwd_kin(lo_thetas, arm, xf);
@@ -182,8 +297,8 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 				d0->mech[m].ori.R[i][j] = (xf.getBasis())[i][j];  
 
 #ifdef simulator
-        log_file("Arm %d: \nFK) Current Pos = (%d , %d, %d)", m, d0->mech[m].pos.x, d0->mech[m].pos.y, d0->mech[m].pos.z); 
-        log_file ("FK) Current Ori = \n %f, %f, %f \n %f, %f, %f \n %f, %f, %f \n", d0->mech[m].ori.R[0][0], d0->mech[m].ori.R[0][1], d0->mech[m].ori.R[0][2], d0->mech[m].ori.R[1][0], d0->mech[m].ori.R[1][1], d0->mech[m].ori.R[1][2], d0->mech[m].ori.R[2][0], d0->mech[m].ori.R[2][1], d0->mech[m].ori.R[2][2]);  
+        log_file("Arm %d: \nFK Output) Current Pos = (%d , %d, %d)", m, d0->mech[m].pos.x, d0->mech[m].pos.y, d0->mech[m].pos.z); 
+        log_file("FK Output) Current Ori = \n %f, %f, %f \n %f, %f, %f \n %f, %f, %f \n", d0->mech[m].ori.R[0][0], d0->mech[m].ori.R[0][1], d0->mech[m].ori.R[0][2], d0->mech[m].ori.R[1][0], d0->mech[m].ori.R[1][1], d0->mech[m].ori.R[1][2], d0->mech[m].ori.R[2][0], d0->mech[m].ori.R[2][1], d0->mech[m].ori.R[2][2]);  
 
 #endif            
                 
@@ -191,10 +306,9 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 	}
 
 #ifdef simulator
-        log_file("RT_PROCESS) FWD Kinematics Done.\n");      
+        //log_file("RT_PROCESS) FWD Kinematics Done.\n");      
 #endif
     if ((runlevel != RL_PEDAL_DN) && (runlevel != RL_INIT)) {
-
         // set cartesian pos_d = pos.
         // That way, if anything wonky happens during state transitions
         // there won't be any discontinuities.
@@ -240,11 +354,8 @@ int fwd_kin (double in_j[6], l_r in_arm, tf::Transform &out_xform)
 			dh_theta[i] = in_j[i];// *M_PI/180;
 	}
 
-#ifndef simulator
 	out_xform = getFKTransform(0,6);
-#else
-	out_xform = getFKTransform(a_fwd,b_fwd);
-#endif
+
 
 
 	// rotate to match "tilted" base
@@ -357,7 +468,9 @@ int r2_inv_kin(struct device *d0, int runlevel)
 	tf::Transform xf;
 	struct orientation * ori_d;
 	struct position    * pos_d;
-
+    ik_solution iksols[2] = {{},{}}; 
+	double gangles[2]={0,0};
+    
 	//  Do FK for each mechanism
 	for (int m=0; m<NUM_MECH; m++)
 	{
@@ -376,9 +489,9 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		pos_d = &(d0->mech[m].pos_d);       	
 
 #ifdef simulator
-		log_file("IK) Desired Pos = (%d, %d, %d)\n", pos_d->x, pos_d->y, pos_d->z);
+		//log_file("IK) Desired Pos = (%d, %d, %d)\n", pos_d->x, pos_d->y, pos_d->z);
                   
-                log_file("IK) Desired Ori = \n %f, %f, %f \n %f, %f, %f \n %f, %f, %f \n", ori_d->R[0][0], ori_d->R[0][1], ori_d->R[0][2], ori_d->R[1][0], ori_d->R[1][1], ori_d->R[1][2], ori_d->R[2][0], ori_d->R[2][1], ori_d->R[2][2]);
+        //log_file("IK) Desired Ori = \n %f, %f, %f \n %f, %f, %f \n %f, %f, %f \n", ori_d->R[0][0], ori_d->R[0][1], ori_d->R[0][2], ori_d->R[1][0], ori_d->R[1][1], ori_d->R[1][2], ori_d->R[2][0], ori_d->R[2][1], ori_d->R[2][2]);
 
 #endif
 
@@ -447,7 +560,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
 
 
 #ifdef simulator
-     		log_file("Arm %d - Current Thetas = %f, %f, %f, %f, %f, %f\n", m, lo_thetas[0] * r2d, lo_thetas[1] * r2d, lo_thetas[2], lo_thetas[3] * r2d, lo_thetas[4] * r2d,lo_thetas[5] * r2d);
+     	//log_file("Arm %d - Current Thetas = %f, %f, %f, %f, %f, %f\n", m, lo_thetas[0] * r2d, lo_thetas[1] * r2d, lo_thetas[2], lo_thetas[3] * r2d, lo_thetas[4] * r2d,lo_thetas[5] * r2d);
 #endif
  	
 		if ( (check_result = check_solutions(lo_thetas, iksol, sol_idx, sol_err)) < 0)
@@ -467,9 +580,19 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		double gangle = double(d0->mech[m].ori_d.grasp) / 1000.0;
 		theta2joint(iksol[sol_idx], Js);
 		
-#ifdef simulator
-               log_file("Solution: (%f,%f,%f,%f,%f,%f)\n",
-			iksol[sol_idx].th1*r2d,iksol[sol_idx].th2*r2d,
+#ifdef simulator    
+		if (m == 0)
+		{
+	        gangles[0] = gangle;
+            iksols[0] = iksol[sol_idx]; 
+		}
+		else
+		{
+			gangles[1] = gangle;
+            iksols[1] = iksol[sol_idx]; 
+		}		
+		log_file("Arm %d: IK Output) Desired Joints = (%f,%f,%f,%f,%f,%f)\n", 
+                        m,iksol[sol_idx].th1*r2d,iksol[sol_idx].th2*r2d,
                         iksol[sol_idx].d3,
                         iksol[sol_idx].th4*r2d, iksol[sol_idx].th5*r2d,
                         iksol[sol_idx].th6*r2d);
@@ -488,7 +611,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
 
 			updateMasterRelativeOrigin(d0);
 #ifdef simulator
-			log_file("Applied Joint Limits\n");              	
+			log_file("Saturated to Joint Limits\n");              	
 #endif
 		}
 		else
@@ -535,10 +658,19 @@ int r2_inv_kin(struct device *d0, int runlevel)
 
 	printIK=0;
 #ifdef simulator
-        log_file("RT_PROCESS) INV Kinematics Done.\n");            
+    int check_result = 0;
+	if ((check_result = check_collision(iksols,gangles)) < 0 )
+	{
+		cout << "Collision Detected\n";	
+		log_file("Collision Detected\n");
+	}  
+        //log_file("RT_PROCESS) INV Kinematics Done.\n");            
 #endif	
 	return 0;
 }
+
+
+
 
 /**\fn  inv_kin(tf::Transform in_T06, l_r in_arm, ik_solution iksol[8])
  * \brief Runs the Raven II INVERSE kinematics to determine end effector position.

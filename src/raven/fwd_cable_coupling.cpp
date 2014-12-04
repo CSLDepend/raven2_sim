@@ -48,7 +48,7 @@ void fwdCableCoupling(struct device *device0, int runlevel)
 	for (int i = 0; i < NUM_MECH; i++)
 		fwdMechCableCoupling(&(device0->mech[i]));
 #ifdef simulator
-        log_file("RT_PROCESS) FWD Cable Coupling Done");         
+        //log_file("RT_PROCESS) FWD Cable Coupling Done");         
 #endif
 }
 

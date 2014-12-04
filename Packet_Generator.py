@@ -88,5 +88,5 @@ for l_line in f_left:
 
 	# Wait for a response from the robot
 	#data, addr = sock.recvfrom(1024);
- 	time.sleep(10)
+ 	time.sleep(0.0001)
 
