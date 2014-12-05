@@ -50,22 +50,39 @@ t_controlmode newRobotControlMode = homing_mode;
  */
 int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdParams, struct device *device0)
 {
+    ///log_msg("updateDeviceState %d", currParams->runlevel);///Added
+    currParams->last_sequence = rcvdParams->last_sequence;
+
 #ifdef simulator
     program_state = 5;
-    if ((rcvdParams->last_sequence == 111) && (curr_pack_no == 0))
+    if ((currParams->last_sequence == 111) && (curr_pack_no == 0))
+	{
 		logging = 0;
+    }
     else
 	{
-		if (rcvdParams->last_sequence != curr_pack_no)
+		if (currParams->last_sequence != curr_pack_no)
 		{
-		 	curr_pack_no = rcvdParams->last_sequence;
-			log_file("_______________________________________________\n");   
-			log_file("Processing New Packet #%d\n", curr_pack_no);   
+			if (curr_pack_no !=0)		 	
+			{
+				log_file("Packet: %d", curr_pack_no);   
+				log_file("______________________________________________\n");
+			}
+			// Dropped
+			if (currParams->last_sequence > (curr_pack_no+1))
+			{
+				for (int i=curr_pack_no+1;i<currParams->last_sequence;i++)   {
+					log_file("Packet: %d\n", i);
+   					log_file("Error: Packet Dropped.\n");  
+					log_file("Packet: %d\n", i);
+					log_file("______________________________________________\n");	  
+		        }			
+			}
+			curr_pack_no = currParams->last_sequence;   
+			log_file("Packet: %d\n", curr_pack_no);  
 		}
     }
 #endif
-    ///log_msg("updateDeviceState %d", currParams->runlevel);///Added
-    currParams->last_sequence = rcvdParams->last_sequence;
  
     for (int i = 0; i < NUM_MECH; i++)
     {
@@ -86,9 +103,6 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
         //currParams->robotControlMode = cartesian_space_control;////Added
 	if (currParams->last_sequence == 1)
 	{
-		curr_pack_no = 1;
-	    log_file("Processing New Packet #%d\n", curr_pack_no);
-
 	    device0->mech[0].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[0];
      	device0->mech[0].joint[ELBOW].jpos_d = rcvdParams->jpos_d[1];
 	    device0->mech[0].joint[Z_INS].jpos_d = rcvdParams->jpos_d[2];
