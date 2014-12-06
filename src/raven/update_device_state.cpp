@@ -65,7 +65,6 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 		{
 			if (curr_pack_no !=0)		 	
 			{
-				log_file("Packet: %d", curr_pack_no);   
 				log_file("______________________________________________\n");
 			}
 			// Dropped
@@ -74,7 +73,6 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 				for (int i=curr_pack_no+1;i<currParams->last_sequence;i++)   {
 					log_file("Packet: %d\n", i);
    					log_file("Error: Packet Dropped.\n");  
-					log_file("Packet: %d\n", i);
 					log_file("______________________________________________\n");	  
 		        }			
 			}

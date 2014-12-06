@@ -93,6 +93,7 @@ int inject_mode;
 int NUM_MECH=2;   // Define NUM_MECH as a C variable, not a c++ variable
 int program_state = -1;
 int logging = 0;
+int no_pack_cnt = 0;
 #else
 int NUM_MECH=0;   // Define NUM_MECH as a C variable, not a c++ variable
 #endif
@@ -287,6 +288,7 @@ static void *rt_process(void* )
       {
 #ifdef simulator
    	    logging = 1;  
+        no_pack_cnt++; 
         //log_file("RT_PROCESS) Update device state based on received packet.\n");         
 #endif
  	     updateDeviceState(&currParams, getRcvdParams(&rcvdParams), &device0);
@@ -333,15 +335,6 @@ static void *rt_process(void* )
       publish_ravenstate_ros(&device0,&currParams);   // from local_io
 
       //Done for this cycle
-#ifdef simulator
-	  if ((currParams.surgeon_mode == 0) && (currParams.last_sequence > 380))
-	  {
-          log_msg("no more packets - r2_control terminating\n");
-          ros::shutdown();
-		  return 0;	
-	  }
-#endif
-
   }
 
   log_msg("Raven Control is shutdown");

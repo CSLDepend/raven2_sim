@@ -298,7 +298,7 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 
 #ifdef simulator
         log_file("FK_Pos_Arm%d: %d, %d, %d", m, d0->mech[m].pos.x, d0->mech[m].pos.y, d0->mech[m].pos.z); 
-        log_file("FK_Ori_Arm%d: %f, %f, %f, %f, %f, %f, %f, %f, %f\n", d0->mech[m].ori.R[0][0], d0->mech[m].ori.R[0][1], d0->mech[m].ori.R[0][2], d0->mech[m].ori.R[1][0], d0->mech[m].ori.R[1][1], d0->mech[m].ori.R[1][2], d0->mech[m].ori.R[2][0], d0->mech[m].ori.R[2][1], d0->mech[m].ori.R[2][2]);  
+        log_file("FK_Ori_Arm%d: %f, %f, %f, %f, %f, %f, %f, %f, %f\n", m, d0->mech[m].ori.R[0][0], d0->mech[m].ori.R[0][1], d0->mech[m].ori.R[0][2], d0->mech[m].ori.R[1][0], d0->mech[m].ori.R[1][1], d0->mech[m].ori.R[1][2], d0->mech[m].ori.R[2][0], d0->mech[m].ori.R[2][1], d0->mech[m].ori.R[2][2]);  
 
 #endif            
                 
@@ -591,11 +591,12 @@ int r2_inv_kin(struct device *d0, int runlevel)
 			gangles[1] = gangle;
             iksols[1] = iksol[sol_idx]; 
 		}		
-		log_file("IK_Thetas_Arm%d: %f, %f, %f, %f, %f, %f\n", 
+		log_file("IK_Thetas_Arm%d: %f, %f, %f, %f, %f, %f, %f\n", 
                         m,iksol[sol_idx].th1*r2d,iksol[sol_idx].th2*r2d,
                         iksol[sol_idx].d3,
                         iksol[sol_idx].th4*r2d, iksol[sol_idx].th5*r2d,
-                        iksol[sol_idx].th6*r2d);
+                        iksol[sol_idx].th6*r2d, 
+                        double(d0->mech[m].ori_d.grasp));
 #endif
 		int limited = apply_joint_limits(Js,Js_sat);
 		if (limited)
@@ -661,7 +662,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
     int check_result = 0;
 	if ((check_result = check_collision(iksols,gangles)) < 0 )
 	{
-		cout << "Collision Detected\n";	
+		//log_msg("Collision Detected\n");	
 		log_file("Error: Collision Detected\n");
 	}  
         //log_file("RT_PROCESS) INV Kinematics Done.\n");            

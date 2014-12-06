@@ -340,10 +340,6 @@ void* network_process(void* param1)
         sendto ( sock, (void*)&v, vSize, 0,
                  (struct sockaddr *) &clientName, clientLength);
 #endif
-#ifdef simulator
-        sendto ( sock, "Done", 1024, 0,
-                 (struct sockaddr *) &clientName, clientLength);
-#endif
 
     } // end while(ros::ok())
 
