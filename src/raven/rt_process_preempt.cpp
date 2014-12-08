@@ -318,11 +318,11 @@ static void *rt_process(void* )
 
       // Check for overcurrent and impose safe torque limits
       if (overdriveDetect(&device0))
-        {
-	  soft_estopped = TRUE;
-	  showInverseKinematicsSolutions(&device0, currParams.runlevel);
-	  outputRobotState();
-        }
+      {
+	      soft_estopped = TRUE;
+	      showInverseKinematicsSolutions(&device0, currParams.runlevel);
+	      outputRobotState();
+      }
 
       //Update Atmel Output Pins
       updateAtmelOutputs(&device0, currParams.runlevel);
