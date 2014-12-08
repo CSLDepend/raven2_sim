@@ -64,6 +64,12 @@
 #define SERVER_ADDR  "128.95.205.206"    // used only if the robot needs to send data to the server
 
 #define simulator 
+#ifdef simulator
+int first = 0;
+#define PACK_GEN_PORT  "32000" 
+#define RUN_PY_PORT  "34000"  
+#define HOST_ADDR  "127.0.0.1"    // used only if the robot needs to send data to the server
+#endif
 
 extern int receiveUserspace(void *u,int size);  // Defined in the local_io.cpp
 
@@ -178,7 +184,7 @@ void* network_process(void* param1)
     volatile int bytesread;
 
     // print some status messages
-    log_msg("Starting network services...");
+    log_msg("Starting network services..");
     log_msg("  u_struct size: %i",uSize);
     log_msg("  Using default port %s",port);
 
@@ -242,10 +248,32 @@ void* network_process(void* param1)
         // Select timeout: nothing to do
         if (nfound == 0)
         {          
+#ifdef simulator
+			if (first == 0)
+			{
+				char v[6] = "Ready";
+		        clientName.sin_port = htons((u_short)atoi(PACK_GEN_PORT));
+				inet_aton(HOST_ADDR, &clientName.sin_addr);
+		        sendto ( sock, (void*)&v, sizeof(v), 0,
+		             (struct sockaddr *) &clientName, clientLength);          		
+		        printf("=================> Sent READY to Packet Generator at ADDR = %d, PORT = %d\n", clientName.sin_port, clientName.sin_addr);
+				first = 1;		        
+			}
+			else if (first == 1)
+			{
+				char v[6] = "Done!";
+		        clientName.sin_port = htons((u_short)atoi(RUN_PY_PORT));
+				inet_aton(HOST_ADDR, &clientName.sin_addr);
+		        sendto ( sock, (void*)&v, sizeof(v), 0,
+		             (struct sockaddr *) &clientName, clientLength);          		
+		        printf("=================> Sent DONE to Run Injection at ADDR = %d, PORT = %d\n", clientName.sin_port, clientName.sin_addr);
+				first = 2;		        
+			}			
+#endif
             fflush(stdout);
             continue;
         }
-        
+       
         // Select: data on socket
         if (FD_ISSET( sock, &rmask))   // check whether the diescriptor sock is added to the fdset mask
         {
