@@ -662,7 +662,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
     int check_result = 0;
 	if ((check_result = check_collision(iksols,gangles)) < 0 )
 	{
-		//log_msg("Collision Detected\n");	
+		log_msg("Collision Detected\n");	
 		log_file("Error: Collision Detected\n");
 	}  
         //log_file("RT_PROCESS) INV Kinematics Done.\n");            

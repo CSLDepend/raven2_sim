@@ -38,66 +38,67 @@ while not data:
         print("Raven is ready...")   
 
 for l_line in f_left:
-    seq = seq + 1;    
-    r_line = f_right.next();
-    #print float(l_line[0]);
-    #test_msg = struct.pack("f",float(l_line[0]))
-    #test_msg = struct.unpack("f",test_msg)
-    #print test_msg
-    tuple_to_send = u_struct(sequence = seq, 
-                    pactyp = 0, 
-                    version = 0, 
-                    delx0 = int(float(l_line[0])*1000),
-                    delx1 = int(float(r_line[0])*1000),
-                    dely0 = int(float(l_line[1])*1000),
-                    dely1 = int(float(r_line[1])*1000),
-                    delz0 = int(float(l_line[2])*1000),
-                    delz1 = int(float(r_line[2])*1000),
-                    R_l00 = float(l_line[3]),
-                    R_l01 = float(l_line[4]),
-                    R_l02 = float(l_line[5]),
-                    R_l10 = float(l_line[6]),
-                    R_l11 = float(l_line[7]), 
-                    R_l12 = float(l_line[8]),
-                    R_l20 = float(l_line[9]),
-                    R_l21 = float(l_line[10]),
-                    R_l22 = float(l_line[11]),
-                    R_r00 = float(r_line[3]),
-                    R_r01 = float(r_line[4]), 
-                    R_r02 = float(r_line[5]),
-                    R_r10 = float(r_line[6]),
-                    R_r11 = float(r_line[7]), 
-                    R_r12 = float(r_line[8]),
-                    R_r20 = float(r_line[9]),
-                    R_r21 = float(r_line[10]),
-                    R_r22 = float(r_line[11]),
-                    ltheta1 = float(l_line[12]),
-                    ltheta2 = float(l_line[13]), 
-                    ld3 = float(l_line[14]),
-                    ltheta4 = float(l_line[15]),
-                    ltheta5 = float(l_line[16]),
-                    ltheta6 = float(l_line[17]),
-                    rtheta1 = float(r_line[12]),
-                    rtheta2 = float(r_line[13]), 
-                    rd3 = float(r_line[14]),
-                    rtheta4 = float(r_line[15]),
-                    rtheta5 = float(r_line[16]),
-                    rtheta6 = float(r_line[17]),
-                    buttonstate0 = 0,
-                    buttonstate1 = 0, 
-                    grasp0 = float(l_line[18]),
-                    grasp1 = float(r_line[18]), 
-                    surgeon_mode = 1, 
-                    checksum=0);
+    while (seq < 200): 
+        seq = seq + 1;    
+        r_line = f_right.next();
+        #print float(l_line[0]);
+        #test_msg = struct.pack("f",float(l_line[0]))
+        #test_msg = struct.unpack("f",test_msg)
+        #print test_msg
+        tuple_to_send = u_struct(sequence = seq, 
+                        pactyp = 0, 
+                        version = 0, 
+                        delx0 = int(float(l_line[0])*1000),
+                        delx1 = int(float(r_line[0])*1000),
+                        dely0 = int(float(l_line[1])*1000),
+                        dely1 = int(float(r_line[1])*1000),
+                        delz0 = int(float(l_line[2])*1000),
+                        delz1 = int(float(r_line[2])*1000),
+                        R_l00 = float(l_line[3]),
+                        R_l01 = float(l_line[4]),
+                        R_l02 = float(l_line[5]),
+                        R_l10 = float(l_line[6]),
+                        R_l11 = float(l_line[7]), 
+                        R_l12 = float(l_line[8]),
+                        R_l20 = float(l_line[9]),
+                        R_l21 = float(l_line[10]),
+                        R_l22 = float(l_line[11]),
+                        R_r00 = float(r_line[3]),
+                        R_r01 = float(r_line[4]), 
+                        R_r02 = float(r_line[5]),
+                        R_r10 = float(r_line[6]),
+                        R_r11 = float(r_line[7]), 
+                        R_r12 = float(r_line[8]),
+                        R_r20 = float(r_line[9]),
+                        R_r21 = float(r_line[10]),
+                        R_r22 = float(r_line[11]),
+                        ltheta1 = float(l_line[12]),
+                        ltheta2 = float(l_line[13]), 
+                        ld3 = float(l_line[14]),
+                        ltheta4 = float(l_line[15]),
+                        ltheta5 = float(l_line[16]),
+                        ltheta6 = float(l_line[17]),
+                        rtheta1 = float(r_line[12]),
+                        rtheta2 = float(r_line[13]), 
+                        rd3 = float(r_line[14]),
+                        rtheta4 = float(r_line[15]),
+                        rtheta5 = float(r_line[16]),
+                        rtheta6 = float(r_line[17]),
+                        buttonstate0 = 0,
+                        buttonstate1 = 0, 
+                        grasp0 = float(l_line[18]),
+                        grasp1 = float(r_line[18]), 
+                        surgeon_mode = 1, 
+                        checksum=0);
 
-    MESSAGE = struct.pack(format_,*tuple_to_send._asdict().values());
+        MESSAGE = struct.pack(format_,*tuple_to_send._asdict().values());
 
-    print "Packet No. ", seq
-    print struct.unpack(format_,MESSAGE);
-    print "\n"
+        print "Packet No. ", seq
+        print struct.unpack(format_,MESSAGE);
+        print "\n"
 
-    # Send the command to the robot
-    sock.sendto(MESSAGE, (UDP_IP, UDP_PORT2))
+        # Send the command to the robot
+        sock.sendto(MESSAGE, (UDP_IP, UDP_PORT2))
 
-    time.sleep(0.1)
+        time.sleep(0.1)
 
