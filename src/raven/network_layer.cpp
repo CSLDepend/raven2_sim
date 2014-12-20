@@ -65,6 +65,7 @@
 
 #define simulator 
 #ifdef simulator
+extern int logging;
 int first = 0;
 #define PACK_GEN_PORT  "32000" 
 #define RUN_PY_PORT  "34000"  
@@ -267,6 +268,9 @@ void* network_process(void* param1)
 		        sendto ( sock, (void*)&v, sizeof(v), 0,
 		             (struct sockaddr *) &clientName, clientLength);          		
 		        printf("=================> Sent DONE to Run Injection at ADDR = %d, PORT = %d\n", clientName.sin_port, clientName.sin_addr);
+		        logging = 1;
+                log_file("______________________________________________\n");
+                logging = 0;
 				first = 2;		        
 			}			
 #endif
