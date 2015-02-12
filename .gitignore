@@ -16,7 +16,6 @@
 *~
 
 #build files, cfg files, generated msg files
-cfg/**
 build/**
 msg_gen/**
 
