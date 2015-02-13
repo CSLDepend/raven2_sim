@@ -38,7 +38,7 @@
 #include "homing.h"
 #include "state_estimate.h"
 #include "log.h"
-
+#include "USB_init.h"
 #include <iostream>
 
 
@@ -49,6 +49,9 @@ extern unsigned long int gTime;
 extern struct DOF_type DOF_types[];
 extern unsigned int soft_estopped;
 
+#ifdef skip_init_button
+extern int serial_fd;
+#endif
 /**
 *  raven_homing()
 *
@@ -76,7 +79,6 @@ int raven_homing(struct device *device0, struct param_pass *currParams, int begi
     struct mechanism* _mech = NULL;
     int i=0,j=0;
 
-
 #ifdef RICKS_TOOLS      // Refers to Enders Game Prop manager!!
                         //  these were wooden dummy tools for the movie.
     _mech = NULL;  _joint = NULL;
@@ -90,9 +92,15 @@ int raven_homing(struct device *device0, struct param_pass *currParams, int begi
     }
 #endif
 
-
-
-
+#ifdef skip_init_button
+	static int counter = 0;
+        static char buff[2] = "1";
+	counter++;
+        if (counter == 600)
+        {          	    
+	    writeSerialPort(serial_fd, buff);
+        }
+#endif
 
     // Only run in init mode
     if ( ! (currParams->runlevel == RL_INIT && currParams->sublevel == SL_AUTO_INIT ))
@@ -103,7 +111,7 @@ int raven_homing(struct device *device0, struct param_pass *currParams, int begi
     }
 
     // Wait a short time for amps to turn on
-    if (gTime - delay < 1000)
+    if (gTime - delay < 500)
     {
         return 0;
     }
@@ -393,8 +401,8 @@ const int homing_max_dac[8] = {2500,  //shoulder
                             2500,  //elbow
                             2800,  //z-ins
                             0,
-                            1900,  //tool_rot // was 1400, lowered to reduce calibration error //I think this is labeled improperly - AL
-                            1900,  //wrist
+                            2600,  //tool_rot // was 1400, lowered to reduce calibration error //I think this is labeled improperly - AL
+                            2000,  //wrist
                             1700,  //grasp1
                             1700};  // grasp2
 #else

@@ -53,7 +53,89 @@ extern int NUM_MECH;
 
 using namespace std;
 
+int openSerialPort(void)
+{
+    int serialFileDescriptor = -1;
+    struct termios options;
+    // open the serial like POSIX C
+    serialFileDescriptor = open("/dev/ttyACM0", O_RDWR | O_NOCTTY | O_NONBLOCK );
 
+    if (serialFileDescriptor == -1)
+    {
+        cout << "Error opening serial port" << endl;
+    	return -1;
+    }
+
+    // block non-root users from using this port
+    if (ioctl(serialFileDescriptor, TIOCEXCL) == -1)
+    {    
+	cout << "Error setting TIOCEXCL" << endl;
+    	return -1;
+    }
+    
+    // clear the O_NONBLOCK flag, so that read() will
+    //   block and wait for data.
+    if (fcntl(serialFileDescriptor, F_SETFL, 0) == -1)
+    {
+        cout << "Error Clearing O_NONBLOCK" << endl;
+    	return -1;
+    }
+
+    //int iFlags = TIOCM_DTR;
+    //ioctl(serialFileDescriptor, TIOCMBIC, &iFlags);
+
+    // grab the options for the serial port
+    if (tcgetattr(serialFileDescriptor, &gOriginalTTYAttrs) == -1)
+    {
+        cout << "Error getting tty attributes" << endl;
+    	return -1;
+    }
+
+    // setting raw-mode allows the use of tcsetattr() and ioctl()
+    options = gOriginalTTYAttrs;
+    cfmakeraw(&options);
+    options.c_cc[VMIN] = 0;
+    options.c_cc[VTIME] = 10;
+
+    // specify any arbitrary baud rate
+    speed_t baudRate = 9600;
+    cfsetospeed(&options, B9600);
+    /*if (ioctl(serialFileDescriptor, IOSSIOSPEED, &baudRate) ==1)
+    {
+        cout << "Error calling ioctl" << endl;
+    	return -1;
+    }*/
+
+    //cout << "Opened connection to Arduino" << endl;
+    return serialFileDescriptor;
+}
+
+int writeSerialPort(int serialFileDescriptor, void *buffer)
+{
+    ssize_t numBytes;
+    numBytes = write(serialFileDescriptor, buffer, sizeof(buffer));
+    //cout << "Wrote " << numBytes << " bytes to Arduino" << endl;
+    //cout << "Sent the start signal through Arduino.."<< endl;
+    return numBytes;
+}
+
+void closeSerialPort(int serialFileDescriptor)
+{
+    if (tcdrain(serialFileDescriptor) == -1) {
+       cout<< "Error waiting for drain" << endl;
+    }
+  
+    // Traditionally it is good practice to reset a serial port back to
+    // the state in which you found it. This is why the original termios struct
+    // was saved.
+    gOriginalTTYAttrs.c_cflag &= ~HUPCL; // disable hang-up-on-close to avoid reset
+    if (tcsetattr(serialFileDescriptor, TCSANOW, &gOriginalTTYAttrs) == -1) {
+        cout << "Error resetting tty attributes"<< endl;
+    }
+
+    close(serialFileDescriptor);
+    //cout << "Closed connection to Arduino" << endl;
+}
 /**\fn int getdir(string dir, vector<string> &files)
  * \brief List directory contents matching BOARD_FILE_STR
  * \param dir - directory name of interest

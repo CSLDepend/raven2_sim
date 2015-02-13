@@ -68,9 +68,7 @@ double ds[2][6]           = {{0,    0,    V,          d4,  0,      0},
 double robot_thetas[2][6] = {{V,    V,    M_PI/2,     V,   V,      V},
                              {V,    V,    -M_PI/2,    V,   V,      V}};
 
-#define simulator
-
-#ifdef simulator
+#ifdef simulator_packet
 int check_collision(ik_solution * iksols, double * gangels);
 /// Parameters to check for fwd_kin
 //int a_fwd = 0;
@@ -127,8 +125,9 @@ tf::Transform getFKTransform(int a, int b)
 
 int check_collision(ik_solution *iksols, double *gangels)
 {
-    //gangels[0] = 10*d2r;
-    //gangels[1] = 20*d2r;
+  
+    //gangels[0] = 30*d2r;
+    //gangels[1] = 30*d2r;
     //l_r arm;
 
     tf::Transform xf;
@@ -138,11 +137,12 @@ int check_collision(ik_solution *iksols, double *gangels)
     tf::Matrix3x3 T6;   
     tf::Matrix3x3 env_r; 
 
-	// Constant Matrices for Transformation to Base Frame
+    // Constant Matrices for Transformation to Base Frame
     R_T0.setValue(0, 0, -1, 0, 1, 0, 1, 0, 0);
     L_T0.setValue(0, 0, 1, 0, -1, 0, 1, 0, 0);
-    tf::Vector3 R_disp(-300710,61000,-7000);
-    tf::Vector3 L_disp(-379290,61000,-7000); 
+    // Needs to be tuned to be more accurate
+    tf::Vector3 R_disp(-250710,61000,-6000);
+    tf::Vector3 L_disp(-379290,61000,-6000); 
 
     double R[3][3];
     double posx, posy, posz;
@@ -179,7 +179,7 @@ int check_collision(ik_solution *iksols, double *gangels)
 		posx = xf.getOrigin()[0] * (1000.0*1000.0);
 		posy = xf.getOrigin()[1] * (1000.0*1000.0);
 		posz = xf.getOrigin()[2] * (1000.0*1000.0);
-        //cout << "Arm " << m << ":\n";
+                //cout << "Arm " << m << ":\n";
 		//cout << "Position = ("<< posx << "," << posy << ","<< posz << ")\n";
 		
         for (int i=0;i<3;i++)
@@ -192,7 +192,6 @@ int check_collision(ik_solution *iksols, double *gangels)
 			//cout << "\n";
 		}
 		T6_b.setValue(R[0][0], R[0][1], R[0][2], R[1][0], R[1][1], R[1][2], R[2][0], R[2][1], R[2][2]);
-
 
 		radius[m] = 10.5/cos(gangels[m])*1000; 
 	    //cout << "Radius = " << radius[m] << "\n";
@@ -208,9 +207,9 @@ int check_collision(ik_solution *iksols, double *gangels)
 			T6 = R_T0 * T6_b;	
             tmp = R_T0*tf::Vector3(posx,posy,posz)+R_disp;  
 		}
-        posx = tmp[0];
-        posy = tmp[1];
-        posz = tmp[2]; 	
+		posx = tmp[0];
+		posy = tmp[1];
+		posz = tmp[2]; 	
 
 		//cout << "TPosition = ("<< posx << "," << posy << ","<< posz << ")\n";
 		for (int i=0;i<3;i++)
@@ -296,7 +295,7 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 			for (int j=0; j<3; j++)
 				d0->mech[m].ori.R[i][j] = (xf.getBasis())[i][j];  
 
-#ifdef simulator
+#ifdef simulator_packet
         log_file("FK_Pos_Arm%d: %d, %d, %d", m, d0->mech[m].pos.x, d0->mech[m].pos.y, d0->mech[m].pos.z); 
         log_file("FK_Ori_Arm%d: %f, %f, %f, %f, %f, %f, %f, %f, %f\n", m, d0->mech[m].ori.R[0][0], d0->mech[m].ori.R[0][1], d0->mech[m].ori.R[0][2], d0->mech[m].ori.R[1][0], d0->mech[m].ori.R[1][1], d0->mech[m].ori.R[1][2], d0->mech[m].ori.R[2][0], d0->mech[m].ori.R[2][1], d0->mech[m].ori.R[2][2]);  
 
@@ -526,9 +525,9 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		int ret = inv_kin(xf, arm, iksol);
 		if (ret < 0)
 		{
-			log_msg("ik failed gracefully (arm%d ret:%d", arm, ret);
-#ifdef simulator
-			log_file("Error: ik failed gracefully (arm%d ret:%d", arm, ret);                 	
+			log_msg("ik failed gracefully (arm%d ret:%d)", arm, ret);
+#ifdef simulator_packet
+			log_file("Error: ik failed gracefully (arm%d ret:%d)", arm, ret);                 	
 #endif		
 		}
 #ifdef simulator	      
@@ -566,8 +565,8 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		if ( (check_result = check_solutions(lo_thetas, iksol, sol_idx, sol_err)) < 0)
 		{
 			cout << "IK failed\n";
-#ifdef simulator
-			log_file("Error: IK failed\n");                	
+#ifdef simulator_packet
+			log_file("Error: IK failed (arm %d)\n",arm);                	
 #endif
 			return -1;
 		}
@@ -580,18 +579,18 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		double gangle = double(d0->mech[m].ori_d.grasp) / 1000.0;
 		theta2joint(iksol[sol_idx], Js);
 		
-#ifdef simulator    
+#ifdef simulator_packet    
 		if (m == 0)
 		{
-	        gangles[0] = gangle;
-            iksols[0] = iksol[sol_idx]; 
+	            gangles[0] = gangle;
+                    iksols[0] = iksol[sol_idx]; 
 		}
 		else
 		{
-			gangles[1] = gangle;
-            iksols[1] = iksol[sol_idx]; 
-		}		
-		log_file("IK_Thetas_Arm%d: %f, %f, %f, %f, %f, %f, %f\n", 
+		    gangles[1] = gangle;
+                    iksols[1] = iksol[sol_idx]; 
+	 	}		
+	   	    log_file("IK_Thetas_Arm%d: %f, %f, %f, %f, %f, %f, %f\n", 
                         m,iksol[sol_idx].th1*r2d,iksol[sol_idx].th2*r2d,
                         iksol[sol_idx].d3,
                         iksol[sol_idx].th4*r2d, iksol[sol_idx].th5*r2d,
@@ -611,8 +610,8 @@ int r2_inv_kin(struct device *d0, int runlevel)
 					d0->mech[m].ori_d.R[i][j] = (xf_sat.getBasis())[i][j];
 
 			updateMasterRelativeOrigin(d0);
-#ifdef simulator
-			log_file("Error: Saturated to Joint Limits\n");              	
+#ifdef simulator_packet
+			log_file("Error: Saturated to Joint Limits (arm %d)\n", arm);                  	
 #endif
 		}
 		else
@@ -658,13 +657,19 @@ int r2_inv_kin(struct device *d0, int runlevel)
 	}
 
 	printIK=0;
-#ifdef simulator
+#ifdef simulator_packet
     int check_result = 0;
+    static int counter = 0;
+    counter++; 
+    if (counter % 100 == 0)
+    {
+
 	if ((check_result = check_collision(iksols,gangles)) < 0 )
 	{
 		log_msg("Collision Detected\n");	
 		log_file("Error: Collision Detected\n");
 	}  
+    }
         //log_file("RT_PROCESS) INV Kinematics Done.\n");            
 #endif	
 	return 0;

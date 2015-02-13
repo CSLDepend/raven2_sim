@@ -20,8 +20,7 @@
 #include "update_device_state.h"
 #include "log.h"
 
-#define simulator
-#ifdef simulator
+#ifdef simulator_packet
 extern int program_state;
 extern int logging;
 int curr_pack_no = 0;
@@ -53,32 +52,33 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
     ///log_msg("updateDeviceState %d", currParams->runlevel);///Added
     currParams->last_sequence = rcvdParams->last_sequence;
 
-#ifdef simulator
+#ifdef simulator_packet
     program_state = 5;
     if ((currParams->last_sequence == 111) && (curr_pack_no == 0))
-	{
-		logging = 0;
+    {
+        logging = 0;
     }
     else
+    {
+	if (currParams->last_sequence != curr_pack_no)
 	{
-		if (currParams->last_sequence != curr_pack_no)
+		if (curr_pack_no !=0)		 	
 		{
-			if (curr_pack_no !=0)		 	
-			{
-				log_file("______________________________________________\n");
-			}
-			// Dropped
-			if (currParams->last_sequence > (curr_pack_no+1))
-			{
-				for (int i=curr_pack_no+1;i<currParams->last_sequence;i++)   {
-					log_file("Packet: %d\n", i);
-   					log_file("Error: Packet Dropped.\n");  
-					log_file("______________________________________________\n");	  
-		        }			
-			}
-			curr_pack_no = currParams->last_sequence;   
-			log_file("Packet: %d\n", curr_pack_no);  
+			log_file("______________________________________________\n");
 		}
+		// Dropped
+		if (currParams->last_sequence > (curr_pack_no+1))
+		{
+  		    for (int i=curr_pack_no+1;i<currParams->last_sequence;i++)   
+                    {
+			log_file("Packet: %d\n", i);
+			log_file("Error: Packet Dropped.\n");  
+			log_file ("______________________________________________\n");	  
+	            }			
+		}
+		curr_pack_no = currParams->last_sequence;   
+		log_file("Packet: %d\n", curr_pack_no);  
+	}
     }
 #endif
  

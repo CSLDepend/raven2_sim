@@ -57,7 +57,7 @@ void updateAtmelOutputs(struct device *device0, int runlevel)
 
     //Update Linux State
     outputs |= (runlevel & (PIN_LS0 | PIN_LS1));
-
+      
     //Update WD Timer - if not software triggered
     if ( !soft_estopped )
     {
@@ -70,7 +70,7 @@ void updateAtmelOutputs(struct device *device0, int runlevel)
             counter = 0;
         }
     }
-
+        
     //Write Changes
     for (i = 0; i < NUM_MECH; i++)
         device0->mech[i].outputs = outputs;
@@ -93,11 +93,12 @@ void updateAtmelInputs(struct device device0, int runlevel)
 
     //Update PLC State
     PLCState = (device0.mech[0].inputs & (PIN_PS0 | PIN_PS1)) >> 6;
-
-    //  printk("Mech0.inputs: %#x\n",device0.mech[0].inputs);
-    //  static int j;
-    //if (j++ % 1000 == 0)
-    //  printk("PLC State is %d\n",PLCState);
-    //if (PLCState != runlevel)
-    // printk("RunLevels on Linux Box and PLC do not match!!!\n");
+#ifdef skip_init_button
+    //log_msg("Mech0.inputs: %#x\n",device0.mech[0].inputs);
+    static int j;
+    if (j++ % 1000 == 0)
+        log_msg("PLC State is %d\n",PLCState);
+    if (PLCState != runlevel)
+        log_msg("RunLevels on Linux Box and PLC do not match!!!\n");
+#endif
 }

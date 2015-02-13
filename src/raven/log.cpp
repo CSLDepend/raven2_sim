@@ -27,15 +27,14 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <ros/console.h>
+#include <defines.h>
 #include <queue>
 
 std::queue<char*> msgqueue;
 const static size_t MAX_MSG_LEN =1024;
 
-#define simulator
 //#define simulator_logging
-
-#ifdef simulator
+#ifdef simulator_packet
 #include <fstream>
 extern int inject_mode;
 extern int logging;
@@ -47,16 +46,19 @@ extern int logging;
 
 int log_file(const char* fmt,...)
 {
-	if (logging == 1)
+#ifdef no_logging
+        logging = 0; 
+#endif
+        if (logging == 1)
 	{
 		std::ofstream logfile;
-		
+	
 		if (inject_mode == 0)
-		    logfile.open("/home/homa/Documents/raven_2/sim_log.txt", std::ofstream::out | std::ofstream::app);
+		    logfile.open("/home/junjie/homa_wksp/raven_2/sim_log.txt", std::ofstream::out | std::ofstream::app);
 		else
 		{
 		    char buff[50];
-		    sprintf(buff,"/home/homa/Documents/raven_2/fault_log_%d.txt",inject_mode);
+		    sprintf(buff,"/home/junjie/homa_wksp/raven_2/fault_log_%d.txt",inject_mode);
 		    logfile.open(buff,std::ofstream::out | std::ofstream::app); 
 		}
 		static char buf[MAX_MSG_LEN];
@@ -85,6 +87,7 @@ int log_file(const char* fmt,...)
 
 int log_msg_later(const char* fmt,...)
 {
+#ifndef no_logging
   static char buf[MAX_MSG_LEN];
   char* msgbuf;
   va_list args;
@@ -99,6 +102,7 @@ int log_msg_later(const char* fmt,...)
   msgqueue.push(msgbuf);
   //  ROS_INFO("%s",buf);
   //std::cout << "qsiz:" << msgqueue.size() << std::endl;
+#endif
   return 0;
 }
 
@@ -110,6 +114,7 @@ int log_msg_later(const char* fmt,...)
 
 int log_msg(const char* fmt,...)
 {
+#ifndef no_logging
   static char buf[MAX_MSG_LEN];
     va_list args;
     va_start (args, fmt);
@@ -118,6 +123,7 @@ int log_msg(const char* fmt,...)
     va_end(args);
 //    printf("%s",buf);
     ROS_INFO("%s",buf);
+#endif
     return 0;
 }
 
@@ -129,6 +135,7 @@ int log_msg(const char* fmt,...)
 
 int err_msg(const char* fmt,...)
 {
+#ifndef no_logging
   static char buf[MAX_MSG_LEN];
     va_list args;
     va_start (args, fmt);
@@ -137,5 +144,6 @@ int err_msg(const char* fmt,...)
     va_end(args);
 //    printf("%s",buf);
     ROS_ERROR("%s",buf);
+#endif
     return 0;
 }

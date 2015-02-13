@@ -76,27 +76,31 @@ using namespace std;
 #define MS  (1000 * US)
 #define SEC (1000 * MS)
 
-#define simulator
 
 //Global Variables
 unsigned long int gTime;
 int initialized=0;     // State initialized flag
 int soft_estopped=0;   // Soft estop flag- indicate desired software estop.
-
 int    deviceType = SURGICAL_ROBOT;//PULLEY_BOARD;
 struct device device0 ={0};  //Declaration Moved outside rt loop for access from console thread
 int    mech_gravcomp_done[2]={0};
 
-#ifdef simulator
+#ifdef simulator_packet
 #include <fstream>
 int inject_mode;
 int NUM_MECH=2;   // Define NUM_MECH as a C variable, not a c++ variable
 int program_state = -1;
+int done_homing = 0;
 int logging = 0;
 int no_pack_cnt = 0;
 #else
 int NUM_MECH=0;   // Define NUM_MECH as a C variable, not a c++ variable
 #endif
+
+#ifdef skip_init_button
+int serial_fd = -1;
+#endif
+
 
 pthread_t rt_thread;
 pthread_t net_thread;
@@ -169,7 +173,7 @@ static void *rt_process(void* )
     {
       0
     };
-  struct timespec t, tnow, t2, tbz;                           // Tracks the timer value
+  struct timespec t, tnow, tnow2, t2, tbz;                           // Tracks the timer value
   int interval= 1 * MS;                        // task period in nanoseconds
 
   //CPU locking doesn't help timing.  Oh well.
@@ -185,7 +189,7 @@ static void *rt_process(void* )
 
   // set thread priority and stuff
   struct sched_param param;                    // process / thread priority settings
-  param.sched_priority = 96;
+  param.sched_priority = 99;
   log_msg("Using realtime, priority: %d", param.sched_priority);
   int ret = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
   if (ret != 0)
@@ -217,33 +221,47 @@ static void *rt_process(void* )
   log_msg("*** Ready to teleoperate ***");
 
 
-
-
   // --- Main robot control loop ---
   // TODO: Break when board becomes disconnected.
   while (ros::ok() && !r2_kill)
   {
-
+      //printf("RealTime @= %lx\n", gTime); 
       // Initiate USB Read
 #ifndef simulator
       initiateUSBGet(&device0);
 #endif
+#ifdef test_gdb
+      clock_gettime(CLOCK_REALTIME,&tnow);
+      tsnorm(&tnow);
+      clock_gettime(CLOCK_REALTIME,&tnow2);
+      tsnorm(&tnow2);
+      long int Diff = (tnow2.tv_nsec-tnow.tv_nsec)/100000;
+      //if (Diff > 9)
+      //if ((gTime % 2) == 0) 
+       // printf("Diff = %ld\n",Diff);          
+#endif
       // Set next timer-shot (must be in future)
       clock_gettime(CLOCK_REALTIME,&tnow);
+      tsnorm(&tnow);
+
       int sleeploops = 0;
+
       while (isbefore(t,tnow))
         {
-	  t.tv_nsec+=interval;
+	  t.tv_nsec+=interval; 
 	  tsnorm(&t);
 	  sleeploops++;
         }
       if (sleeploops!=1)
+      {
 	//std::cout<< "slplup"<< sleeploops <<std::endl;
+      }
 #ifndef simulator
       parport_out(0x00);
 #endif
       /// SLEEP until next timer shot
       clock_nanosleep(0, TIMER_ABSTIME, &t, NULL);
+
 #ifndef simulator      
       parport_out(0x03);
 #endif
@@ -272,7 +290,9 @@ static void *rt_process(void* )
       clock_gettime(CLOCK_REALTIME,&t2);
       t2 = tsSubtract(t2, tnow);
       if (loops!=0)
-	std::cout<< "bzlup"<<loops<<"0us time:" << (double)t2.tv_sec + (double)t2.tv_nsec/SEC <<std::endl;
+      {
+	//std::cout<< "bzlup"<<loops<<"0us time:" << (double)t2.tv_sec + (double)t2.tv_nsec/SEC <<std::endl;
+      }
 
       //Run Safety State Machine
 #ifndef simulator
@@ -286,8 +306,8 @@ static void *rt_process(void* )
       //Get state updates from master
       if ( checkLocalUpdates() == TRUE)
       {
-#ifdef simulator
-   	    logging = 1;  
+#ifdef simulator_packet
+   	logging = 1;  
         no_pack_cnt++; 
         //log_file("RT_PROCESS) Update device state based on received packet.\n");         
 #endif
@@ -295,8 +315,8 @@ static void *rt_process(void* )
       }
       else
       {
-#ifdef simulator
-   	    logging = 0;  
+#ifdef simulator_packet
+   	logging = 0;  
         //log_file("RT_PROCESS) No new packets. Use previous parameters.\n");         
 #endif
         rcvdParams.runlevel = currParams.runlevel;
@@ -308,7 +328,7 @@ static void *rt_process(void* )
       //////////////// SURGICAL ROBOT CODE //////////////////////////
       if (deviceType == SURGICAL_ROBOT)
         {
-#ifdef simulator
+#ifdef simulator_packet
 	    program_state = 6;
 #endif
 	  // Calculate Raven control
@@ -336,6 +356,10 @@ static void *rt_process(void* )
 
       //Done for this cycle
   }
+
+#ifdef skip_init_button
+      closeSerialPort(serial_fd);
+#endif
 
   log_msg("Raven Control is shutdown");
   return 0;
@@ -375,7 +399,7 @@ int init_ros(int argc, char **argv)
    */
   ros::init(argc, argv, "r2_control", ros::init_options::NoSigintHandler);
   ros::NodeHandle n;
-#ifdef simulator
+#ifdef simulator_packet
   n.getParam("inject",inject_mode);
 #endif
   //    rosrt::init();
@@ -416,18 +440,24 @@ int main(int argc, char **argv)
       cerr << "ERROR! Failed to init memory_pool.  Exiting.\n";
       exit(1);
     }
-#ifdef simulator
+
+#ifdef skip_init_button
+      serial_fd = openSerialPort();
+#endif
+
+#ifdef simulator_packet
   std::ofstream logfile;
   log_msg("************** Inject mode = %d\n",inject_mode);
   if (inject_mode == 0)
-      logfile.open("/home/homa/Documents/raven_2/sim_log.txt", std::ofstream::out);
+      logfile.open("/home/junjie/homa_wksp/raven_2/sim_log.txt", std::ofstream::out);
   else
   {
       char buff[50];
-      sprintf(buff,"/home/homa/Documents/raven_2/fault_log_%d.txt",inject_mode);
+      sprintf(buff,"/home/junjie/homa_wksp/raven_2/fault_log_%d.txt",inject_mode);
       logfile.open(buff,std::ofstream::out); 
   }
-  //log_file("MAIN) Initiated ROS and Memory Pool.\n");     
+  //log_file("MAIN) Initiated ROS and Memory Pool.\n");   
+
 #endif
 
   // init reconfigure
@@ -443,7 +473,6 @@ int main(int argc, char **argv)
 #ifdef simulator
   //log_file("MAIN) Created and initiated threads.\n");         
 #endif
-
   ros::spin();
 
 #ifndef simulator  

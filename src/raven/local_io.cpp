@@ -53,9 +53,8 @@ ROS publishing is at the bottom half of this file.
 #include "r2_kinematics.h"
 #include "reconfigure.h"
 
-#define simulator 
 
-#ifdef simulator
+#ifdef simulator_packet
 extern int program_state;
 #endif
 
@@ -124,6 +123,9 @@ int initLocalioData(void)
 
 int receiveUserspace(void *u,int size)
 {
+#ifdef simulator_packet
+    //log_msg("I got a new packet of size %d, but size = %d", sizeof(struct u_struct), size);
+#endif
     if (size==sizeof(struct u_struct))
     {
         isUpdated = TRUE;        
@@ -155,13 +157,17 @@ void teleopIntoDS1(struct u_struct *us_t)
     // TODO:: APPLY TRANSFORM TO INCOMING DATA
 
 
-
     for (i=0;i<NUM_MECH;i++)
     {
 #ifndef simulator
         armserial = USBBoards.boards[i]==GREEN_ARM_SERIAL ? GREEN_ARM_SERIAL : GOLD_ARM_SERIAL;
         armidx    = USBBoards.boards[i]==GREEN_ARM_SERIAL ? 1 : 0;
+#else
+        armserial = (i == 1) ? GREEN_ARM_SERIAL : GOLD_ARM_SERIAL; 
+        armidx = (i == 1) ? 1 : 0; 
+#endif
 
+#ifndef simulator_packet
         // apply mapping to teleop data
         p.x = us_t->delx[armidx];
         p.y = us_t->dely[armidx];
@@ -194,25 +200,24 @@ void teleopIntoDS1(struct u_struct *us_t)
 	if (data1.rd[i].grasp>graspmax) data1.rd[i].grasp=graspmax;
 	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
 #else
-    armserial = (i == 1) ? GREEN_ARM_SERIAL : GOLD_ARM_SERIAL; 
-    armidx = (i == 1) ? 1 : 0; 
-
 	// Set Position command
-    data1.xd[i].x = us_t->delx[armidx];
+        data1.xd[i].x = us_t->delx[armidx];
 	data1.xd[i].y = us_t->dely[armidx];
 	data1.xd[i].z = us_t->delz[armidx];
 
+	
         // commented debug output
-        /*log_file("Arm %d : User desired end-effector positions: (%d,%d,%d)",
-               i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);      
-*/
+        //log_file("Arm %d : User desired end-effector positions: (%d,%d,%d)",
+        //       i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);      
+
         // Set rotation command
 	if (i == 0)
 	{	
 		for (int j=0;j<3;j++)
 		    for (int k=0;k<3;k++)
 		        data1.rd[0].R[j][k] = us_t->R_l[j][k];
-                // Just keep the golden results
+#ifdef simulator
+              // Just keep the golden results
 		double gangle = (us_t->grasp[armidx]*M_PI/180)/1000.0;		
                 data1.jpos_d[0] = (us_t->ljoints[0] - 205)*M_PI/180; 
  		data1.jpos_d[1] = (us_t->ljoints[1] - 180)*M_PI/180;
@@ -221,12 +226,14 @@ void teleopIntoDS1(struct u_struct *us_t)
  		data1.jpos_d[4] = (us_t->ljoints[4] + 90)*M_PI/180;
 		data1.jpos_d[5] = -us_t->ljoints[5]*M_PI/180 + gangle/2; 
  		data1.jpos_d[6] =  us_t->ljoints[5]*M_PI/180 + gangle/2;
+#endif
 	}        
 	else
 	{
 		for (int j=0;j<3;j++)
 		    for (int k=0;k<3;k++)
 		        data1.rd[1].R[j][k] = us_t->R_r[j][k];
+#ifdef simulator
 		// Just keep the golden results
 		double gangle = (us_t->grasp[armidx]*M_PI/180)/1000.0;	
                 data1.jpos_d[7] = (us_t->rjoints[0] - 25)*M_PI/180; 
@@ -236,6 +243,7 @@ void teleopIntoDS1(struct u_struct *us_t)
  		data1.jpos_d[11] = (us_t->rjoints[4] + 90)*M_PI/180;
 		data1.jpos_d[12] = -us_t->rjoints[5]*M_PI/180 + gangle/2;
 		data1.jpos_d[13] = us_t->rjoints[5]*M_PI/180 + gangle/2; 
+#endif
 	}        
 	//log_file("Arm %d: User desired end-effector rotations: \n(%f,%f,%f)\n(%f,%f,%f)\n(%f,%f,%f)\n",i, data1.rd[i].R[0][0],data1.rd[i].R[0][1],data1.rd[i].R[0][2],data1.rd[i].R[1][0],data1.rd[i].R[1][1],data1.rd[i].R[1][2],data1.rd[i].R[2][0],data1.rd[i].R[2][1],data1.rd[i].R[2][2]);
 
@@ -272,7 +280,7 @@ void teleopIntoDS1(struct u_struct *us_t)
  */
 int checkLocalUpdates()
 {
-#ifdef simulator
+#ifdef simulator_packet
     program_state = 3;
 #endif
     static unsigned long int lastUpdated;
@@ -308,7 +316,7 @@ int checkLocalUpdates()
 */
 struct param_pass * getRcvdParams(struct param_pass* d1)
 {
-#ifdef simulator
+#ifdef simulator_packet
     program_state = 4;
 #endif
     // \TODO Check performance of trylock / default priority inversion scheme

@@ -27,7 +27,6 @@
 #include "fwd_cable_coupling.h"
 #include "log.h"
 #include "tool.h"
-#define simulator 
 
 extern struct DOF_type DOF_types[];
 extern int NUM_MECH;

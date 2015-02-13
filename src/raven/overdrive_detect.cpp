@@ -64,8 +64,12 @@ int overdriveDetect(struct device *device0)
             if (abs(_joint->current_cmd) > MAX_INST_DAC)
             {
                 log_msg("Instant i command too high. Joint type: %d DAC:%d \t tau:%0.3f\n", _joint->type, _joint->current_cmd, _joint->tau_d);
+		log_file("Error: Instant i command too high. Joint type: %d DAC:%d \t tau:%0.3f\n", _joint->type, _joint->current_cmd, _joint->tau_d);
                 _joint->current_cmd = 0;
+                log_file("Error: E-STOP");
+//#ifndef skip_restart_button 
                 ret = TRUE;
+//#endif
             }
 
             else if ( _joint->current_cmd > _dac_max )
@@ -73,6 +77,8 @@ int overdriveDetect(struct device *device0)
                 //Clip current to max_torque
                 if (gTime %100 == 0) //don't saturate the console
                     err_msg("Joint type %d is current clipped high (%d) at DAC:%d\n", _joint->type, _dac_max, _joint->current_cmd);
+		log_file("Error: Joint type %d is current clipped high (%d) at DAC:%d\n", _joint->type, _dac_max, _joint->current_cmd);	
+
                 _joint->current_cmd = _dac_max;
             }
 
@@ -81,6 +87,7 @@ int overdriveDetect(struct device *device0)
                 //Clip current to -1*max_torque
                 if (gTime %100 == 0)
                     err_msg("Joint type %d is current clipped low (%d) at DAC:%d\n", _joint->type, _dac_max*-1,  _joint->current_cmd);
+                    log_file("Error: Joint type %d is current clipped low (%d) at DAC:%d\n", _joint->type, _dac_max*-1,  _joint->current_cmd);
                 _joint->current_cmd = _dac_max*-1;
             }
         }

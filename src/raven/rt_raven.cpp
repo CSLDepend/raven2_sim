@@ -34,7 +34,6 @@
 
 #include "rt_raven.h"
 #include "defines.h"
-
 #include "init.h"             // for initSurgicalArms()
 #include "inv_kinematics.h"
 #include "r2_kinematics.h"
@@ -51,11 +50,15 @@
 #include "update_device_state.h"
 #include "parallel.h"
 
-#define simulator 
-#ifdef simulator
+
+#ifdef simulator_packet
 extern int program_state;
+extern int done_homing;
 #endif
-extern int NUM_MECH; //Defined in rt_process_preempt.cpp
+#ifdef test_gdb
+struct timespec tnow, tnow2;
+#endif
+extern int NUM_MECH; //Defined in rt_process_																								preempt.cpp
 extern unsigned long int gTime; //Defined in rt_process_preempt.cpp
 extern struct DOF_type DOF_types[]; //Defined in DOF_type.h
 extern t_controlmode newRobotControlMode; //Defined in struct.h
@@ -92,9 +95,18 @@ extern int initialized; //Defined in rt_process_preempt.cpp
 *
 */
 int controlRaven(struct device *device0, struct param_pass *currParams){
-#ifdef simulator
-    program_state = 7;
+#ifdef test_gdb
+      clock_gettime(CLOCK_REALTIME,&tnow);
+#endif      
+#ifdef simulator_packet
+      program_state = 7;
 #endif
+#ifdef test_gdb      
+      clock_gettime(CLOCK_REALTIME,&tnow2);
+      long int Diff = (tnow2.tv_nsec-tnow.tv_nsec)/100000;
+      if (Diff > 9)
+          printf("Diff = %ld\n",Diff);
+#endif    
     int ret = 0;
     //Desired control mode
     t_controlmode controlmode = (t_controlmode)currParams->robotControlMode;
@@ -107,13 +119,13 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
     stateEstimate(device0); 
 #endif
 
-#ifdef simulator
+#ifdef simulator_packet
     program_state = 8;
 #endif
     //Foward Cable Coupling
     fwdCableCoupling(device0, currParams->runlevel);
 
-#ifdef simulator
+#ifdef simulator_packet
     program_state = 9;
 #endif
     //Forward kinematics
@@ -124,7 +136,7 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         //CHECK ME: what is the purpose of this mode?
         case no_control:
         {
-#ifdef simulator
+#ifdef simulator_packet
 	    program_state = 10;
         //log_file("RT_PROCESS) No Control");         
 #endif
@@ -146,7 +158,8 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         }
         //Cartesian Space Control is called to control the robot in cartesian space
         case cartesian_space_control:
-#ifdef simulator
+#ifdef simulator_packet
+		done_homing = 1;
 	        program_state = 11;
             //log_file("RT_PROCESS) Cartesian space control");         
 #endif		
@@ -164,12 +177,12 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
             break;
         //Runs homing mode
         case homing_mode:
-#ifdef simulator
-	    program_state = 12;
-        //log_file("RT_PROCESS) Homing Mode");         
+#ifdef simulator_packet
+	   program_state = 12;
+           //log_file("RT_PROCESS) Homing Mode");         
+           //log_msg("Homing");
 #endif	
-	    log_msg("Homing");
-        	static int hom = 0;
+	        static int hom = 0;
         	if (hom==0){
         		log_msg("Entered homing mode");
         		hom = 1;
@@ -248,19 +261,19 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
     parport_out(0x01);
 #endif
 
-#ifdef simulator
+#ifdef simulator_packet
     program_state = 13;
 #endif
     //Inverse kinematics
     r2_inv_kin(device0, currParams->runlevel);
 
-#ifdef simulator
+#ifdef simulator_packet
     program_state = 14;
 #endif
     //Inverse Cable Coupling
     invCableCoupling(device0, currParams->runlevel);
 
-#ifdef simulator
+#ifdef simulator_packet
     program_state = 15;
 #endif
     // Set all joints to zero torque
