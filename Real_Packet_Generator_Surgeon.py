@@ -21,9 +21,7 @@ else:
    MAX_LINES = 3000
    FREQ = 0.01
 
-#print "UDP target IP:", UDP_IP
-#print "UDP target port1:", UDP_PORT1
-#print "UDP target port2:", UDP_PORT2
+line_no = 0;
 
 u_struct = namedtuple("u_struct", "sequence pactyp version delx0 delx1 dely0 dely1 delz0 delz1 R_l00 R_l01 R_l02 R_l10 R_l11 R_l12 R_l20 R_l21 R_l22 R_r00 R_r01 R_r02 R_r10 R_r11 R_r12 R_r20 R_r21 R_r22 buttonstate0 buttonstate1 grasp0 grasp1 surgeon_mode checksum");
 
@@ -35,8 +33,9 @@ sock1.bind((UDP_IP,UDP_PORT1))
 sock2 = socket.socket(socket.AF_INET, # Internet
                       socket.SOCK_DGRAM) # UDP
 def readSignals():
+    global line_no
     global robot_state
-    while(1):
+    while(line_no < MAX_LINES):
         data = sock1.recvfrom(100)       
         if (robot_state == 0):
             if (data[0].find('Ready') > -1):
@@ -56,13 +55,13 @@ def readSignals():
             if (data[0].find('Ready') > -1):
                 robot_state = 1;
             else:
-                robot_state = 2;         
+                robot_state = 2;    
 
 def sendPackets():
+    global line_no
     seq = 0;
-    line_no = 0;
     line = [];
-    csvfile1 = open('/home/junjie/homa_wksp/teleop_data/data1.csv'); 
+    csvfile1 = open('/home/alemzad1/homa_wksp/teleop_data/data1.csv'); 
     reader = csv.reader(csvfile1)
     
     # Skip the first packets
@@ -89,34 +88,34 @@ def sendPackets():
             tuple_to_send = u_struct(sequence = seq, 
                     pactyp = 0, 
                     version = 0, 
-                    delx0 = int(float(line[9])),
-                    delx1 = int(float(line[12])),
-                    dely0 = int(float(line[10])),
-                    dely1 = int(float(line[13])),
-                    delz0 = int(float(line[11])),
-                    delz1 = int(float(line[14])),
-                    R_l00 = float(line[15]),
-                    R_l01 = float(line[16]),
-                    R_l02 = float(line[17]),
-                    R_l10 = float(line[18]),
-                    R_l11 = float(line[19]), 
-                    R_l12 = float(line[20]),
-                    R_l20 = float(line[21]),
-                    R_l21 = float(line[22]),
-                    R_l22 = float(line[23]),
-                    R_r00 = float(line[24]),
-                    R_r01 = float(line[25]), 
-                    R_r02 = float(line[26]),
-                    R_r10 = float(line[27]),
-                    R_r11 = float(line[28]), 
-                    R_r12 = float(line[29]),
-                    R_r20 = float(line[30]),
-                    R_r21 = float(line[31]),
-                    R_r22 = float(line[32]),
+                    delx0 = int(float(line[51])),
+                    delx1 = int(float(line[54])),
+                    dely0 = int(float(line[52])),
+                    dely1 = int(float(line[55])),
+                    delz0 = int(float(line[53])),
+                    delz1 = int(float(line[56])),
+                    R_l00 = float(line[33]),
+                    R_l01 = float(line[34]),
+                    R_l02 = float(line[35]),
+                    R_l10 = float(line[36]),
+                    R_l11 = float(line[37]), 
+                    R_l12 = float(line[38]),
+                    R_l20 = float(line[39]),
+                    R_l21 = float(line[40]),
+                    R_l22 = float(line[41]),
+                    R_r00 = float(line[42]),
+                    R_r01 = float(line[43]), 
+                    R_r02 = float(line[44]),
+                    R_r10 = float(line[45]),
+                    R_r11 = float(line[46]), 
+                    R_r12 = float(line[47]),
+                    R_r20 = float(line[48]),
+                    R_r21 = float(line[49]),
+                    R_r22 = float(line[50]),
                     buttonstate0 = 0,
                     buttonstate1 = 0, 
-                    grasp0 = float((float(line[112])-float(line[113]))/2),
-                    grasp1 = float((float(line[120])-float(line[121]))/2), 
+                    grasp0 = float((float(line[113])-float(line[112]))/2),
+                    grasp1 = float((float(line[121])-float(line[120]))/2), 
                     surgeon_mode = 1, 
                     checksum=0);
             MESSAGE = struct.pack(format_,*tuple_to_send._asdict().values());
@@ -130,8 +129,14 @@ def sendPackets():
         elif (robot_state == 2):
             print "\rWaiting for the robot to be restarted",
             sys.stdout.flush();
-    sys.exit()
    
+def signal_handler(signal, frame):
+    sock1.close()
+    sock2.close()
+    sys.exit()
+
+signal.signal(signal.SIGINT, signal_handler)
+
 t1 = threading.Thread(target=readSignals);
 t2 = threading.Thread(target=sendPackets);
 t1.daemon = True;
@@ -139,8 +144,12 @@ t2.daemon = True;
 t1.start();
 t2.start();
 
-while(1):
+while(line_no < MAX_LINES):
    time.sleep(1)
+
+sock1.close()
+sock2.close()
+sys.exit()
 
 
 
