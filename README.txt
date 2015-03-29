@@ -1,8 +1,10 @@
 ======================================
 Summary and licensing information
 ======================================
-This code is for RAVEN II surgical simulator. It is based on the RAVEN II control software from https://github.com/uw-biorobotics/raven2/tree/indigo. It enables running RAVEN control software with no robotic hardware attached. 
-A Python script (Packet_Generator.py) mimicks the network packets sent from the surgeon console based on a previously collected data from the trajectory of a basic surgical task. 
+This code is for RAVEN II surgical simulator. It is based on the RAVEN II control software from https://github.com/uw-biorobotics/raven2/tree/indigo. It enables running RAVEN control software with no robotic hardware attached.
+
+A Python script (Packet_Generator.py) mimicks the network packets sent from the surgeon console based on a previously collected data from the trajectory of a basic surgical task. For more information, see: 
+http://users.crhc.illinois.edu/alemzad1/papers/MedicalCPS_2015.pdf
 
 Copyright (C) 2015 University of Illinois Board of Trustees, DEPEND Research Group, Homa Alemzadeh
 
