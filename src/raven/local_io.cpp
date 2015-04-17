@@ -207,7 +207,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 
 	
         // commented debug output
-        //log_file("Arm %d : User desired end-effector positions: (%d,%d,%d)",
+        //log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",
         //       i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);      
 
         // Set rotation command

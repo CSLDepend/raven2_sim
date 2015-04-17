@@ -29,7 +29,7 @@
 
 #include <math.h>
 
-//#define simulator
+#define simulator
 #define simulator_packet
 #define skip_init_button
 #define skip_restart_button

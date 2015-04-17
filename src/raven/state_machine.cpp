@@ -69,8 +69,8 @@ void stateMachine(struct device *device0, struct param_pass *currParams, struct 
             rlDesired = tmp;
         }
     }
-
-    // already in desired runlevel.  Exit.
+     
+     // already in desired runlevel.  Exit.
     if ( *rl == rlDesired)
     {
         return;
@@ -80,7 +80,7 @@ void stateMachine(struct device *device0, struct param_pass *currParams, struct 
         rlDelayCounter++;
         return;
     }
-
+    
     rlDelayCounter = 0;
     *rl = rlDesired;            // Update Run Level
     device0->runlevel = *rl;    // Log runlevels in DS0.

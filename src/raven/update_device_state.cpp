@@ -102,14 +102,14 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 	if (currParams->last_sequence == 1)
 	{
 	    device0->mech[0].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[0];
-     	device0->mech[0].joint[ELBOW].jpos_d = rcvdParams->jpos_d[1];
+     	    device0->mech[0].joint[ELBOW].jpos_d = rcvdParams->jpos_d[1];
 	    device0->mech[0].joint[Z_INS].jpos_d = rcvdParams->jpos_d[2];
 	    device0->mech[0].joint[TOOL_ROT].jpos_d = rcvdParams->jpos_d[3];
 	    device0->mech[0].joint[WRIST].jpos_d = rcvdParams->jpos_d[4];
 	    device0->mech[0].joint[GRASP1].jpos_d = rcvdParams->jpos_d[5];
 	    device0->mech[0].joint[GRASP2].jpos_d = rcvdParams->jpos_d[6];
 	    device0->mech[1].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[7];
-     	device0->mech[1].joint[ELBOW].jpos_d = rcvdParams->jpos_d[8];
+     	    device0->mech[1].joint[ELBOW].jpos_d = rcvdParams->jpos_d[8];
 	    device0->mech[1].joint[Z_INS].jpos_d = rcvdParams->jpos_d[9];
 	    device0->mech[1].joint[TOOL_ROT].jpos_d = rcvdParams->jpos_d[10];
 	    device0->mech[1].joint[WRIST].jpos_d = rcvdParams->jpos_d[11];
@@ -132,6 +132,7 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 
     }
 
+  
      // Switch control modes only in pedal up or init.
     if ( (currParams->runlevel == RL_E_STOP)   &&
          (currParams->robotControlMode != (int)newRobotControlMode) )

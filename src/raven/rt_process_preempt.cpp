@@ -87,6 +87,7 @@ int    mech_gravcomp_done[2]={0};
 
 #ifdef simulator_packet
 #include <fstream>
+char raven_path[] = "/home/alemzad1/homa_wksp/raven_2";
 int inject_mode;
 int NUM_MECH=2;   // Define NUM_MECH as a C variable, not a c++ variable
 int program_state = -1;
@@ -347,7 +348,7 @@ static void *rt_process(void* )
       //Update Atmel Output Pins
       updateAtmelOutputs(&device0, currParams.runlevel);
 
-#ifndef simulator  
+#ifdef simulator  
       //Fill USB Packet and send it out   
       putUSBPackets(&device0); //disable usb for par port test
 #endif
@@ -448,16 +449,13 @@ int main(int argc, char **argv)
 #ifdef simulator_packet
   std::ofstream logfile;
   log_msg("************** Inject mode = %d\n",inject_mode);
-  if (inject_mode == 0)
-      logfile.open("/home/junjie/homa_wksp/raven_2/sim_log.txt", std::ofstream::out);
-  else
-  {
-      char buff[50];
-      sprintf(buff,"/home/junjie/homa_wksp/raven_2/fault_log_%d.txt",inject_mode);
-      logfile.open(buff,std::ofstream::out); 
-  }
-  //log_file("MAIN) Initiated ROS and Memory Pool.\n");   
+  char buff[50];
 
+  if (inject_mode == 0)
+      sprintf(buff,"%s/sim_log.txt", raven_path);
+  else     
+      sprintf(buff,"%s/fault_log_%d.txt", raven_path, inject_mode);
+  logfile.open(buff,std::ofstream::out); 
 #endif
 
   // init reconfigure

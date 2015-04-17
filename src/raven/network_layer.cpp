@@ -275,6 +275,7 @@ void* network_process(void* param1)
 #endif
                         if ((first == 0) && (device0.runlevel == 2))
 			{
+                        
 				done_homing = 0;
 	                        char v[6] = "Ready";
 				clientName.sin_port = htons((u_short)atoi(PACK_GEN_PORT));
@@ -324,6 +325,7 @@ void* network_process(void* param1)
 #endif
             if (bytesread != uSize){
                 ROS_ERROR("ERROR: Rec'd wrong ustruct size on socket!\n");
+                log_msg("%d not %d",bytesread, uSize);
                 FD_CLR(sock, &rmask);   // remove the descriptor sock from fdset rmask
                 continue;
             }

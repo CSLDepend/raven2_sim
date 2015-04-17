@@ -94,6 +94,6 @@ int putUSBPacket(int id, struct mechanism *mech)
     {
         return -USB_WRITE_ERROR;
     }
-
+    log_msg("Packet = %s\n",buffer_out);
     return 0;
 }

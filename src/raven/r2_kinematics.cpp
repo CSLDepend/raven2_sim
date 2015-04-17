@@ -488,9 +488,9 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		pos_d = &(d0->mech[m].pos_d);       	
 
 #ifdef simulator
-		//log_file("IK) Desired Pos = (%d, %d, %d)\n", pos_d->x, pos_d->y, pos_d->z);
+		log_file("IK) Desired Pos = (%d, %d, %d)\n", pos_d->x, pos_d->y, pos_d->z);
                   
-        //log_file("IK) Desired Ori = \n %f, %f, %f \n %f, %f, %f \n %f, %f, %f \n", ori_d->R[0][0], ori_d->R[0][1], ori_d->R[0][2], ori_d->R[1][0], ori_d->R[1][1], ori_d->R[1][2], ori_d->R[2][0], ori_d->R[2][1], ori_d->R[2][2]);
+        log_file("IK) Desired Ori = \n %f, %f, %f \n %f, %f, %f \n %f, %f, %f \n", ori_d->R[0][0], ori_d->R[0][1], ori_d->R[0][2], ori_d->R[1][0], ori_d->R[1][1], ori_d->R[1][2], ori_d->R[2][0], ori_d->R[2][1], ori_d->R[2][2]);
 
 #endif
 
@@ -590,12 +590,12 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		    gangles[1] = gangle;
                     iksols[1] = iksol[sol_idx]; 
 	 	}		
-	   	    log_file("IK_Thetas_Arm%d: %f, %f, %f, %f, %f, %f, %f\n", 
+	   	/*    log_file("IK_Thetas_Arm%d: %f, %f, %f, %f, %f, %f, %f\n", 
                         m,iksol[sol_idx].th1*r2d,iksol[sol_idx].th2*r2d,
                         iksol[sol_idx].d3,
                         iksol[sol_idx].th4*r2d, iksol[sol_idx].th5*r2d,
                         iksol[sol_idx].th6*r2d, 
-                        double(d0->mech[m].ori_d.grasp));
+                        double(d0->mech[m].ori_d.grasp));*/
 #endif
 		int limited = apply_joint_limits(Js,Js_sat);
 		if (limited)
@@ -627,6 +627,17 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		d0->mech[m].joint[WRIST   ].jpos_d = Js_sat[4];
 		d0->mech[m].joint[GRASP1  ].jpos_d = -Js[5] +  gangle / 2;
 		d0->mech[m].joint[GRASP2  ].jpos_d =  Js[5] +  gangle / 2;
+#ifdef simulator_packet
+	   	log_file("IK_Thetas_Arm%d: %f, %f, %f, %f, %f, %f, %f\n", 
+                        m,
+                        d0->mech[m].joint[SHOULDER].jpos_d*r2d,
+                        d0->mech[m].joint[ELBOW   ].jpos_d*r2d,
+                        d0->mech[m].joint[Z_INS   ].jpos_d,
+                        d0->mech[m].joint[TOOL_ROT].jpos_d*r2d, 
+                        d0->mech[m].joint[WRIST   ].jpos_d*r2d,
+                        d0->mech[m].joint[GRASP1  ].jpos_d*r2d, 
+                        d0->mech[m].joint[GRASP1  ].jpos_d*r2d);             	
+#endif
 		
          	if (printIK !=0 )// && d0->mech[m].type == GREEN_ARM_SERIAL )
 		{

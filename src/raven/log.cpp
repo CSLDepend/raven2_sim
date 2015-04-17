@@ -36,6 +36,7 @@ const static size_t MAX_MSG_LEN =1024;
 //#define simulator_logging
 #ifdef simulator_packet
 #include <fstream>
+extern char raven_path[];
 extern int inject_mode;
 extern int logging;
 /**\fn int log_file(const char* fmt,...)
@@ -52,15 +53,12 @@ int log_file(const char* fmt,...)
         if (logging == 1)
 	{
 		std::ofstream logfile;
-	
-		if (inject_mode == 0)
-		    logfile.open("/home/junjie/homa_wksp/raven_2/sim_log.txt", std::ofstream::out | std::ofstream::app);
-		else
-		{
-		    char buff[50];
-		    sprintf(buff,"/home/junjie/homa_wksp/raven_2/fault_log_%d.txt",inject_mode);
-		    logfile.open(buff,std::ofstream::out | std::ofstream::app); 
-		}
+    	        static char buff[50];
+		if (inject_mode == 0)  
+                    sprintf(buff,"%s/sim_log.txt", raven_path);
+                else
+		    sprintf(buff,"%s/fault_log_%d.txt", raven_path, inject_mode);
+                logfile.open(buff,std::ofstream::out | std::ofstream::app); 
 		static char buf[MAX_MSG_LEN];
 		va_list args;
 		va_start (args, fmt);

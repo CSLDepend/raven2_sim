@@ -161,7 +161,7 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
 #ifdef simulator_packet
 		done_homing = 1;
 	        program_state = 11;
-            //log_file("RT_PROCESS) Cartesian space control");         
+                //log_msg("RT_PROCESS) Cartesian space control");         
 #endif		
         	ret = raven_cartesian_space_command(device0,currParams);
         	break;
@@ -201,7 +201,8 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
                 newRobotControlMode = cartesian_space_control;
             }
 #else
-	    currParams->runlevel = RL_PEDAL_DN;
+	    currParams->runlevel = RL_PEDAL_UP; 
+            device0->runlevel = 2;
             currParams->robotControlMode = cartesian_space_control;
             newRobotControlMode = cartesian_space_control;
 #endif

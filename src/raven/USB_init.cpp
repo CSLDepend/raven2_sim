@@ -115,7 +115,7 @@ int writeSerialPort(int serialFileDescriptor, void *buffer)
     ssize_t numBytes;
     numBytes = write(serialFileDescriptor, buffer, sizeof(buffer));
     //cout << "Wrote " << numBytes << " bytes to Arduino" << endl;
-    //cout << "Sent the start signal through Arduino.."<< endl;
+    cout << "Sent the start signal through Arduino.."<< endl;
     return numBytes;
 }
 

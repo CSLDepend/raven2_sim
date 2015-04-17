@@ -15,7 +15,7 @@ print "UDP target port2:", UDP_PORT2
 
 u_struct = namedtuple("u_struct", "sequence pactyp version delx0 delx1 dely0 dely1 delz0 delz1 R_l00 R_l01 R_l02 R_l10 R_l11 R_l12 R_l20 R_l21 R_l22 R_r00 R_r01 R_r02 R_r10 R_r11 R_r12 R_r20 R_r21 R_r22 buttonstate0 buttonstate1 grasp0 grasp1 surgeon_mode checksum");
 
-csvfile1 = open('/home/junjie/homa_wksp/teleop_data/data1.csv'); 
+csvfile1 = open('/home/alemzad1/homa_wksp/teleop_data/data1.csv'); 
 reader = csv.reader(csvfile1)
 seq = 0;
 
