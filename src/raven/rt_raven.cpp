@@ -95,6 +95,7 @@ extern int initialized; //Defined in rt_process_preempt.cpp
 *
 */
 int controlRaven(struct device *device0, struct param_pass *currParams){
+
 #ifdef test_gdb
       clock_gettime(CLOCK_REALTIME,&tnow);
 #endif      
@@ -201,7 +202,7 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
                 newRobotControlMode = cartesian_space_control;
             }
 #else
-	    currParams->runlevel = RL_PEDAL_UP; 
+	    currParams->runlevel = RL_PEDAL_DN; 
             device0->runlevel = 2;
             currParams->robotControlMode = cartesian_space_control;
             newRobotControlMode = cartesian_space_control;

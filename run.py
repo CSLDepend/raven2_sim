@@ -49,7 +49,6 @@ my_ip = s.getsockname()[0]
 print my_ip
 s.close()
 
-
 env = os.environ.copy()
 '''splits = env['ROS_PACKAGE_PATH'].split(':')
 splits[-1] = '/home/alemzad1/homa_wksp/raven_2'
@@ -96,12 +95,10 @@ def quit():
     os.system("killall roslaunch")
     os.system("killall r2_control")
 
-
-packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
-time.sleep(1)   
-raven_proc = subprocess.Popen(ravenTask, env=env, shell=True, preexec_fn=os.setsid)
-time.sleep(4)   
 vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
+time.sleep(3.5)  
+packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
+raven_proc = subprocess.Popen(ravenTask, env=env, shell=True, preexec_fn=os.setsid)
 
 #Wait for a response from the robot
 data = ''

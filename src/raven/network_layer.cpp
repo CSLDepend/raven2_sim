@@ -320,6 +320,7 @@ void* network_process(void* param1)
                                  NULL,
                                  NULL);
 
+
 #ifdef simulator_packet
         //log_file("NETWORK) Receieved Data on Socket, Size = %d", uSize);         
 #endif

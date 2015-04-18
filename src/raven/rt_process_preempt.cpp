@@ -190,7 +190,7 @@ static void *rt_process(void* )
 
   // set thread priority and stuff
   struct sched_param param;                    // process / thread priority settings
-  param.sched_priority = 99;
+  param.sched_priority = 96;
   log_msg("Using realtime, priority: %d", param.sched_priority);
   int ret = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
   if (ret != 0)
@@ -243,7 +243,6 @@ static void *rt_process(void* )
 #endif
       // Set next timer-shot (must be in future)
       clock_gettime(CLOCK_REALTIME,&tnow);
-      tsnorm(&tnow);
 
       int sleeploops = 0;
 
@@ -255,7 +254,7 @@ static void *rt_process(void* )
         }
       if (sleeploops!=1)
       {
-	//std::cout<< "slplup"<< sleeploops <<std::endl;
+	std::cout<< "slplup"<< sleeploops <<std::endl;
       }
 #ifndef simulator
       parport_out(0x00);
@@ -292,7 +291,7 @@ static void *rt_process(void* )
       t2 = tsSubtract(t2, tnow);
       if (loops!=0)
       {
-	//std::cout<< "bzlup"<<loops<<"0us time:" << (double)t2.tv_sec + (double)t2.tv_nsec/SEC <<std::endl;
+	std::cout<< "bzlup"<<loops<<"0us time:" << (double)t2.tv_sec + (double)t2.tv_nsec/SEC <<std::endl;
       }
 
       //Run Safety State Machine
@@ -312,7 +311,7 @@ static void *rt_process(void* )
         no_pack_cnt++; 
         //log_file("RT_PROCESS) Update device state based on received packet.\n");         
 #endif
- 	     updateDeviceState(&currParams, getRcvdParams(&rcvdParams), &device0);
+         updateDeviceState(&currParams, getRcvdParams(&rcvdParams), &device0);
       }
       else
       {

@@ -205,8 +205,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 	data1.xd[i].y = us_t->dely[armidx];
 	data1.xd[i].z = us_t->delz[armidx];
 
-	
-        // commented debug output
+	// commented debug output
         //log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",
         //       i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);      
 
@@ -216,35 +215,18 @@ void teleopIntoDS1(struct u_struct *us_t)
 		for (int j=0;j<3;j++)
 		    for (int k=0;k<3;k++)
 		        data1.rd[0].R[j][k] = us_t->R_l[j][k];
-#ifdef simulator
-              // Just keep the golden results
-		double gangle = (us_t->grasp[armidx]*M_PI/180)/1000.0;		
-                data1.jpos_d[0] = (us_t->ljoints[0] - 205)*M_PI/180; 
- 		data1.jpos_d[1] = (us_t->ljoints[1] - 180)*M_PI/180;
-		data1.jpos_d[2] = us_t->ljoints[2]*0.001; 
-		data1.jpos_d[3] = us_t->ljoints[3]*M_PI/180; 
- 		data1.jpos_d[4] = (us_t->ljoints[4] + 90)*M_PI/180;
-		data1.jpos_d[5] = -us_t->ljoints[5]*M_PI/180 + gangle/2; 
- 		data1.jpos_d[6] =  us_t->ljoints[5]*M_PI/180 + gangle/2;
-#endif
 	}        
 	else
 	{
 		for (int j=0;j<3;j++)
 		    for (int k=0;k<3;k++)
 		        data1.rd[1].R[j][k] = us_t->R_r[j][k];
+	}  
 #ifdef simulator
-		// Just keep the golden results
-		double gangle = (us_t->grasp[armidx]*M_PI/180)/1000.0;	
-                data1.jpos_d[7] = (us_t->rjoints[0] - 25)*M_PI/180; 
- 		data1.jpos_d[8] = us_t->rjoints[1]*M_PI/180;
-		data1.jpos_d[9] = us_t->rjoints[2]*0.001; 
-		data1.jpos_d[10] = us_t->rjoints[3]*M_PI/180; 
- 		data1.jpos_d[11] = (us_t->rjoints[4] + 90)*M_PI/180;
-		data1.jpos_d[12] = -us_t->rjoints[5]*M_PI/180 + gangle/2;
-		data1.jpos_d[13] = us_t->rjoints[5]*M_PI/180 + gangle/2; 
-#endif
-	}        
+        // Just keep the golden results	    
+        for (int j=0;j<16;j++)          
+      	    data1.jpos_d[j] = (us_t->jpos[j])*M_PI/180; 
+#endif      
 	//log_file("Arm %d: User desired end-effector rotations: \n(%f,%f,%f)\n(%f,%f,%f)\n(%f,%f,%f)\n",i, data1.rd[i].R[0][0],data1.rd[i].R[0][1],data1.rd[i].R[0][2],data1.rd[i].R[1][0],data1.rd[i].R[1][1],data1.rd[i].R[1][2],data1.rd[i].R[2][0],data1.rd[i].R[2][1],data1.rd[i].R[2][2]);
 
 	data1.rd[i].grasp = us_t->grasp[armidx];
@@ -263,6 +245,7 @@ void teleopIntoDS1(struct u_struct *us_t)
                //data1.xd[0].x, data1.xd[0].y, data1.xd[0].z,
                //data1.xd[1].x, data1.xd[1].y, data1.xd[1].z);
     data1.surgeon_mode = us_t->surgeon_mode;
+    
     pthread_mutex_unlock(&data1Mutex);
 }
 
@@ -284,7 +267,6 @@ int checkLocalUpdates()
     program_state = 3;
 #endif
     static unsigned long int lastUpdated;
-
     if (isUpdated || lastUpdated == 0)
     {
         lastUpdated = gTime;

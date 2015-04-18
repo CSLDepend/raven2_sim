@@ -71,8 +71,7 @@ struct u_struct {
         double R_l[3][3];
         double R_r[3][3];
 #ifdef simulator	
-        double ljoints[6];
-	double rjoints[6];
+        double jpos[16];
 #endif
 	int buttonstate[2];
 	int grasp[2];

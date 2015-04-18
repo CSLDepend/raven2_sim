@@ -31,7 +31,7 @@
 
 #define simulator
 #define simulator_packet
-#define skip_init_button
+//#define skip_init_button
 #define skip_restart_button
 #define surgeon_packet_gen
 //#define test_gdb
