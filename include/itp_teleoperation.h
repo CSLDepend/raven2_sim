@@ -59,7 +59,7 @@ surgeon_mode    SURGEON_ENGAGED or SURGEON_DISENGAGED  (formerly Pedal_Down or P
 checksum
 */
 
-#ifdef simulator_packet
+#ifdef simulator_2
 struct u_struct {
 	unsigned int sequence;
 	unsigned int pactyp;
@@ -70,7 +70,7 @@ struct u_struct {
 	int delz[2];
         double R_l[3][3];
         double R_r[3][3];
-#ifdef simulator	
+#ifdef simulator_2	
         double jpos[16];
 #endif
 	int buttonstate[2];

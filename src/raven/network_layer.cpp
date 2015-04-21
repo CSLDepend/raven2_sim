@@ -64,7 +64,8 @@
 
 #define SERVER_PORT  "36001"             // used if the robot needs to send data to the server
 //#define SERVER_ADDR  "192.168.0.102"
-#define SERVER_ADDR  "128.95.205.206"    // used only if the robot needs to send data to the server
+//#define SERVER_ADDR  "128.95.205.206"    // used only if the robot needs to send data to the server
+#define SERVER_ADDR  "130.126.143.20"
 
 #ifdef simulator_packet
 extern int logging;

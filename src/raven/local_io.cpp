@@ -167,7 +167,7 @@ void teleopIntoDS1(struct u_struct *us_t)
         armidx = (i == 1) ? 1 : 0; 
 #endif
 
-#ifndef simulator_packet
+#ifndef simulator_2
         // apply mapping to teleop data
         p.x = us_t->delx[armidx];
         p.y = us_t->dely[armidx];
@@ -222,7 +222,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 		    for (int k=0;k<3;k++)
 		        data1.rd[1].R[j][k] = us_t->R_r[j][k];
 	}  
-#ifdef simulator
+#ifdef simulator_2
         // Just keep the golden results	    
         for (int j=0;j<16;j++)          
       	    data1.jpos_d[j] = (us_t->jpos[j])*M_PI/180; 

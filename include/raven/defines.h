@@ -29,8 +29,9 @@
 
 #include <math.h>
 
-#define simulator
-#define simulator_packet
+#define simulator // no hardware
+//#define simulator_2  // packet generator instead of GUI
+#define simulator_packet // other simulator features
 //#define skip_init_button
 #define skip_restart_button
 #define surgeon_packet_gen

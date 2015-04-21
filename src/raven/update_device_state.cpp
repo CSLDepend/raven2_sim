@@ -96,7 +96,7 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
     // set desired mech position in pedal_down runlevel
     if (currParams->runlevel == RL_PEDAL_DN)
     {
-#ifdef simulator 
+#ifdef simulator_2 
         //log_file("RT_PROCESS) Pedal is down. Update device state.\n");         
         //currParams->robotControlMode = cartesian_space_control;////Added
 	if (currParams->last_sequence == 1)
