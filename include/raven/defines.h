@@ -30,7 +30,7 @@
 #include <math.h>
 
 #define simulator // no hardware
-//#define simulator_2  // packet generator instead of GUI
+#define simulator_2  // packet generator instead of GUI
 #define simulator_packet // other simulator features
 //#define skip_init_button
 #define skip_restart_button

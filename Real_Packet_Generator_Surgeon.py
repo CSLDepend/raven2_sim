@@ -8,7 +8,8 @@ import sys
 import signal
 import time
 
-UDP_IP = "127.0.0.1"
+#UDP_IP = "127.0.0.1"
+UDP_IP = "130.126.138.16"
 UDP_PORT1 = 32000
 UDP_PORT2 = 36001
 
