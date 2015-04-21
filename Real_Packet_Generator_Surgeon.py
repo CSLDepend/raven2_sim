@@ -8,8 +8,7 @@ import sys
 import signal
 import time
 
-#UDP_IP = "127.0.0.1"
-UDP_IP = "130.126.138.16"
+UDP_IP = "127.0.0.1"
 UDP_PORT1 = 32000
 UDP_PORT2 = 36001
 
@@ -68,7 +67,7 @@ def sendPackets():
     global line_no
     seq = 0;
     line = [];
-    csvfile1 = open('/home/alemzad1/homa_wksp/teleop_data/data1.csv'); 
+    csvfile1 = open('./teleop_data/data1.csv'); 
     reader = csv.reader(csvfile1)
     
     # Skip the first packets
