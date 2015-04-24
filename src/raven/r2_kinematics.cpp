@@ -68,7 +68,7 @@ double ds[2][6]           = {{0,    0,    V,          d4,  0,      0},
 double robot_thetas[2][6] = {{V,    V,    M_PI/2,     V,   V,      V},
                              {V,    V,    -M_PI/2,    V,   V,      V}};
 
-#ifdef simulator_packet
+#ifdef simulator
 int check_collision(ik_solution * iksols, double * gangels);
 /// Parameters to check for fwd_kin
 //int a_fwd = 0;
@@ -298,7 +298,7 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 			for (int j=0; j<3; j++)
 				d0->mech[m].ori.R[i][j] = (xf.getBasis())[i][j];  
 
-#ifdef simulator_packet
+#ifdef save_logs
         log_file("FK_Pos_Arm%d: %d, %d, %d", m, d0->mech[m].pos.x, d0->mech[m].pos.y, d0->mech[m].pos.z); 
         log_file("FK_Ori_Arm%d: %f, %f, %f, %f, %f, %f, %f, %f, %f\n", m, d0->mech[m].ori.R[0][0], d0->mech[m].ori.R[0][1], d0->mech[m].ori.R[0][2], d0->mech[m].ori.R[1][0], d0->mech[m].ori.R[1][1], d0->mech[m].ori.R[1][2], d0->mech[m].ori.R[2][0], d0->mech[m].ori.R[2][1], d0->mech[m].ori.R[2][2]);  
 
@@ -490,7 +490,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		ori_d = &(d0->mech[m].ori_d);
 		pos_d = &(d0->mech[m].pos_d);       	
 
-#ifdef simulator
+#ifdef save_logs
 		//log_file("IK) Desired Pos = (%d, %d, %d)\n", pos_d->x, pos_d->y, pos_d->z);
                   
         //log_file("IK) Desired Ori = \n %f, %f, %f \n %f, %f, %f \n %f, %f, %f \n", ori_d->R[0][0], ori_d->R[0][1], ori_d->R[0][2], ori_d->R[1][0], ori_d->R[1][1], ori_d->R[1][2], ori_d->R[2][0], ori_d->R[2][1], ori_d->R[2][2]);
@@ -529,11 +529,11 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		if (ret < 0)
 		{
 			log_msg("ik failed gracefully (arm%d ret:%d)", arm, ret);
-#ifdef simulator_packet
+#ifdef save_logs
 			log_file("Error: ik failed gracefully (arm%d ret:%d)", arm, ret);                 	
 #endif		
 		}
-#ifdef simulator	      
+#ifdef save_logs	      
 /*		for (int i =0; i < 8;i++)
 	        log_file("Arm %d - IK Solution %d = %f, %f, %f, %f, %f, %f\n", m, i+1 ,iksol[i].th1 * r2d, iksol[i].th2 * r2d, iksol[i].d3, iksol[i].th4 * r2d, iksol[i].th5 * r2d, iksol[i].th6 * r2d);*/
 
@@ -568,7 +568,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		if ( (check_result = check_solutions(lo_thetas, iksol, sol_idx, sol_err)) < 0)
 		{
 			cout << "IK failed\n";
-#ifdef simulator_packet
+#ifdef save_logs
 			log_file("Error: IK failed (arm %d)\n",arm);                	
 #endif
 			return -1;
@@ -582,7 +582,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		double gangle = double(d0->mech[m].ori_d.grasp) / 1000.0;
 		theta2joint(iksol[sol_idx], Js);
 		
-#ifdef simulator_packet    
+#ifdef simulator    
 		if (m == 0)
 		{
 	            gangles[0] = gangle;
@@ -614,7 +614,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
 					d0->mech[m].ori_d.R[i][j] = (xf_sat.getBasis())[i][j];
 
 			updateMasterRelativeOrigin(d0);
-#ifdef simulator_packet
+#ifdef save_logs
 			log_file("Error: Saturated to Joint Limits (arm %d)\n", arm);                  	
 #endif
 		}
@@ -631,7 +631,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		d0->mech[m].joint[WRIST   ].jpos_d = Js_sat[4];
 		d0->mech[m].joint[GRASP1  ].jpos_d = -Js[5] +  gangle / 2;
 		d0->mech[m].joint[GRASP2  ].jpos_d =  Js[5] +  gangle / 2;
-#ifdef simulator_packet
+#ifdef save_logs
 	   	log_file("IK_Thetas_Arm%d: %f, %f, %f, %f, %f, %f, %f\n", 
                         m,
                         d0->mech[m].joint[SHOULDER].jpos_d*r2d,
@@ -672,7 +672,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
 	}
 
 	printIK=0;
-#ifdef simulator_packet
+#ifdef simulator
     int check_result = 0;
     static int counter = 0;
     counter++; 

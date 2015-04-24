@@ -67,9 +67,7 @@ int overdriveDetect(struct device *device0)
 		log_file("Error: Instant i command too high. Joint type: %d DAC:%d \t tau:%0.3f\n", _joint->type, _joint->current_cmd, _joint->tau_d);
                 _joint->current_cmd = 0;
                 log_file("Error: E-STOP");
-//#ifndef skip_restart_button 
                 ret = TRUE;
-//#endif
             }
 
             else if ( _joint->current_cmd > _dac_max )

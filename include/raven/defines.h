@@ -29,14 +29,14 @@
 
 #include <math.h>
 
-#define simulator // no hardware
-#define simulator_2  // packet generator instead of GUI
-#define simulator_packet // other simulator features
-//#define skip_init_button
-#define skip_restart_button
-#define surgeon_packet_gen
-//#define test_gdb
-//#define no_logging
+#define simulator // ruuning with no hardware
+#define simulator_packetgen  // use packet generator instead of GUI
+#define simulator_packetgen_restart // packet generator can restart
+#define save_logs // save trajectory logs into sim_log.txt
+//#define no_logging // diable logging
+//#define skip_init_button // skip the start physical button
+//#define test_gdb // for debugging
+
 
 #define RAVEN_MODULE_VERSION RAVEN_II_RELEASE_02
 #define device robot_device

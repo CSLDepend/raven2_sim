@@ -67,7 +67,7 @@
 //#define SERVER_ADDR  "128.95.205.206"    // used only if the robot needs to send data to the server
 #define SERVER_ADDR  "130.126.143.20"
 
-#ifdef simulator_packet
+#ifdef simulator_packetgen
 extern int logging;
 extern int done_homing;
 int first = 0;
@@ -268,8 +268,8 @@ void* network_process(void* param1)
 // Select timeout: nothing to do
         if (nfound == 0)
         {          
-#ifdef simulator_packet
-#ifdef surgeon_packet_gen
+#ifdef simulator_packetgen
+#ifdef simulator_packetgen_restart
                         // To enable recieving packets again, set first	
 			if (device0.runlevel == 0)
 				first = 0;
@@ -306,7 +306,7 @@ void* network_process(void* param1)
             fflush(stdout);
             continue;
         }
-#ifdef simulator_packet
+#ifdef simulator_packetgen
         else
             first = 1;
 #endif   
@@ -322,7 +322,7 @@ void* network_process(void* param1)
                                  NULL);
 
 
-#ifdef simulator_packet
+#ifdef save_logs
         //log_file("NETWORK) Receieved Data on Socket, Size = %d", uSize);         
 #endif
             if (bytesread != uSize){
@@ -376,7 +376,7 @@ void* network_process(void* param1)
 
             else if (u.sequence > seq)       // Valid packet
             {    
-#ifdef simulator_packet
+#ifdef save_logs
                 log_msg("NETWORK) Receieved Valid Packet # %d\n", u.sequence); 
                 //log_file("NETWORK) Receieved Valid Packet # %d\n", u.sequence);         
 #endif
@@ -403,7 +403,7 @@ void* network_process(void* param1)
             }
         }
 
-#ifdef surgeon_packet_gen
+#ifdef simulator_packetgen_restart
 	if (device0.runlevel == 0)
 	{
 		char v[8] = "Stopped";

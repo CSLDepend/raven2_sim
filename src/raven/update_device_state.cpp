@@ -20,7 +20,7 @@
 #include "update_device_state.h"
 #include "log.h"
 
-#ifdef simulator_packet
+#ifdef save_logs
 extern int program_state;
 extern int logging;
 int curr_pack_no = 0;
@@ -52,7 +52,7 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
     ///log_msg("updateDeviceState %d", currParams->runlevel);///Added
     currParams->last_sequence = rcvdParams->last_sequence;
 
-#ifdef simulator_packet
+#ifdef save_logs
     program_state = 5;
     if ((currParams->last_sequence == 111) && (curr_pack_no == 0))
     {
@@ -96,12 +96,14 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
     // set desired mech position in pedal_down runlevel
     if (currParams->runlevel == RL_PEDAL_DN)
     {
-#ifdef simulator_2 
+#ifdef simulator 
         //log_file("RT_PROCESS) Pedal is down. Update device state.\n");         
         //currParams->robotControlMode = cartesian_space_control;////Added
 	if (currParams->last_sequence == 1)
 	{
-	    device0->mech[0].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[0];
+            //for (int j=0;j<16;j++)    
+            //    log_file("jpos %d = %f\n", j,rcvdParams->jpos_d[j]);
+ 	    /*device0->mech[0].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[0];
      	    device0->mech[0].joint[ELBOW].jpos_d = rcvdParams->jpos_d[1];
 	    device0->mech[0].joint[Z_INS].jpos_d = rcvdParams->jpos_d[2];
 	    device0->mech[0].joint[TOOL_ROT].jpos_d = rcvdParams->jpos_d[4];
@@ -114,7 +116,21 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 	    device0->mech[1].joint[TOOL_ROT].jpos_d = rcvdParams->jpos_d[12];
 	    device0->mech[1].joint[WRIST].jpos_d = rcvdParams->jpos_d[13];
 	    device0->mech[1].joint[GRASP1].jpos_d = rcvdParams->jpos_d[14];
-	    device0->mech[1].joint[GRASP2].jpos_d = rcvdParams->jpos_d[15];
+	    device0->mech[1].joint[GRASP2].jpos_d = rcvdParams->jpos_d[15];*/
+	    device0->mech[0].joint[SHOULDER].jpos_d = 0.521722;
+     	    device0->mech[0].joint[ELBOW].jpos_d = 1.585218;
+	    device0->mech[0].joint[Z_INS].jpos_d = 0.400515;
+	    device0->mech[0].joint[TOOL_ROT].jpos_d = -0.010442;
+	    device0->mech[0].joint[WRIST].jpos_d = -0.001124;
+	    device0->mech[0].joint[GRASP1].jpos_d = 0.774309;
+	    device0->mech[0].joint[GRASP2].jpos_d = 0.841388;
+	    device0->mech[1].joint[SHOULDER].jpos_d = 0.521301;
+     	    device0->mech[1].joint[ELBOW].jpos_d = 1.584427;
+	    device0->mech[1].joint[Z_INS].jpos_d = 0.400447;
+	    device0->mech[1].joint[TOOL_ROT].jpos_d = 0.013722;
+	    device0->mech[1].joint[WRIST].jpos_d = -0.070899;
+	    device0->mech[1].joint[GRASP1].jpos_d = 0.702793;
+	    device0->mech[1].joint[GRASP2].jpos_d = 0.729010;
 	}
 #endif
         for (int i = 0; i < NUM_MECH; i++)
@@ -168,6 +184,7 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 */
         //log_file("Current Control Mode: %d\n",currParams->robotControlMode);         
 #endif
+ 
     return 0;
 }
 

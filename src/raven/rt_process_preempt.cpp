@@ -85,7 +85,7 @@ int    deviceType = SURGICAL_ROBOT;//PULLEY_BOARD;
 struct device device0 ={0};  //Declaration Moved outside rt loop for access from console thread
 int    mech_gravcomp_done[2]={0};
 
-#ifdef simulator_packet
+#ifdef simulator_packetgen
 #include <fstream>
 char raven_path[] = "/home/alemzad1/homa_wksp/raven_2";
 int inject_mode;
@@ -306,7 +306,7 @@ static void *rt_process(void* )
       //Get state updates from master
       if ( checkLocalUpdates() == TRUE)
       {
-#ifdef simulator_packet
+#ifdef simulator_packetgen
    	logging = 1;  
         no_pack_cnt++; 
         //log_file("RT_PROCESS) Update device state based on received packet.\n");         
@@ -315,7 +315,7 @@ static void *rt_process(void* )
       }
       else
       {
-#ifdef simulator_packet
+#ifdef simulator_packetgen
    	logging = 0;  
         //log_file("RT_PROCESS) No new packets. Use previous parameters.\n");         
 #endif
