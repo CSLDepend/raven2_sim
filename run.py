@@ -1,4 +1,4 @@
-/* Runs Raven 2 simulator by calling packet generator, Raven control software, and visualization code
+'''/* Runs Raven 2 simulator by calling packet generator, Raven control software, and visualization code
  * Copyright (C) 2015 University of Illinois Board of Trustees, DEPEND Research Group, Creators: Homa Alemzadeh and Daniel Chen
  *
  * This file is part of Raven 2 Surgical Simulator.
@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Raven 2 Control.  If not, see <http://www.gnu.org/licenses/>.
- */
+ */'''
 
 import os
 import subprocess
@@ -98,7 +98,7 @@ def quit():
 
 vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
 time.sleep(3.5)  
-packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
+#packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
 raven_proc = subprocess.Popen(ravenTask, env=env, shell=True, preexec_fn=os.setsid)
 
 #Wait for a response from the robot

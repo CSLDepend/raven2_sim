@@ -68,13 +68,15 @@
 #define SERVER_ADDR  "130.126.143.20"
 
 #ifdef simulator_packetgen
-extern int logging;
 extern int done_homing;
 int first = 0;
 extern struct device device0;
 #define PACK_GEN_PORT  "32000" 
 #define RUN_PY_PORT  "34000"  
 #define HOST_ADDR  "127.0.0.1"    // used only if the robot needs to send data to the server
+#endif
+#ifdef save_logs
+extern int logging;
 #endif
 
 //#ifdef test_gdb

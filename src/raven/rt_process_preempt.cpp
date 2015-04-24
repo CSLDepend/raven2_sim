@@ -86,16 +86,19 @@ struct device device0 ={0};  //Declaration Moved outside rt loop for access from
 int    mech_gravcomp_done[2]={0};
 
 #ifdef simulator_packetgen
+int NUM_MECH=2;   // Define NUM_MECH as a C variable, not a c++ variable
+int done_homing = 0;
+int program_state = -1;
+#else
+int NUM_MECH=0;   // Define NUM_MECH as a C variable, not a c++ variable
+#endif
+
+#ifdef save_logs
 #include <fstream>
 char raven_path[] = "/home/alemzad1/homa_wksp/raven_2";
 int inject_mode;
-int NUM_MECH=2;   // Define NUM_MECH as a C variable, not a c++ variable
-int program_state = -1;
-int done_homing = 0;
 int logging = 0;
 int no_pack_cnt = 0;
-#else
-int NUM_MECH=0;   // Define NUM_MECH as a C variable, not a c++ variable
 #endif
 
 #ifdef skip_init_button
@@ -328,7 +331,7 @@ static void *rt_process(void* )
       //////////////// SURGICAL ROBOT CODE //////////////////////////
       if (deviceType == SURGICAL_ROBOT)
         {
-#ifdef simulator_packet
+#ifdef simulator_packetgen
 	    program_state = 6;
 #endif
 	  // Calculate Raven control
@@ -399,7 +402,7 @@ int init_ros(int argc, char **argv)
    */
   ros::init(argc, argv, "r2_control", ros::init_options::NoSigintHandler);
   ros::NodeHandle n;
-#ifdef simulator_packet
+#ifdef simulator_packetgen
   n.getParam("inject",inject_mode);
 #endif
   //    rosrt::init();
@@ -445,7 +448,7 @@ int main(int argc, char **argv)
       serial_fd = openSerialPort();
 #endif
 
-#ifdef simulator_packet
+#ifdef save_logs
   std::ofstream logfile;
   log_msg("************** Inject mode = %d\n",inject_mode);
   char buff[50];

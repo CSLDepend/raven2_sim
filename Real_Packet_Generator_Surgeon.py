@@ -1,4 +1,4 @@
-/* Surgeon Packet Generator - Works with Control software for the Raven II robot
+'''/* Surgeon Packet Generator - Works with Control software for the Raven II robot
  * Copyright (C) 2015 University of Illinois Board of Trustees, DEPEND Research Group, Creator: Homa Alemzadeh
  *
  * This file is part of Raven 2 Surgical Simulator.
@@ -15,8 +15,8 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Raven 2 Control.  If not, see <http://www.gnu.org/licenses/>.
- */
- 
+ */'''
+
 import socket
 import struct
 import csv

@@ -54,7 +54,7 @@ ROS publishing is at the bottom half of this file.
 #include "reconfigure.h"
 
 
-#ifdef simulator_packet
+#ifdef simulator_packetgen
 extern int program_state;
 #endif
 

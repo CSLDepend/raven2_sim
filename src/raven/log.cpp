@@ -34,7 +34,7 @@ std::queue<char*> msgqueue;
 const static size_t MAX_MSG_LEN =1024;
 
 //#define simulator_logging
-#ifdef simulator_packetgen
+#ifdef save_logs
 #include <fstream>
 extern char raven_path[];
 extern int inject_mode;
