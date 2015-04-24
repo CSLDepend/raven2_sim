@@ -1,20 +1,21 @@
-"""
-File: insert_code.py
-Authors: Daniel Chen and Homa Alemzadeh
-Created: 2015/2/3
-
-Overall Idea
-1. copy entire folder from backup to origion
-2. Read the target file and determine what to insert
-3. Insert to the source code file
-4. Compile the source code file
-
-Modified: 2015/2/5
-1. Now checks if make was successful, if not restores and quits
-2. Added a quit function to be called on Ctrl+C and compilation errors
-3. Fixed the R matrix value assignment
-4. Added different assignment scenarios for position, rotation, and joint variables
-"""
+/* Runs Raven 2 simulator by calling packet generator, Raven control software, and visualization code
+ * Copyright (C) 2015 University of Illinois Board of Trustees, DEPEND Research Group, Creators: Homa Alemzadeh and Daniel Chen
+ *
+ * This file is part of Raven 2 Surgical Simulator.
+ *
+ * Raven 2 Surgical Simulator is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Raven 2 Surgical Simulator is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Raven 2 Control.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 import os
 import subprocess
