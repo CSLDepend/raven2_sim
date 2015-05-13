@@ -53,6 +53,7 @@ extern int NUM_MECH;
 
 using namespace std;
 
+#ifdef skip_init_button
 int openSerialPort(void)
 {
     int serialFileDescriptor = -1;
@@ -136,6 +137,7 @@ void closeSerialPort(int serialFileDescriptor)
     close(serialFileDescriptor);
     //cout << "Closed connection to Arduino" << endl;
 }
+#endif
 /**\fn int getdir(string dir, vector<string> &files)
  * \brief List directory contents matching BOARD_FILE_STR
  * \param dir - directory name of interest

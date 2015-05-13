@@ -47,7 +47,7 @@ sock.bind((UDP_IP,UDP_PORT))
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("gmail.com", 80))
 my_ip = s.getsockname()[0]
-print my_ip
+#print my_ip
 s.close()
 
 env = os.environ.copy()
@@ -91,15 +91,26 @@ def quit():
     except:
         pass
 
-    os.system("killall xterm")
-    #os.system("killall python")
+    os.system("killall python")
     os.system("killall roslaunch")
     os.system("killall r2_control")
+    os.system("killall xterm")
 
+def signal_handler(signal, frame):
+    print "Ctrl+C Pressed!"
+    quit()
+    sys.exit(0)
+
+# Main code starts here
+signal.signal(signal.SIGINT, signal_handler)
+
+# Call visualization, packet generator, and Raven II software
 vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
 time.sleep(3.5)  
 packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
 raven_proc = subprocess.Popen(ravenTask, env=env, shell=True, preexec_fn=os.setsid)
+
+print("Press Ctrl+C to exit.")
 
 #Wait for a response from the robot
 data = ''
@@ -112,5 +123,6 @@ while not data:
         print("Raven is stopped, shutdown everything...")  
     else:
         data = ''
+
 quit()
 
