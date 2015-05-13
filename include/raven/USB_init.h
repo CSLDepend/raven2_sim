@@ -93,8 +93,10 @@ int usb_write(int id, void *buffer, size_t len);
 
 int usb_reset_encoders(int boardid);
 
+#ifdef skip_init_button
 int openSerialPort(void);
 int writeSerialPort(int serialFileDescriptor, void *buffer);
 void closeSerialPort(int serialFileDescriptor);
+#endif
 
 #endif
