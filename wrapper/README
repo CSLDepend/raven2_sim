@@ -1,7 +1,0 @@
-Example command:
-
-a) Start the Raven code
-LD_PRELOAD=/home/homa/Documents/wrapper/malicious_wrapper.so roslaunch raven_2 raven_2.launch 
-
-b) Run the attack code
-./attack.sh
