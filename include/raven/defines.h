@@ -30,8 +30,8 @@
 #include <math.h>
 
 #define simulator // ruuning with no hardware
-//#define simulator_packetgen  // use packet generator instead of GUI
-//#define simulator_packetgen_restart // packet generator can restart
+#define simulator_packetgen  // use packet generator instead of GUI
+#define simulator_packetgen_restart // packet generator can restart
 #define save_logs // save trajectory logs into sim_log.txt
 //#define no_logging // diable logging
 //#define skip_init_button // skip the start physical button
