@@ -32,6 +32,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <ros/console.h>
+#include <fstream>
 
 #include "USB_init.h"
 #include "parallel.h"
@@ -386,7 +387,13 @@ int usb_write(int id, void *buffer, size_t len)
 {
     // write to board
     int ret = write(boardFPs[id], buffer, len);
-    log_file("USB Write Buffer = %s\n",buffer);
+
+/// Remove me
+    std::ofstream logfile;
+    logfile.open("/home/alemzad1/homa_wksp/raven_2/USB_log.txt",std::ofstream::out | std::ofstream::app);  
+    logfile << "USB Write Buffer = " << buffer << "\n";  		
+    logfile.close();
+/// Remove me
 
     if (ret < 0)
       ret = -errno;

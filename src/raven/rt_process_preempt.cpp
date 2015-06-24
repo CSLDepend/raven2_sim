@@ -95,6 +95,9 @@ int NUM_MECH=0;   // Define NUM_MECH as a C variable, not a c++ variable
 
 #ifdef save_logs
 #include <fstream>
+//char* ROS_PACKAGE_PATH;
+//ROS_PACKAGE_PATH = getenv("ROS_PACKAGE_PATH");
+//if (ROS_PACKAGE_PATH != NULL)
 char raven_path[] = "/home/alemzad1/homa_wksp/raven_2";
 int inject_mode;
 int logging = 0;
