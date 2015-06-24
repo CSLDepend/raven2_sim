@@ -386,6 +386,7 @@ int usb_write(int id, void *buffer, size_t len)
 {
     // write to board
     int ret = write(boardFPs[id], buffer, len);
+    log_file("USB Write Buffer = %s\n",buffer);
 
     if (ret < 0)
       ret = -errno;

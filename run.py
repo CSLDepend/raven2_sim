@@ -105,8 +105,8 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # Call visualization, packet generator, and Raven II software
-vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
-time.sleep(3.5)  
+#vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
+#time.sleep(3.5)  
 packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
 raven_proc = subprocess.Popen(ravenTask, env=env, shell=True, preexec_fn=os.setsid)
 
