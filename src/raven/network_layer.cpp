@@ -326,8 +326,8 @@ void* network_process(void* param1)
 
 #ifdef save_logs
         log_file("NETWORK) Receieved Data on Socket, Size = %d", uSize);         
-        log_msg("Pos Arm 0 = %f, %f, %f", u.delx[0], u.dely[0], u.delz[0]);         
-        log_msg("Pos Arm 1 = %f, %f, %f", u.delx[1], u.dely[1], u.delz[1]);         
+        //log_msg("Pos Arm 0 = %d, %d, %d", u.delx[0], u.dely[0], u.delz[0]);         
+        //log_msg("Pos Arm 1 = %d, %d, %d", u.delx[1], u.dely[1], u.delz[1]);         
 
 
 #endif
