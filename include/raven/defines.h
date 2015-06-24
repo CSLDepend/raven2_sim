@@ -29,7 +29,7 @@
 
 #include <math.h>
 
-#define simulator // ruuning with no hardware
+#define simulator // running with no hardware
 #define simulator_packetgen  // use packet generator instead of GUI
 #define simulator_packetgen_restart // packet generator can restart
 #define save_logs // save trajectory logs into sim_log.txt
