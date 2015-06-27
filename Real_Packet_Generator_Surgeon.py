@@ -39,11 +39,11 @@ else:
    MAX_LINES = 3000
    FREQ = 0.01
 
-# When only running simulator with no robot, we need to send initial joint positions
+# When only running simulator with no robot, we need to send encoder values
 simulator = 1
 if (simulator):
-   format_ = "<IIIiiiiiiddddddddddddddddddddddddddddddddddiiiiii"
-   u_struct = namedtuple("u_struct", "sequence pactyp version delx0 delx1 dely0 dely1 delz0 delz1 R_l00 R_l01 R_l02 R_l10 R_l11 R_l12 R_l20 R_l21 R_l22 R_r00 R_r01 R_r02 R_r10 R_r11 R_r12 R_r20 R_r21 R_r22 jpos0 jpos1 jpos2 jpos3 jpos4 jpos5 jpos6 jpos7 jpos8 jpos9 jpos10 jpos11 jpos12 jpos13 jpos14 jpos15 buttonstate0 buttonstate1 grasp0 grasp1 surgeon_mode checksum");
+   format_ = "<IIIiiiiiiddddddddddddddddddiiiiiiiiiiiiiiiiiiiiii"
+   u_struct = namedtuple("u_struct", "sequence pactyp version delx0 delx1 dely0 dely1 delz0 delz1 R_l00 R_l01 R_l02 R_l10 R_l11 R_l12 R_l20 R_l21 R_l22 R_r00 R_r01 R_r02 R_r10 R_r11 R_r12 R_r20 R_r21 R_r22 encval0 encval1 encval2 encval3 encval4 encval5 encval6 encval7 encval8 encval9 encval10 encval11 encval12 encval13 encval14 encval15 buttonstate0 buttonstate1 grasp0 grasp1 surgeon_mode checksum");
 else:
    format_ = "<IIIiiiiiiddddddddddddddddddiiiiii"
    u_struct = namedtuple("u_struct", "sequence pactyp version delx0 delx1 dely0 dely1 delz0 delz1 R_l00 R_l01 R_l02 R_l10 R_l11 R_l12 R_l20 R_l21 R_l22 R_r00 R_r01 R_r02 R_r10 R_r11 R_r12 R_r20 R_r21 R_r22 buttonstate0 buttonstate1 grasp0 grasp1 surgeon_mode checksum");
@@ -138,22 +138,22 @@ def sendPackets():
                     R_r20 = float(line[48]),
                     R_r21 = float(line[49]),
                     R_r22 = float(line[50]),
-                    jpos0 = float(line[106]),
-		    jpos1 = float(line[107]),
-		    jpos2 = float(line[108]),
-		    jpos3 = float(line[109]),
-		    jpos4 = float(line[110]),
-		    jpos5 = float(line[111]),
-		    jpos6 = float(line[112]),
-		    jpos7 = float(line[113]),
-		    jpos8 = float(line[114]),
-		    jpos9 = float(line[115]),
-		    jpos10 = float(line[116]),
-		    jpos11 = float(line[117]),
-		    jpos12 = float(line[118]),
-		    jpos13 = float(line[119]),
-                    jpos14 = float(line[120]),
-		    jpos15 = float(line[121]),
+                    encval0 = float(line[58]),
+		    encval1 = float(line[59]),
+		    encval2 = float(line[60]),
+		    encval3 = float(line[61]),
+		    encval4 = float(line[62]),
+		    encval5 = float(line[63]),
+		    encval6 = float(line[64]),
+		    encval7 = float(line[65]),
+		    encval8 = float(line[66]),
+		    encval9 = float(line[67]),
+		    encval10 = float(line[68]),
+		    encval11 = float(line[69]),
+		    encval12 = float(line[70]),
+		    encval13 = float(line[71]),
+                    encval14 = float(line[72]),
+		    encval15 = float(line[73]),
                     buttonstate0 = 0,
                     buttonstate1 = 0, 
                     grasp0 = float((float(line[113])-float(line[112]))/2),
