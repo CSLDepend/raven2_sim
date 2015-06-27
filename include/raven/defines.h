@@ -33,6 +33,7 @@
 #define simulator_packetgen  // use packet generator instead of GUI
 #define simulator_packetgen_restart // packet generator can restart
 #define save_logs // save trajectory logs into sim_log.txt
+#define log_USB // log USB packets sent
 //#define no_logging // diable logging
 //#define skip_init_button // skip the start physical button
 //#define test_gdb // for debugging
@@ -58,8 +59,8 @@
 
 // Two arm identification
 // Change this to match device ID in /dev/brl_usbXX
-#define GREEN_ARM_SERIAL 29
-#define GOLD_ARM_SERIAL  37
+#define GREEN_ARM_SERIAL 33
+#define GOLD_ARM_SERIAL  48
 
 #define GREEN_ARM        GREEN_ARM_SERIAL
 #define GOLD_ARM         GOLD_ARM_SERIAL
