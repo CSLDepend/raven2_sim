@@ -70,6 +70,7 @@ struct u_struct {
 #ifdef simulator_packetgen
         double R_l[3][3];
         double R_r[3][3];
+        int encVals[16];
 #else
         double Qx[2];
         double Qy[2];
