@@ -99,27 +99,10 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
     // set desired mech position in pedal_down runlevel
     if (currParams->runlevel == RL_PEDAL_DN)
     {
+
 #ifdef simulator 
-        //log_file("RT_PROCESS) Pedal is down. Update device state.\n");         
-        //currParams->robotControlMode = cartesian_space_control;////Added
 	if (currParams->last_sequence == 1)
 	{
-            //for (int j=0;j<16;j++)    
-            //    log_file("jpos %d = %f\n", j,rcvdParams->jpos_d[j]);
- 	    /*device0->mech[0].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[0];
-     	    device0->mech[0].joint[ELBOW].jpos_d = rcvdParams->jpos_d[1];
-	    device0->mech[0].joint[Z_INS].jpos_d = rcvdParams->jpos_d[2];
-	    device0->mech[0].joint[TOOL_ROT].jpos_d = rcvdParams->jpos_d[4];
-	    device0->mech[0].joint[WRIST].jpos_d = rcvdParams->jpos_d[5];
-	    device0->mech[0].joint[GRASP1].jpos_d = rcvdParams->jpos_d[6];
-	    device0->mech[0].joint[GRASP2].jpos_d = rcvdParams->jpos_d[7];
-	    device0->mech[1].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[8];
-     	    device0->mech[1].joint[ELBOW].jpos_d = rcvdParams->jpos_d[9];
-	    device0->mech[1].joint[Z_INS].jpos_d = rcvdParams->jpos_d[10];
-	    device0->mech[1].joint[TOOL_ROT].jpos_d = rcvdParams->jpos_d[12];
-	    device0->mech[1].joint[WRIST].jpos_d = rcvdParams->jpos_d[13];
-	    device0->mech[1].joint[GRASP1].jpos_d = rcvdParams->jpos_d[14];
-	    device0->mech[1].joint[GRASP2].jpos_d = rcvdParams->jpos_d[15];*/
 	    device0->mech[0].joint[SHOULDER].jpos_d = 0.521722;
      	    device0->mech[0].joint[ELBOW].jpos_d = 1.585218;
 	    device0->mech[0].joint[Z_INS].jpos_d = 0.400515;
@@ -134,6 +117,15 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 	    device0->mech[1].joint[WRIST].jpos_d = -0.070899;
 	    device0->mech[1].joint[GRASP1].jpos_d = 0.702793;
 	    device0->mech[1].joint[GRASP2].jpos_d = 0.729010;
+	}
+#endif
+#ifdef simulator_packetgen
+        for (int i = 0; i < NUM_MECH; i++)
+        {        
+            for (int ch=0;ch<8;ch++)
+	    {
+                device0->mech[i].joint[ch].enc_val = rcvdParams->enc_d[i*8+ch]; 
+            }     
 	}
 #endif
         for (int i = 0; i < NUM_MECH; i++)

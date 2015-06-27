@@ -282,6 +282,9 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
     _mech = NULL;  _joint = NULL;
     while (loop_over_joints(device0, _mech, _joint, i,j) )
     {
+#ifdef simulator_packetgen
+	mpos_PD_control(_joint);
+#else
         if (currParams->runlevel != RL_PEDAL_DN)
         {
             _joint->tau_d=0;
@@ -290,6 +293,7 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
         {
     	    mpos_PD_control(_joint);
         }
+#endif
     }
 
     // Gravity compensation calculation

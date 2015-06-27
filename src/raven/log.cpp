@@ -36,7 +36,7 @@ const static size_t MAX_MSG_LEN =1024;
 //#define simulator_logging
 #ifdef save_logs
 #include <fstream>
-extern char raven_path[];
+extern char* raven_path;
 extern int inject_mode;
 extern int logging;
 /**\fn int log_file(const char* fmt,...)

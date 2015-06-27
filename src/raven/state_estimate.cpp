@@ -50,12 +50,10 @@ void stateEstimate(struct robot_device *device0)
         for (j = 0; j < MAX_DOF_PER_MECH; j++)
         {
             _joint = &(device0->mech[i].joint[j]);
-
 //            if (_joint->type == TOOL_ROT_GOLD || _joint->type == TOOL_ROT_GOLD)
 //                encToMPos(_joint);
 //            else
                 getStateLPF(_joint, device0->mech[i].tool_type);
-
         }
     }
 }

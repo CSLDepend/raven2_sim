@@ -180,6 +180,7 @@ void fwdMechCableCoupling(struct mechanism *mech)
 		th6 = (1.0/tr6) * (m6 - m4/GB_RATIO);
 		th7 = (1.0/tr7) * (m7 - m4/GB_RATIO);
 	}
+// Commented out
 #ifndef simulator
 	// Now have solved for th1, th2, d3, th4, th5, th6
 	mech->joint[SHOULDER].jpos 		= th1;// - mech->joint[SHOULDER].jpos_off;
@@ -189,6 +190,8 @@ void fwdMechCableCoupling(struct mechanism *mech)
 	mech->joint[WRIST].jpos 		= th5;// - mech->joint[WRIST].jpos_off;
 	mech->joint[GRASP1].jpos 		= th6;// - mech->joint[GRASP1].jpos_off;
 	mech->joint[GRASP2].jpos 		= th7;// - mech->joint[GRASP2].jpos_off;
+
+// Commented out
 #else
 	mech->joint[SHOULDER].jpos 		= mech->joint[SHOULDER].jpos_d;// - mech->joint[SHOULDER].jpos_off;
 	mech->joint[ELBOW].jpos 		= mech->joint[ELBOW].jpos_d;// - mech->joint[ELBOW].jpos_off;

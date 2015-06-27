@@ -73,8 +73,6 @@ int TorqueToDAC(struct device *device0)
 
             device0->mech[i].joint[j].current_cmd = tToDACVal( &(device0->mech[i].joint[j]) );  // Convert torque to DAC value
 
-
-
             if ( soft_estopped )
                 device0->mech[i].joint[j].current_cmd = 0;
 

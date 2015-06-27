@@ -199,6 +199,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 	data1.rd[i].grasp -= us_t->grasp[armidx];
 	if (data1.rd[i].grasp>graspmax) data1.rd[i].grasp=graspmax;
 	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
+
 #else
 	// Set Position command
         data1.xd[i].x = us_t->delx[armidx];
@@ -222,6 +223,11 @@ void teleopIntoDS1(struct u_struct *us_t)
 		    for (int k=0;k<3;k++)
 		        data1.rd[1].R[j][k] = us_t->R_r[j][k];
 	}  
+
+        // Get the encoder values
+	for (int ch=0;ch<16;ch++)
+	    data1.enc_d[ch] = us_t->encVals[ch];
+
         // Get the initial joint positions from input
 	/*if (us_t->sequence == 1)	    
             for (int j=0;j<16;j++)          

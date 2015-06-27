@@ -59,7 +59,6 @@ int overdriveDetect(struct device *device0)
         {
             _joint = &(device0->mech[i].joint[j]);
             int _dac_max = DOF_types[_joint->type].DAC_max;
-
             // Kill current if greater than MAX_INST_DAC.  Probably indicates a problem.
             if (abs(_joint->current_cmd) > MAX_INST_DAC)
             {

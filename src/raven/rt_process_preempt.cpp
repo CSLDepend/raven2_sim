@@ -95,10 +95,7 @@ int NUM_MECH=0;   // Define NUM_MECH as a C variable, not a c++ variable
 
 #ifdef save_logs
 #include <fstream>
-//char* ROS_PACKAGE_PATH;
-//ROS_PACKAGE_PATH = getenv("ROS_PACKAGE_PATH");
-//if (ROS_PACKAGE_PATH != NULL)
-char raven_path[] = "/home/alemzad1/homa_wksp/raven_2";
+char* raven_path = new char[100];
 int inject_mode;
 int logging = 0;
 int no_pack_cnt = 0;
@@ -353,9 +350,13 @@ static void *rt_process(void* )
       //Update Atmel Output Pins
       updateAtmelOutputs(&device0, currParams.runlevel);
 
-#ifdef simulator  
+#ifndef simulator  
       //Fill USB Packet and send it out   
       putUSBPackets(&device0); //disable usb for par port test
+#else
+#ifdef log_USB 
+      writeUSBPackets(&device0);
+#endif
 #endif
       //Publish current raven state
       publish_ravenstate_ros(&device0,&currParams);   // from local_io
@@ -452,16 +453,41 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef save_logs
+  char* ROS_PACKAGE_PATH;
+  ROS_PACKAGE_PATH = getenv("ROS_PACKAGE_PATH");
+  if (ROS_PACKAGE_PATH!= NULL)
+  {
+     raven_path = strtok(ROS_PACKAGE_PATH,":");
+     while(raven_path!= NULL){
+	 if (strstr(raven_path,"raven_2") != NULL){
+             printf("%s\n",raven_path);      
+	     break;
+         }
+	 raven_path = strtok(NULL,":");
+     }        	
+  }
+
   std::ofstream logfile;
   log_msg("************** Inject mode = %d\n",inject_mode);
-  char buff[50];
 
+  char buff[50];
   if (inject_mode == 0)
       sprintf(buff,"%s/sim_log.txt", raven_path);
   else     
       sprintf(buff,"%s/fault_log_%d.txt", raven_path, inject_mode);
-  logfile.open(buff,std::ofstream::out); 
+  logfile.open(buff,std::ofstream::out);  
+
+#ifdef log_USB
+  std::ofstream USBlogfile;  
+  sprintf(buff,"%s/USB0_log.txt", raven_path);
+  USBlogfile.open(buff,std::ofstream::out);
+  USBlogfile.close(); 
+  sprintf(buff,"%s/USB1_log.txt", raven_path);
+  USBlogfile.open(buff,std::ofstream::out);
+  USBlogfile.close(); 
 #endif
+#endif
+
 
   // init reconfigure
   dynamic_reconfigure::Server<raven_2::MyStuffConfig> srv;
