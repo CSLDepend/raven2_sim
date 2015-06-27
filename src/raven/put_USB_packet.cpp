@@ -30,7 +30,7 @@
 
 extern unsigned long int gTime;
 extern USBStruct USBBoards;
-
+extern char* raven_path;
 /**\fn void putUSBPackets(struct device *device0)
   \brief Takes data from robot to send to USB board(s)
   \struct device
@@ -97,3 +97,45 @@ int putUSBPacket(int id, struct mechanism *mech)
 
     return 0;
 }
+
+#ifdef log_USB
+void writeUSBPackets(struct device *device0)
+{
+    for (int j = 0; j < 2; j++)
+    {
+        struct mechanism *mech = &(device0->mech[j]);
+
+        int i = 0;
+        unsigned char buffer_out[MAX_OUT_LENGTH];
+
+        buffer_out[0]= DAC;        //Type of USB packet
+        buffer_out[1]= MAX_DOF_PER_MECH; //Number of DAC channels
+
+        for (i = 0; i < MAX_DOF_PER_MECH; i++)
+        {
+	    //Factor in offset since we are in midrange operation
+	    mech->joint[i].current_cmd += DAC_OFFSET;
+
+    	    buffer_out[2*i+2] = (char)(mech->joint[i].current_cmd);
+	    buffer_out[2*i+3] = (char)(mech->joint[i].current_cmd >> 8);
+
+	    //Remove offset
+	    mech->joint[i].current_cmd -= DAC_OFFSET;
+        }
+
+        // Set PortF outputs
+        buffer_out[OUT_LENGTH-1] = mech->outputs;
+
+        char buff[50];
+        sprintf(buff,"%s/USB%d_log.txt", raven_path, j);
+        std::ofstream USBlogfile;
+        USBlogfile.open(buff,std::ofstream::out | std::ofstream::app);  
+        for (int k = 0; k < OUT_LENGTH; k++)
+        {
+            USBlogfile << std::hex << (unsigned)buffer_out[k] << " "; 
+        }
+        USBlogfile << "\n";
+        USBlogfile.close();
+    }
+}
+#endif
