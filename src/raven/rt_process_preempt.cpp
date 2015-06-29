@@ -386,6 +386,9 @@ int init_module(void)
      err_msg("\nERROR: Could not init USB. Boards on?");
      return STARTUP_ERROR;
   }
+#else
+  device0.mech[0].type = GOLD_ARM;
+  device0.mech[1].type = GREEN_ARM;
 #endif
   // Initialize Local_io datastructs.
   log_msg("Initializing Local I/O...");

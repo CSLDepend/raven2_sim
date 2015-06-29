@@ -95,7 +95,6 @@ extern int initialized; //Defined in rt_process_preempt.cpp
 *
 */
 int controlRaven(struct device *device0, struct param_pass *currParams){
-
 #ifdef test_gdb
       clock_gettime(CLOCK_REALTIME,&tnow);
 #endif      
@@ -112,13 +111,13 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
     //Desired control mode
     t_controlmode controlmode = (t_controlmode)currParams->robotControlMode;
 
-#ifndef simulator
+//#ifndef simulator
     //Initialization code
     initRobotData(device0, currParams->runlevel, currParams);
 
     //Compute Mpos & Velocities
     stateEstimate(device0); 
-#endif
+//#endif
 
 #ifdef simulator_packetgen
     program_state = 8;
@@ -201,7 +200,7 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
                 currParams->robotControlMode = cartesian_space_control;
                 newRobotControlMode = cartesian_space_control;
             }
-#else
+#else            
 	    currParams->runlevel = RL_PEDAL_DN; 
             device0->runlevel = 2;
             currParams->robotControlMode = cartesian_space_control;
@@ -278,13 +277,12 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
 #ifdef simulator_packetgen
     program_state = 15;
 #endif
+
+#ifndef simulator_packetgen
     // Set all joints to zero torque
     _mech = NULL;  _joint = NULL;
     while (loop_over_joints(device0, _mech, _joint, i,j) )
     {
-#ifdef simulator_packetgen
-	mpos_PD_control(_joint);
-#else
         if (currParams->runlevel != RL_PEDAL_DN)
         {
             _joint->tau_d=0;
@@ -293,9 +291,15 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
         {
     	    mpos_PD_control(_joint);
         }
-#endif
     }
-
+#else
+    // Set all joints to zero torque
+    _mech = NULL;  _joint = NULL;
+    while (loop_over_joints(device0, _mech, _joint, i,j) )
+    {
+    	mpos_PD_control(_joint);
+    }
+#endif
     // Gravity compensation calculation
     getGravityTorque(*device0, *currParams);
     _mech = NULL;  _joint = NULL;

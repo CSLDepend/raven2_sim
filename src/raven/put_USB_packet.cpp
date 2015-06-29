@@ -115,7 +115,6 @@ void writeUSBPackets(struct device *device0)
         {
 	    //Factor in offset since we are in midrange operation
 	    mech->joint[i].current_cmd += DAC_OFFSET;
-
     	    buffer_out[2*i+2] = (char)(mech->joint[i].current_cmd);
 	    buffer_out[2*i+3] = (char)(mech->joint[i].current_cmd >> 8);
 
@@ -125,7 +124,7 @@ void writeUSBPackets(struct device *device0)
 
         // Set PortF outputs
         buffer_out[OUT_LENGTH-1] = mech->outputs;
-
+        
         char buff[50];
         sprintf(buff,"%s/USB%d_log.txt", raven_path, j);
         std::ofstream USBlogfile;

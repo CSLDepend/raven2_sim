@@ -33,7 +33,7 @@ UDP_PORT2 = 36001
 
 fast_surgeon = 1;
 if fast_surgeon:
-   MAX_LINES = 4000
+   MAX_LINES = 3000
    FREQ = 0.001
 else: 
    MAX_LINES = 3000
@@ -42,8 +42,8 @@ else:
 # When only running simulator with no robot, we need to send encoder values
 simulator = 1
 if (simulator):
-   format_ = "<IIIiiiiiiddddddddddddddddddiiiiiiiiiiiiiiiiiiiiii"
-   u_struct = namedtuple("u_struct", "sequence pactyp version delx0 delx1 dely0 dely1 delz0 delz1 R_l00 R_l01 R_l02 R_l10 R_l11 R_l12 R_l20 R_l21 R_l22 R_r00 R_r01 R_r02 R_r10 R_r11 R_r12 R_r20 R_r21 R_r22 encval0 encval1 encval2 encval3 encval4 encval5 encval6 encval7 encval8 encval9 encval10 encval11 encval12 encval13 encval14 encval15 buttonstate0 buttonstate1 grasp0 grasp1 surgeon_mode checksum");
+   format_ = "<IIIiiiiiiddddddddddddddddddddddddddddddddddddddddddddddddddiiiiii"
+   u_struct = namedtuple("u_struct", "sequence pactyp version delx0 delx1 dely0 dely1 delz0 delz1 R_l00 R_l01 R_l02 R_l10 R_l11 R_l12 R_l20 R_l21 R_l22 R_r00 R_r01 R_r02 R_r10 R_r11 R_r12 R_r20 R_r21 R_r22 encval0 encval1 encval2 encval3 encval4 encval5 encval6 encval7 encval8 encval9 encval10 encval11 encval12 encval13 encval14 encval15 encoff0 encoff1 encoff2 encoff3 encoff4 encoff5 encoff6 encoff7 encoff8 encoff9 encoff10 encoff11 encoff12 encoff13 encoff14 encoff15 buttonstate0 buttonstate1 grasp0 grasp1 surgeon_mode checksum");
 else:
    format_ = "<IIIiiiiiiddddddddddddddddddiiiiii"
    u_struct = namedtuple("u_struct", "sequence pactyp version delx0 delx1 dely0 dely1 delz0 delz1 R_l00 R_l01 R_l02 R_l10 R_l11 R_l12 R_l20 R_l21 R_l22 R_r00 R_r01 R_r02 R_r10 R_r11 R_r12 R_r20 R_r21 R_r22 buttonstate0 buttonstate1 grasp0 grasp1 surgeon_mode checksum");
@@ -138,22 +138,38 @@ def sendPackets():
                     R_r20 = float(line[48]),
                     R_r21 = float(line[49]),
                     R_r22 = float(line[50]),
-                    encval0 = float(line[58]),
-		    encval1 = float(line[59]),
-		    encval2 = float(line[60]),
-		    encval3 = float(line[61]),
-		    encval4 = float(line[62]),
-		    encval5 = float(line[63]),
-		    encval6 = float(line[64]),
-		    encval7 = float(line[65]),
-		    encval8 = float(line[66]),
-		    encval9 = float(line[67]),
-		    encval10 = float(line[68]),
-		    encval11 = float(line[69]),
-		    encval12 = float(line[70]),
-		    encval13 = float(line[71]),
-                    encval14 = float(line[72]),
-		    encval15 = float(line[73]),
+                    encval0 = float(line[74]),
+		    encval1 = float(line[75]),
+		    encval2 = float(line[76]),
+		    encval3 = float(line[77]),
+		    encval4 = float(line[78]),
+		    encval5 = float(line[79]),
+		    encval6 = float(line[80]),
+		    encval7 = float(line[81]),
+		    encval8 = float(line[82]),
+		    encval9 = float(line[83]),
+		    encval10 = float(line[84]),
+		    encval11 = float(line[85]),
+		    encval12 = float(line[86]),
+		    encval13 = float(line[87]),
+                    encval14 = float(line[88]),
+		    encval15 = float(line[89]),
+                    encoff0 = float(line[188]),
+		    encoff1 = float(line[189]),
+		    encoff2 = float(line[190]),
+		    encoff3 = float(line[191]),
+		    encoff4 = float(line[192]),
+		    encoff5 = float(line[193]),
+		    encoff6 = float(line[194]),
+		    encoff7 = float(line[195]),
+		    encoff8 = float(line[196]),
+		    encoff9 = float(line[197]),
+		    encoff10 = float(line[198]),
+		    encoff11 = float(line[199]),
+		    encoff12 = float(line[200]),
+		    encoff13 = float(line[201]),
+                    encoff14 = float(line[202]),
+		    encoff15 = float(line[203]),
                     buttonstate0 = 0,
                     buttonstate1 = 0, 
                     grasp0 = float((float(line[113])-float(line[112]))/2),

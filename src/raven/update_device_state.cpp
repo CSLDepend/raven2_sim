@@ -124,7 +124,8 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
         {        
             for (int ch=0;ch<8;ch++)
 	    {
-                device0->mech[i].joint[ch].enc_val = rcvdParams->enc_d[i*8+ch]; 
+                device0->mech[i].joint[ch].enc_val = rcvdParams->enc_d[i*8+ch];
+                device0->mech[i].joint[ch].enc_offset = rcvdParams->dac_d[i*8+ch]; 
             }     
 	}
 #endif

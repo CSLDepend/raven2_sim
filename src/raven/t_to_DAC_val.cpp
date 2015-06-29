@@ -46,7 +46,7 @@ extern struct DOF_type DOF_types[];
 extern int NUM_MECH;
 
 extern unsigned int soft_estopped;
-
+extern unsigned long int gTime;
 
 /**
  * \brief Converts desired torque on each joint to desired DAC level
@@ -72,7 +72,7 @@ int TorqueToDAC(struct device *device0)
             }
 
             device0->mech[i].joint[j].current_cmd = tToDACVal( &(device0->mech[i].joint[j]) );  // Convert torque to DAC value
-
+           
             if ( soft_estopped )
                 device0->mech[i].joint[j].current_cmd = 0;
 
@@ -103,7 +103,7 @@ short int tToDACVal(struct DOF *joint)
     TFamplifier =     DOF_types[j_index].DAC_per_amp;    // Determine the amplifier TF = (DAC_per_amp)
 
     DACVal = (int)(joint->tau_d * TFmotor * TFamplifier);  //compute DAC value: DAC=[tau*(amp/torque)*(DACs/amp)]
-
+    
     //Perform range checking and convert to short int
     //Note: toShort saturates at max value for short int.
     toShort(DACVal, &result);

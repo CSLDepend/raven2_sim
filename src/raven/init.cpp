@@ -274,6 +274,7 @@ void initDOFs(struct device *device0)
                 _dof->DAC_per_amp = (float)(K_DAC_PER_AMP_HIGH_CURRENT);                   // DAC counts to AMPS
                 _dof->i_max = (float)(I_MAX_BIG_MOTOR);
                 _dof->i_cont = (float)(I_CONT_BIG_MOTOR);
+
             }
             else //set tool stuff
             {
@@ -558,6 +559,7 @@ int init_ravengains(ros::NodeHandle n, struct device *device0)
             DOF_types[14].KP, DOF_types[14].KD, DOF_types[14].KI,
             DOF_types[15].KP, DOF_types[15].KD, DOF_types[15].KI);
     }
+
     return 0;
 }
 

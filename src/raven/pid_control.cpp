@@ -66,7 +66,7 @@ void mpos_PD_control(struct DOF *joint, int reset_I)
     float kp = DOF_types[joint->type].KP;
     float kd = DOF_types[joint->type].KD;
     float ki = DOF_types[joint->type].KI;
-
+     
     /* PD CONTROL LAW */
 
     //Calculate error
@@ -99,7 +99,6 @@ void mpos_PD_control(struct DOF *joint, int reset_I)
 
     //Finally place torque
     joint->tau_d = pTerm + vTerm +iTerm + friction_feedforward;
-
 
 //    static int count = 0;
 //    if (count <100){

@@ -226,7 +226,11 @@ void teleopIntoDS1(struct u_struct *us_t)
 
         // Get the encoder values
 	for (int ch=0;ch<16;ch++)
+        {
+	    // These arrays are not for this purpose, only used here.
 	    data1.enc_d[ch] = us_t->encVals[ch];
+	    data1.dac_d[ch] = us_t->encOffs[ch];
+	}
 
         // Get the initial joint positions from input
 	/*if (us_t->sequence == 1)	    
