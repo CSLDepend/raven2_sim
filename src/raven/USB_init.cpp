@@ -33,6 +33,8 @@
 #include <stdio.h>
 #include <ros/console.h>
 #include <fstream>
+#include <sys/time.h> // needed for getrusage
+#include "utils.h"
 
 #include "USB_init.h"
 #include "parallel.h"
@@ -385,15 +387,26 @@ int usb_read(int id, void *buffer, size_t len)
  */
 int usb_write(int id, void *buffer, size_t len)
 {
+/*
+//Remove me
+    char buff[100];
+    sprintf(buff,"/home/junjie/homa_wksp/time_triger_inject_write2.txt");
+    std::ofstream USBlogfile;
+    USBlogfile.open(buff,std::ofstream::out | std::ofstream::app);  
+    struct timespec tnow, tnow2;
+    clock_gettime(CLOCK_REALTIME,&tnow);
+    tsnorm(&tnow);
     // write to board
     int ret = write(boardFPs[id], buffer, len);
-
-/// Remove me
-    std::ofstream logfile;
-    logfile.open("/home/alemzad1/homa_wksp/raven_2/USB_log.txt",std::ofstream::out | std::ofstream::app);  
-    logfile << "USB Write Buffer = " << buffer << "\n";  		
-    logfile.close();
-/// Remove me
+    clock_gettime(CLOCK_REALTIME,&tnow2);
+    tsnorm(&tnow2);
+    long int Diff = (tnow2.tv_nsec-tnow.tv_nsec)/1000;
+    USBlogfile << Diff << "\n";       
+    USBlogfile.close();
+//Remove me
+*/
+    // write to board
+    int ret = write(boardFPs[id], buffer, len);
 
     if (ret < 0)
       ret = -errno;

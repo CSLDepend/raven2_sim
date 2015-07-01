@@ -353,10 +353,9 @@ static void *rt_process(void* )
 #ifndef simulator  
       //Fill USB Packet and send it out   
       putUSBPackets(&device0); //disable usb for par port test
-#else
+#endif
 #ifdef log_USB 
       writeUSBPackets(&device0);
-#endif
 #endif
       //Publish current raven state
       publish_ravenstate_ros(&device0,&currParams);   // from local_io

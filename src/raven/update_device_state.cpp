@@ -119,7 +119,7 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 	    device0->mech[1].joint[GRASP2].jpos_d = 0.729010;
 	}
 #endif
-#ifdef simulator_packetgen
+/*#ifdef simulator_packetgen
         for (int i = 0; i < NUM_MECH; i++)
         {        
             for (int ch=0;ch<8;ch++)
@@ -128,7 +128,7 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
                 device0->mech[i].joint[ch].enc_offset = rcvdParams->dac_d[i*8+ch]; 
             }     
 	}
-#endif
+#endif*/
         for (int i = 0; i < NUM_MECH; i++)
         {
             device0->mech[i].pos_d.x = rcvdParams->xd[i].x;

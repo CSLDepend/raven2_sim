@@ -31,16 +31,17 @@ UDP_IP = "127.0.0.1"
 UDP_PORT1 = 32000
 UDP_PORT2 = 36001
 
+SKIP = 200;
 fast_surgeon = 1;
 if fast_surgeon:
-   MAX_LINES = 3000
+   MAX_LINES = 10000
    FREQ = 0.001
 else: 
    MAX_LINES = 3000
    FREQ = 0.01
 
 # When only running simulator with no robot, we need to send encoder values
-simulator = 1
+simulator = 0
 if (simulator):
    format_ = "<IIIiiiiiiddddddddddddddddddddddddddddddddddddddddddddddddddiiiiii"
    u_struct = namedtuple("u_struct", "sequence pactyp version delx0 delx1 dely0 dely1 delz0 delz1 R_l00 R_l01 R_l02 R_l10 R_l11 R_l12 R_l20 R_l21 R_l22 R_r00 R_r01 R_r02 R_r10 R_r11 R_r12 R_r20 R_r21 R_r22 encval0 encval1 encval2 encval3 encval4 encval5 encval6 encval7 encval8 encval9 encval10 encval11 encval12 encval13 encval14 encval15 encoff0 encoff1 encoff2 encoff3 encoff4 encoff5 encoff6 encoff7 encoff8 encoff9 encoff10 encoff11 encoff12 encoff13 encoff14 encoff15 buttonstate0 buttonstate1 grasp0 grasp1 surgeon_mode checksum");
@@ -90,7 +91,7 @@ def sendPackets():
     reader = csv.reader(csvfile1)
     
     # Skip the first packets
-    for i in range(0,200):
+    for i in range(0,SKIP):
        line = reader.next()
     
     global robot_state

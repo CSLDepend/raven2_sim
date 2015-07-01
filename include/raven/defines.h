@@ -29,7 +29,7 @@
 
 #include <math.h>
 
-#define simulator // running with no hardware
+//#define simulator // running with no hardware
 #define simulator_packetgen  // use packet generator instead of GUI
 #define simulator_packetgen_restart // packet generator can restart
 #define save_logs // save trajectory logs into sim_log.txt
@@ -59,8 +59,8 @@
 
 // Two arm identification
 // Change this to match device ID in /dev/brl_usbXX
-#define GREEN_ARM_SERIAL 33
-#define GOLD_ARM_SERIAL  48
+#define GREEN_ARM_SERIAL 29
+#define GOLD_ARM_SERIAL  37
 
 #define GREEN_ARM        GREEN_ARM_SERIAL
 #define GOLD_ARM         GOLD_ARM_SERIAL
