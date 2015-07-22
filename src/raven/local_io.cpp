@@ -365,10 +365,10 @@ void updateMasterRelativeOrigin(struct device *device0)
 #else
         armidx = (i == 1) ? 1 : 0; 
 #endif
-        /*tmpmx.setValue(_ori->R[0][0], _ori->R[0][1], _ori->R[0][2],
+        tmpmx.setValue(_ori->R[0][0], _ori->R[0][1], _ori->R[0][2],
                         _ori->R[1][0], _ori->R[1][1], _ori->R[1][2],
                         _ori->R[2][0], _ori->R[2][1], _ori->R[2][2]);
-        tmpmx.getRotation(Q_ori[armidx]);*/
+        tmpmx.getRotation(Q_ori[armidx]);
 
     }
     pthread_mutex_unlock(&data1Mutex);

@@ -868,8 +868,8 @@ int  __attribute__ ((optimize("0"))) inv_kin(tf::Transform in_T06, l_r in_arm, i
 		}
 		iksol[i].th6 = atan2(s6, c6);
 
-		if (gTime%1000 == 0 && in_arm == dh_left )
-		{
+//		if (gTime%1000 == 0 && in_arm == dh_left )
+//		{
 //			log_msg("dh_iksols: [%d]\t( %3f,\t %3f,\t %3f,\t %3f,\t %3f,\t %3f)",0,
 //					iksol[i].th1 * r2d,
 //					iksol[i].th2 * r2d,
@@ -878,7 +878,7 @@ int  __attribute__ ((optimize("0"))) inv_kin(tf::Transform in_T06, l_r in_arm, i
 //					iksol[i].th5 * r2d,
 //					iksol[i].th6 * r2d
 //					);
-		}
+//		}
 
 
 	}
