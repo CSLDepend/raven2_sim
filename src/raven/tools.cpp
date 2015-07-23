@@ -17,7 +17,7 @@ tool::tool(end_effector_type t_end_new, int a_mech) {
 void tool::set_tool(end_effector_type t_end_new, int a_mech) {
 	t_end = t_end_new;
 	mech_type = a_mech;
-	if (t_end == r_grasper)
+	if ((t_end == r_grasper)||(t_end==r_grasper_A)||(t_end==r_grasper_B))
 		t_style = raven;
 	else if (t_end == r_sq_grasper)
 		t_style = square_raven;
@@ -38,6 +38,50 @@ void tool::set_limits() {
 	switch (t_end) {
 	case r_grasper:
 		rot_max_angle = 270 DEG2RAD;//330 DEG2RAD;
+		rot_min_angle = -330 DEG2RAD; //might not be correct
+		rot_max_limit = 182 DEG2RAD;
+		rot_min_limit = -182 DEG2RAD;
+
+		wrist_max_angle = 115 DEG2RAD;
+		wrist_min_angle = -115 DEG2RAD;
+		wrist_max_limit = 75 DEG2RAD;
+		wrist_min_limit = -75 DEG2RAD;
+
+		grasp1_max_angle = 120 DEG2RAD;
+		grasp1_min_angle = -120 DEG2RAD;
+		grasp1_max_limit = 85 DEG2RAD;
+		grasp1_min_limit = -85 DEG2RAD;
+
+		grasp2_max_angle = 120 DEG2RAD;
+		grasp2_min_angle = -120 DEG2RAD;
+		grasp2_max_limit = 85 DEG2RAD;
+		grasp2_min_limit = -85 DEG2RAD;
+		break;
+
+	case r_grasper_A:
+		rot_max_angle = 290 DEG2RAD;//330 DEG2RAD;
+		rot_min_angle = -330 DEG2RAD; //might not be correct
+		rot_max_limit = 182 DEG2RAD;
+		rot_min_limit = -182 DEG2RAD;
+
+		wrist_max_angle = 115 DEG2RAD;
+		wrist_min_angle = -115 DEG2RAD;
+		wrist_max_limit = 75 DEG2RAD;
+		wrist_min_limit = -75 DEG2RAD;
+
+		grasp1_max_angle = 120 DEG2RAD;
+		grasp1_min_angle = -120 DEG2RAD;
+		grasp1_max_limit = 85 DEG2RAD;
+		grasp1_min_limit = -85 DEG2RAD;
+
+		grasp2_max_angle = 120 DEG2RAD;
+		grasp2_min_angle = -120 DEG2RAD;
+		grasp2_max_limit = 85 DEG2RAD;
+		grasp2_min_limit = -85 DEG2RAD;
+		break;
+
+	case r_grasper_B:
+		rot_max_angle = 325 DEG2RAD;//330 DEG2RAD;
 		rot_min_angle = -330 DEG2RAD; //might not be correct
 		rot_max_limit = 182 DEG2RAD;
 		rot_min_limit = -182 DEG2RAD;
@@ -230,6 +274,20 @@ void tool::set_home_angles() {
 		grasp2_home_angle = 45 DEG2RAD;
 		break;
 
+	case r_grasper_A:
+		rot_home_angle = 0;
+		wrist_home_angle = 0;
+		grasp1_home_angle = 45 DEG2RAD;
+		grasp2_home_angle = 45 DEG2RAD;
+		break;
+
+	case r_grasper_B:
+		rot_home_angle = 0;
+		wrist_home_angle = 0;
+		grasp1_home_angle = 45 DEG2RAD;
+		grasp2_home_angle = 45 DEG2RAD;
+		break;
+
 	case r_sq_grasper:
 		rot_home_angle = 0;
 		wrist_home_angle = 0;
@@ -294,6 +352,14 @@ void tool::set_wrist_coupling() {
 		wrist_coupling = 0;
 		break;
 
+	case r_grasper_A:
+		wrist_coupling = 0;
+		break;
+
+	case r_grasper_B:
+		wrist_coupling = 0;
+		break;
+
 	case r_sq_grasper:
 		wrist_coupling = 0;
 		break;
@@ -334,6 +400,16 @@ void tool::set_wrist_coupling() {
 void tool::set_DH_params() {
 	switch (t_end) {
 	case r_grasper:
+		shaft_length = 0.482;
+		wrist_length = 0.013;
+		break;
+
+	case r_grasper_A:
+		shaft_length = 0.482;
+		wrist_length = 0.013;
+		break;
+
+	case r_grasper_B:
 		shaft_length = 0.482;
 		wrist_length = 0.013;
 		break;
@@ -384,6 +460,14 @@ void tool::set_DH_params() {
 void tool::set_max_opening_angle() {
 	switch (t_end) {
 	case r_grasper:
+		max_opening_angle = 120 DEG2RAD;
+		break;
+
+	case r_grasper_A:
+		max_opening_angle = 120 DEG2RAD;
+		break;
+
+	case r_grasper_B:
 		max_opening_angle = 120 DEG2RAD;
 		break;
 

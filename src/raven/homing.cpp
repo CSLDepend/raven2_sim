@@ -420,16 +420,25 @@ void homing(struct DOF* _joint, tool a_tool)
     //check if scissors
     int scissor = ((a_tool.t_end == mopocu_scissor) || (a_tool.t_end == potts_scissor))? 1 : 0;
 
-    float f_magnitude[MAX_MECH*MAX_DOF_PER_MECH] = {-10 DEG2RAD, 10 DEG2RAD, 0.02, 9999999, 80 DEG2RAD, 40 DEG2RAD, 40 DEG2RAD, 40 DEG2RAD,
-    		 	 	 	 	 	 	 	 	 	 	-10 DEG2RAD, 10 DEG2RAD, 0.02, 9999999, 80 DEG2RAD, 40 DEG2RAD, 40 DEG2RAD, 40 DEG2RAD};
+//    float f_magnitude[MAX_MECH*MAX_DOF_PER_MECH] = {-10 DEG2RAD, 10 DEG2RAD, 0.02, 9999999, 80 DEG2RAD, 40 DEG2RAD, 40 DEG2RAD, 40 DEG2RAD,
+//    		 	 	 	 	 	 	 	 	 	 	-10 DEG2RAD, 10 DEG2RAD, 0.02, 9999999, 80 DEG2RAD, 40 DEG2RAD, 40 DEG2RAD, 40 DEG2RAD};
+
+    float f_magnitude[MAX_MECH*MAX_DOF_PER_MECH] =
+    			//GOLD_ARM
+    			{-10 DEG2RAD, 10 DEG2RAD, 0.02, 9999999,
+    			80 DEG2RAD, 40 DEG2RAD, 40 DEG2RAD, 40 DEG2RAD,
+				//GREEN arm
+				-10 DEG2RAD, 10 DEG2RAD, 0.02, 9999999,
+				80 DEG2RAD, 40 DEG2RAD, 40 DEG2RAD, 40 DEG2RAD};
+
 
     if(a_tool.t_style == square_raven){
-    	if(a_tool.mech_type == GOLD_ARM) f_magnitude[TOOL_ROT_GOLD] =  -80 DEG2RAD;
-    	else if(a_tool.mech_type == GREEN_ARM) f_magnitude[TOOL_ROT_GREEN] =  -80 DEG2RAD;
+    	if(a_tool.mech_type == GOLD_ARM) f_magnitude[TOOL_ROT_GOLD] *=  -1;
+    	else if(a_tool.mech_type == GREEN_ARM) f_magnitude[TOOL_ROT_GREEN] *=  -1;
     }
     if (scissor){
-    	if(a_tool.mech_type == GOLD_ARM) f_magnitude[GRASP2_GOLD] = -40 DEG2RAD;
-    	else if(a_tool.mech_type == GREEN_ARM) f_magnitude[GRASP2_GREEN] = -40 DEG2RAD;
+    	if(a_tool.mech_type == GOLD_ARM) f_magnitude[GRASP2_GOLD] *=  -1;
+    	else if(a_tool.mech_type == GREEN_ARM) f_magnitude[GRASP2_GREEN] *=  -1;
     }
 
 
@@ -493,21 +502,21 @@ const int homing_max_dac[8] = {2500,  //shoulder
 #ifdef DV_ADAPTER
 const int homing_max_dac[8] = {2500,  //shoulder
                             2500,  //elbow
-                            2500,  //z-ins
+                            1900,//2300,  //z-ins
                             0,
-                            2400,  //tool_rot // was 1400, lowered to reduce calibration error //I think this is labeled improperly - AL
-                            2400,  //wrist
-                            2100,  //grasp1
-                            2100};  // grasp2
+                            2000,//2400,  //tool_rot // was 1400, lowered to reduce calibration error //I think this is labeled improperly - AL
+                            1800,//2400,  //wrist
+                            1900,//2100,  //grasp1
+                            1900};//2100};  // grasp2
 #else
 const int homing_max_dac[8] = {2500,  //shoulder
                             2500,  //elbow
-                            2400, //1900,  //z_ins
+                            1900, //1900,  //z_ins
                             0,
-                            2100,  //tool_rot  //rasised from 1400 alewis 3/4/14
-                            2000,  //wrist
-                            2100,  //grasp1 decreased from 1900
-                            2000};  // grasp2 decreased from 1900
+                            2000,  //tool_rot  //rasised from 1400 alewis 3/4/14
+                            1800,  //wrist
+                            1900,  //grasp1 decreased from 1900
+                            1900};  // grasp2 decreased from 1900
 #endif
 #endif
 

@@ -159,7 +159,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 
     for (i=0;i<NUM_MECH;i++)
     {
-#ifndef simulator
+#ifndef simulator_packetgen
         armserial = USBBoards.boards[i]==GREEN_ARM_SERIAL ? GREEN_ARM_SERIAL : GOLD_ARM_SERIAL;
         armidx    = USBBoards.boards[i]==GREEN_ARM_SERIAL ? 1 : 0;
 #else
@@ -193,13 +193,6 @@ void teleopIntoDS1(struct u_struct *us_t)
         for (int j=0;j<3;j++)
             for (int k=0;k<3;k++)
                 data1.rd[i].R[j][k] = rot_mx_temp[j][k];
-
-        const int graspmax = (M_PI/2 * 1000);
-        const int graspmin = (-30.0 * 1000.0 DEG2RAD);
-	data1.rd[i].grasp -= us_t->grasp[armidx];
-	if (data1.rd[i].grasp>graspmax) data1.rd[i].grasp=graspmax;
-	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
-
 #else
 	// Set Position command
         data1.xd[i].x = us_t->delx[armidx];
@@ -238,9 +231,13 @@ void teleopIntoDS1(struct u_struct *us_t)
       	        data1.jpos_d[j] = (us_t->jpos[j])*M_PI/180;  
         */                 
 	//log_file("Arm %d: User desired end-effector rotations: \n(%f,%f,%f)\n(%f,%f,%f)\n(%f,%f,%f)\n",i, data1.rd[i].R[0][0],data1.rd[i].R[0][1],data1.rd[i].R[0][2],data1.rd[i].R[1][0],data1.rd[i].R[1][1],data1.rd[i].R[1][2],data1.rd[i].R[2][0],data1.rd[i].R[2][1],data1.rd[i].R[2][2]);
-
-	data1.rd[i].grasp = us_t->grasp[armidx];
 #endif
+        const int graspmax = (M_PI/2 * 1000);
+        const int graspmin = (-30.0 * 1000.0 DEG2RAD);
+	data1.rd[i].grasp -= 2*us_t->grasp[armidx];
+	if (data1.rd[i].grasp>graspmax) data1.rd[i].grasp=graspmax;
+	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
+
     }
 
     /// \question HK: why is this a hack?

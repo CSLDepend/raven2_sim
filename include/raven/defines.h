@@ -51,10 +51,7 @@
 //#define RAVEN_II_SQUARE    1 //for Santa Cruz style tool carriage
 //#define RICKS_TOOLS
 
-//#undef RAVEN_TOOLS
-#undef DV_ADAPTER
-#undef RAVEN_II_SQUARE
-#undef RICKS_TOOLS
+
 
 
 // Two arm identification

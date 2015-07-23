@@ -61,8 +61,11 @@
 #include "defines.h"
 
 
-
+#ifdef simulator_packetgen
 #define SERVER_PORT  "36001"             // used if the robot needs to send data to the server
+#else
+#define SERVER_PORT  "36000"             // used if the robot needs to send data to the server
+#endif
 //#define SERVER_ADDR  "192.168.0.102"
 //#define SERVER_ADDR  "128.95.205.206"    // used only if the robot needs to send data to the server
 #define SERVER_ADDR  "130.126.143.20"

@@ -15,6 +15,8 @@ enum style{
 
 enum end_effector_type  {
 	r_grasper,
+	r_grasper_A,
+	r_grasper_B,
 	r_sq_grasper,
 	large_needle,
 	micro_forceps,

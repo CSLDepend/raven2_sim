@@ -31,10 +31,11 @@ UDP_IP = "127.0.0.1"
 UDP_PORT1 = 32000
 UDP_PORT2 = 36001
 
-SKIP = 200;
+# Should be at least 1
+SKIP = 1;
 fast_surgeon = 1;
 if fast_surgeon:
-   MAX_LINES = 10000
+   MAX_LINES = 20000
    FREQ = 0.001
 else: 
    MAX_LINES = 3000
@@ -87,7 +88,7 @@ def sendPackets():
     global line_no
     seq = 0;
     line = [];
-    csvfile1 = open('./teleop_data/data1_flipped.csv'); 
+    csvfile1 = open('./teleop_data/traj1.csv', ); 
     reader = csv.reader(csvfile1)
     
     # Skip the first packets
