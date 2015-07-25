@@ -29,15 +29,13 @@
 
 #include <math.h>
 
-//#define simulator // running with no hardware
-#define simulator_packetgen  // use packet generator instead of GUI
-#define simulator_packetgen_restart // packet generator can restart
+#define simulator // running with no hardware
+#define packetgen  // use packet generator instead of GUI
+#define packetgen_restart // packet generator can restart after an E-STOP
 #define save_logs // save trajectory logs into sim_log.txt
-//#define log_USB // log USB packets sent
+#define log_USB // log USB packets sent
 //#define no_logging // diable logging
 //#define skip_init_button // skip the start physical button
-//#define test_gdb // for debugging
-
 
 #define RAVEN_MODULE_VERSION RAVEN_II_RELEASE_02
 #define device robot_device

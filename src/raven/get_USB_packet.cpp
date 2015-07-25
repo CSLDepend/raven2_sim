@@ -30,7 +30,11 @@
 
 extern unsigned long int gTime;
 extern USBStruct USBBoards;
-
+extern char* raven_path;
+#ifdef log_USB
+extern std::ofstream ReadUSBfile;
+extern std::ofstream WriteUSBfile; 
+#endif
 /**\fn void initiateUSBGet(struct device *device0)
   \brief Initiate data request from USB Board. Must be called before read
   \struct device  
@@ -118,6 +122,14 @@ int getUSBPacket(int id, struct mechanism *mech)
     // No data or something. Boo.
     else if ((result == 0) || (result != IN_LENGTH))
       return -EIO;
+
+#ifdef log_USB
+        for (int k = 0; k < IN_LENGTH; k++)
+        {
+            ReadUSBfile << std::hex << (unsigned)buffer[k] << " "; 
+        }
+        ReadUSBfile << "\n";
+#endif 
 
     // -- Good packet so process it --
     type = buffer[0];

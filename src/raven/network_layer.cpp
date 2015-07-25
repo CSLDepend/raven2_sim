@@ -61,7 +61,7 @@
 #include "defines.h"
 
 
-#ifdef simulator_packetgen
+#ifdef packetgen
 #define SERVER_PORT  "36001"             // used if the robot needs to send data to the server
 #else
 #define SERVER_PORT  "36000"             // used if the robot needs to send data to the server
@@ -70,7 +70,7 @@
 //#define SERVER_ADDR  "128.95.205.206"    // used only if the robot needs to send data to the server
 #define SERVER_ADDR  "130.126.143.20"
 
-#ifdef simulator_packetgen
+#ifdef packetgen
 extern int done_homing;
 int first = 0;
 extern struct device device0;
@@ -82,9 +82,6 @@ extern struct device device0;
 extern int logging;
 #endif
 
-//#ifdef test_gdb
-extern unsigned long int gTime;
-//#endif
 extern int receiveUserspace(void *u,int size);  // Defined in the local_io.cpp
 
 /**\fn int initSock (const char* port )
@@ -197,16 +194,6 @@ void* network_process(void* param1)
     unsigned int seq = 0;
     volatile int bytesread;
 
-#ifdef test_gdb
-      //struct timespec tnow, tnow2;
-      // Set next timer-shot (must be in future)
-      //clock_gettime(CLOCK_REALTIME,&tnow);
-      //logging = 1;
-      //clock_gettime(CLOCK_REALTIME,&tnow2);
-      //log_msg("Diff = %ld",tnow2.tv_nsec-tnow.tv_nsec);
-      //logging = 0;
-#endif
-
     // print some status messages
     log_msg("Starting network services..");
     log_msg("  u_struct size: %i",uSize);
@@ -249,7 +236,6 @@ void* network_process(void* param1)
     ///// Main read/write loop
     while ( ros::ok() )
     {
-        //printf("Network @= %lx\n", gTime);
         rmask = mask;
         timeout.tv_sec = 2;  // hack:reset timer after timeout event.
         timeout.tv_usec = 0; //        ""
@@ -273,16 +259,15 @@ void* network_process(void* param1)
 // Select timeout: nothing to do
         if (nfound == 0)
         {          
-#ifdef simulator_packetgen
-#ifdef simulator_packetgen_restart
+#ifdef packetgen
+#ifdef packetgen_restart
                         // To enable recieving packets again, set first	
 			if (device0.runlevel == 0)
 				first = 0;
 #endif
                         if ((first == 0) && (device0.runlevel == 2))
-			{
-                        
-				done_homing = 0;
+			{                   
+				done_homing = 0;     
 	                        char v[6] = "Ready";
 				clientName.sin_port = htons((u_short)atoi(PACK_GEN_PORT));
 				inet_aton(HOST_ADDR, &clientName.sin_addr);
@@ -311,7 +296,7 @@ void* network_process(void* param1)
             fflush(stdout);
             continue;
         }
-#ifdef simulator_packetgen
+#ifdef packetgen
         else
             first = 1;
 #endif   
@@ -412,7 +397,7 @@ void* network_process(void* param1)
             }
         }
 
-#ifdef simulator_packetgen_restart
+#ifdef packetgen_restart
 	if (device0.runlevel == 0)
 	{
 		char v[8] = "Stopped";

@@ -85,7 +85,7 @@ int    deviceType = SURGICAL_ROBOT;//PULLEY_BOARD;
 struct device device0 ={0};  //Declaration Moved outside rt loop for access from console thread
 int    mech_gravcomp_done[2]={0};
 
-#ifdef simulator_packetgen
+#ifdef packetgen
 int NUM_MECH=2;   // Define NUM_MECH as a C variable, not a c++ variable
 int done_homing = 0;
 int program_state = -1;
@@ -103,9 +103,12 @@ int no_pack_cnt = 0;
 
 #ifdef skip_init_button
 int serial_fd = -1;
+#endif 
+
+#ifdef log_USB 
+std::ofstream ReadUSBfile;
+std::ofstream WriteUSBfile;  
 #endif
-
-
 pthread_t rt_thread;
 pthread_t net_thread;
 pthread_t console_thread;
@@ -236,16 +239,6 @@ static void *rt_process(void* )
 #ifndef simulator
       initiateUSBGet(&device0);
 #endif
-#ifdef test_gdb
-      clock_gettime(CLOCK_REALTIME,&tnow);
-      tsnorm(&tnow);
-      clock_gettime(CLOCK_REALTIME,&tnow2);
-      tsnorm(&tnow2);
-      long int Diff = (tnow2.tv_nsec-tnow.tv_nsec)/100000;
-      //if (Diff > 9)
-      //if ((gTime % 2) == 0) 
-       // printf("Diff = %ld\n",Diff);          
-#endif
       // Set next timer-shot (must be in future)
       clock_gettime(CLOCK_REALTIME,&tnow);
 
@@ -311,7 +304,7 @@ static void *rt_process(void* )
       //Get state updates from master
       if ( checkLocalUpdates() == TRUE)
       {
-#ifdef simulator_packetgen
+#ifdef packetgen
    	logging = 1;  
         no_pack_cnt++; 
         //log_file("RT_PROCESS) Update device state based on received packet.\n");         
@@ -320,7 +313,7 @@ static void *rt_process(void* )
       }
       else
       {
-#ifdef simulator_packetgen
+#ifdef packetgen
    	logging = 0;  
         //log_file("RT_PROCESS) No new packets. Use previous parameters.\n");         
 #endif
@@ -333,7 +326,7 @@ static void *rt_process(void* )
       //////////////// SURGICAL ROBOT CODE //////////////////////////
       if (deviceType == SURGICAL_ROBOT)
         {
-#ifdef simulator_packetgen
+#ifdef packetgen
 	    program_state = 6;
 #endif
 	  // Calculate Raven control
@@ -357,7 +350,7 @@ static void *rt_process(void* )
       putUSBPackets(&device0); //disable usb for par port test
 #endif
 #ifdef log_USB 
-      writeUSBPackets(&device0);
+      //writeUSBPackets(&device0);
 #endif
       //Publish current raven state
       publish_ravenstate_ros(&device0,&currParams);   // from local_io
@@ -410,7 +403,7 @@ int init_ros(int argc, char **argv)
    */
   ros::init(argc, argv, "r2_control", ros::init_options::NoSigintHandler);
   ros::NodeHandle n;
-#ifdef simulator_packetgen
+#ifdef packetgen
   n.getParam("inject",inject_mode);
 #endif
   //    rosrt::init();
@@ -482,7 +475,13 @@ int main(int argc, char **argv)
   logfile.open(buff,std::ofstream::out);  
 
 #ifdef log_USB
-  std::ofstream USBlogfile;  
+  sprintf(buff,"%s/readUSB_log.txt", raven_path);
+  ReadUSBfile.open(buff,std::ofstream::out);
+
+  sprintf(buff,"%s/writeUSB_log.txt", raven_path);
+  WriteUSBfile.open(buff,std::ofstream::out);
+
+  std::ofstream USBlogfile; 
   sprintf(buff,"%s/USB0_log.txt", raven_path);
   USBlogfile.open(buff,std::ofstream::out);
   USBlogfile.close(); 
@@ -510,6 +509,10 @@ int main(int argc, char **argv)
 
 #ifndef simulator  
   USBShutdown();
+#endif
+#ifdef log_USB
+  WriteUSBfile.close(); 
+  ReadUSBfile.close();
 #endif
   //Suspend main until all threads terminate
   pthread_join(rt_thread,NULL);

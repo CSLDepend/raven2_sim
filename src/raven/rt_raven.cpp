@@ -50,13 +50,9 @@
 #include "update_device_state.h"
 #include "parallel.h"
 
-
-#ifdef simulator_packetgen
-extern int program_state;
+#ifdef packetgen
 extern int done_homing;
-#endif
-#ifdef test_gdb
-struct timespec tnow, tnow2;
+extern int program_state;
 #endif
 extern int NUM_MECH; //Defined in rt_process_																								preempt.cpp
 extern unsigned long int gTime; //Defined in rt_process_preempt.cpp
@@ -94,19 +90,10 @@ extern int initialized; //Defined in rt_process_preempt.cpp
 *  -Applying arbitrary torque
 *
 */
-int controlRaven(struct device *device0, struct param_pass *currParams){
-#ifdef test_gdb
-      clock_gettime(CLOCK_REALTIME,&tnow);
-#endif      
-#ifdef simulator_packetgen
+int controlRaven(struct device *device0, struct param_pass *currParams){   
+#ifdef packetgen
       program_state = 7;
-#endif
-#ifdef test_gdb      
-      clock_gettime(CLOCK_REALTIME,&tnow2);
-      long int Diff = (tnow2.tv_nsec-tnow.tv_nsec)/100000;
-      if (Diff > 9)
-          printf("Diff = %ld\n",Diff);
-#endif    
+#endif  
     int ret = 0;
     //Desired control mode
     t_controlmode controlmode = (t_controlmode)currParams->robotControlMode;
@@ -119,13 +106,13 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
     stateEstimate(device0); 
 //#endif
 
-#ifdef simulator_packetgen
+#ifdef packetgen
     program_state = 8;
 #endif
     //Foward Cable Coupling
     fwdCableCoupling(device0, currParams->runlevel);
 
-#ifdef simulator_packetgen
+#ifdef packetgen
     program_state = 9;
 #endif
     //Forward kinematics
@@ -136,7 +123,7 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         //CHECK ME: what is the purpose of this mode?
         case no_control:
         {
-#ifdef simulator_packetgen
+#ifdef packetgen
 	    program_state = 10;
         //log_file("RT_PROCESS) No Control");         
 #endif
@@ -158,9 +145,8 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         }
         //Cartesian Space Control is called to control the robot in cartesian space
         case cartesian_space_control:
-#ifdef simulator_packetgen
+#ifdef packet_gen
 		done_homing = 1;
-	        program_state = 11;
                 //log_msg("RT_PROCESS) Cartesian space control");         
 #endif		
         	ret = raven_cartesian_space_command(device0,currParams);
@@ -177,7 +163,7 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
             break;
         //Runs homing mode
         case homing_mode:
-#ifdef simulator_packetgen
+#ifdef packetgen
 	   program_state = 12;
            //log_file("RT_PROCESS) Homing Mode");         
            //log_msg("Homing");
@@ -262,24 +248,22 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
     parport_out(0x01);
 #endif
 
-#ifdef simulator_packetgen
+#ifdef packetgen
     program_state = 13;
 #endif
     //Inverse kinematics
     r2_inv_kin(device0, currParams->runlevel);
 
-#ifdef simulator_packetgen
+#ifdef packetgen
     program_state = 14;
 #endif
     //Inverse Cable Coupling
     invCableCoupling(device0, currParams->runlevel);
 
-#ifdef simulator_packetgen
+#ifdef packetgen
     program_state = 15;
 #endif
-
-#ifndef simulator_packetgen
-    // Set all joints to zero torque
+   // Set all joints to zero torque
     _mech = NULL;  _joint = NULL;
     while (loop_over_joints(device0, _mech, _joint, i,j) )
     {
@@ -292,14 +276,7 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
     	    mpos_PD_control(_joint);
         }
     }
-#else
-    // Set all joints to zero torque
-    _mech = NULL;  _joint = NULL;
-    while (loop_over_joints(device0, _mech, _joint, i,j) )
-    {
-    	mpos_PD_control(_joint);
-    }
-#endif
+
     // Gravity compensation calculation
     getGravityTorque(*device0, *currParams);
     _mech = NULL;  _joint = NULL;

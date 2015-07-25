@@ -30,9 +30,9 @@ import struct
 import time
 import signal
 
-src = '/home/alemzad1/homa_wksp/raven_2/src/raven'
-raven_home = '/home/alemzad1/homa_wksp/raven_2'
-root_dir = '/home/alemzad1/homa_wksp'
+src = '~/homa_wksp/raven_2/src/raven'
+raven_home = '~/homa_wksp/raven_2'
+root_dir = '~/homa_wksp'
 cur_inj = -1
 saved_param = []
 surgeon_simulator = 1;
@@ -95,6 +95,7 @@ def quit():
     os.system("killall roslaunch")
     os.system("killall r2_control")
     os.system("killall xterm")
+    os.system("killall xterm")
 
 def signal_handler(signal, frame):
     print "Ctrl+C Pressed!"
@@ -105,8 +106,8 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 # Call visualization, packet generator, and Raven II software
-#vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
-#time.sleep(3.5)  
+vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
+time.sleep(3.5)  
 packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
 raven_proc = subprocess.Popen(ravenTask, env=env, shell=True, preexec_fn=os.setsid)
 

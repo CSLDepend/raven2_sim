@@ -37,7 +37,3 @@
 //Function prototypes
 void putUSBPackets(struct device *device0);
 int putUSBPacket(int id, struct mechanism *mech);
-#ifdef log_USB 
-#include <fstream>
-void writeUSBPackets(struct device *device0);
-#endif

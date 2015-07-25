@@ -31,6 +31,10 @@
 extern unsigned long int gTime;
 extern USBStruct USBBoards;
 extern char* raven_path;
+#ifdef log_USB
+extern std::ofstream ReadUSBfile;
+extern std::ofstream WriteUSBfile; 
+#endif 
 /**\fn void putUSBPackets(struct device *device0)
   \brief Takes data from robot to send to USB board(s)
   \struct device
@@ -89,12 +93,18 @@ int putUSBPacket(int id, struct mechanism *mech)
     // Set PortF outputs
     buffer_out[OUT_LENGTH-1] = mech->outputs;
 
+#ifdef log_USB
+        for (int k = 0; k < OUT_LENGTH; k++)
+        {
+            WriteUSBfile << std::hex << (unsigned)buffer_out[k] << " "; 
+        }
+        WriteUSBfile << "\n";
+#endif 
     //Write the packet to the USB Driver
     if (usb_write(id, &buffer_out, OUT_LENGTH )!= OUT_LENGTH)
     {
         return -USB_WRITE_ERROR;
     }
-
     return 0;
 }
 

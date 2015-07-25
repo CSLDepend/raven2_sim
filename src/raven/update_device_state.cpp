@@ -24,7 +24,7 @@
 extern int logging;
 int curr_pack_no = 0;
 #endif
-#ifdef simulator_packetgen
+#ifdef packetgen
 extern int program_state;
 #endif
 
@@ -53,7 +53,7 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 {
     ///log_msg("updateDeviceState %d", currParams->runlevel);///Added
     currParams->last_sequence = rcvdParams->last_sequence;
-#ifdef simulator_packetgen
+#ifdef packetgen
     program_state = 5;
 #endif 
 #ifdef save_logs
@@ -103,7 +103,23 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 #ifdef simulator 
 	if (currParams->last_sequence == 1)
 	{
-	    device0->mech[0].joint[SHOULDER].jpos_d = 0.521722;
+            /*for (int j=0;j<16;j++)    
+                log_msg("jpos %d = %f\n", j,rcvdParams->jpos_d[j]);*/
+ 	    device0->mech[0].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[0];
+     	    device0->mech[0].joint[ELBOW].jpos_d = rcvdParams->jpos_d[1];
+	    device0->mech[0].joint[Z_INS].jpos_d = rcvdParams->jpos_d[2];
+	    device0->mech[0].joint[TOOL_ROT].jpos_d = rcvdParams->jpos_d[4];
+	    device0->mech[0].joint[WRIST].jpos_d = rcvdParams->jpos_d[5];
+	    device0->mech[0].joint[GRASP1].jpos_d = rcvdParams->jpos_d[6];
+	    device0->mech[0].joint[GRASP2].jpos_d = rcvdParams->jpos_d[7];
+	    device0->mech[1].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[8];
+     	    device0->mech[1].joint[ELBOW].jpos_d = rcvdParams->jpos_d[9];
+	    device0->mech[1].joint[Z_INS].jpos_d = rcvdParams->jpos_d[10];
+	    device0->mech[1].joint[TOOL_ROT].jpos_d = rcvdParams->jpos_d[12];
+	    device0->mech[1].joint[WRIST].jpos_d = rcvdParams->jpos_d[13];
+	    device0->mech[1].joint[GRASP1].jpos_d = rcvdParams->jpos_d[14];
+	    device0->mech[1].joint[GRASP2].jpos_d = rcvdParams->jpos_d[15];
+	    /*device0->mech[0].joint[SHOULDER].jpos_d = 0.521722;
      	    device0->mech[0].joint[ELBOW].jpos_d = 1.585218;
 	    device0->mech[0].joint[Z_INS].jpos_d = 0.400515;
 	    device0->mech[0].joint[TOOL_ROT].jpos_d = -0.010442;
@@ -116,19 +132,17 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 	    device0->mech[1].joint[TOOL_ROT].jpos_d = 0.013722;
 	    device0->mech[1].joint[WRIST].jpos_d = -0.070899;
 	    device0->mech[1].joint[GRASP1].jpos_d = 0.702793;
-	    device0->mech[1].joint[GRASP2].jpos_d = 0.729010;
+	    device0->mech[1].joint[GRASP2].jpos_d = 0.729010;*/
 	}
-#endif
-/*#ifdef simulator_packetgen
-        for (int i = 0; i < NUM_MECH; i++)
+        /*for (int i = 0; i < NUM_MECH; i++)
         {        
             for (int ch=0;ch<8;ch++)
 	    {
                 device0->mech[i].joint[ch].enc_val = rcvdParams->enc_d[i*8+ch];
                 device0->mech[i].joint[ch].enc_offset = rcvdParams->dac_d[i*8+ch]; 
             }     
-	}
-#endif*/
+	}*/
+#endif
         for (int i = 0; i < NUM_MECH; i++)
         {
             device0->mech[i].pos_d.x = rcvdParams->xd[i].x;
@@ -140,12 +154,10 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
             for (int j=0;j<3;j++)
                 for (int k=0;k<3;k++)
                 device0->mech[i].ori_d.R[j][k]  = rcvdParams->rd[i].R[j][k];
-        }	
-
+        }
     }
 
-  
-     // Switch control modes only in pedal up or init.
+    // Switch control modes only in pedal up or init.
     if ( (currParams->runlevel == RL_E_STOP)   &&
          (currParams->robotControlMode != (int)newRobotControlMode) )
     {

@@ -47,6 +47,10 @@
 #define BRL_RESET_BOARD     10
 #define BRL_START_READ      4
 
+#ifdef log_USB 
+extern char* raven_path;
+#endif
+
 // Keep board information
 std::vector<int> boardFile;
 std::map<int,int> boardFPs;
@@ -356,7 +360,6 @@ int startUSBRead(int id)
   return ret;
 }
 
-
 /**\fn int usb_read(int id, void *buffer, size_t len)
  * \brief read from usb board with serial number id
  * \param id - serial number of board to read
@@ -369,6 +372,7 @@ int usb_read(int id, void *buffer, size_t len)
 {
   int fp = boardFPs[id]; // file pointer
   int ret = read(fp, buffer, len);
+
   if (ret<0)
     {
       ret = -errno;

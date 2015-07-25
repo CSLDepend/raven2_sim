@@ -67,9 +67,12 @@ struct u_struct {
 	int delx[2];
 	int dely[2];
 	int delz[2];
-#ifdef simulator_packetgen
+#ifdef packetgen
         double R_l[3][3];
         double R_r[3][3];
+#ifdef simulator
+	double jpos[16];
+#endif
 #else
         double Qx[2];
         double Qy[2];

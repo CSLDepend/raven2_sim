@@ -99,4 +99,9 @@ int writeSerialPort(int serialFileDescriptor, void *buffer);
 void closeSerialPort(int serialFileDescriptor);
 #endif
 
+#ifdef log_USB 
+#include <fstream>
+void writeUSBPackets(struct device *device0);
+#endif
+
 #endif
