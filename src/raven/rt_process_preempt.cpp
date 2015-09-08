@@ -463,6 +463,7 @@ int main(int argc, char **argv)
 	 raven_path = strtok(NULL,":");
      }        	
   }
+  log_msg("%s\n",raven_path);
 
   std::ofstream logfile;
   log_msg("************** Inject mode = %d\n",inject_mode);
