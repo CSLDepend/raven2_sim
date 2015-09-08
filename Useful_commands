@@ -1,4 +1,4 @@
-To record a trajectory:
+To record a trajectory using ROS:
 rostopic echo -p ravenstate > /home/raven/homa_wksp/Tests/test1.csv
 
 To run the RAVEN visualization:
