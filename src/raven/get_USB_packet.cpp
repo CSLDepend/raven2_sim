@@ -30,8 +30,9 @@
 
 extern unsigned long int gTime;
 extern USBStruct USBBoards;
-extern char* raven_path;
+
 #ifdef log_USB
+#include <fstream>
 extern std::ofstream ReadUSBfile;
 extern std::ofstream WriteUSBfile; 
 #endif

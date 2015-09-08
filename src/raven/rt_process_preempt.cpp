@@ -107,7 +107,7 @@ int serial_fd = -1;
 
 #ifdef log_USB 
 std::ofstream ReadUSBfile;
-std::ofstream WriteUSBfile;  
+std::ofstream WriteUSBfile; 
 #endif
 pthread_t rt_thread;
 pthread_t net_thread;
@@ -349,9 +349,7 @@ static void *rt_process(void* )
       //Fill USB Packet and send it out   
       putUSBPackets(&device0); //disable usb for par port test
 #endif
-#ifdef log_USB 
-      //writeUSBPackets(&device0);
-#endif
+
       //Publish current raven state
       publish_ravenstate_ros(&device0,&currParams);   // from local_io
 
@@ -481,14 +479,6 @@ int main(int argc, char **argv)
 
   sprintf(buff,"%s/writeUSB_log.txt", raven_path);
   WriteUSBfile.open(buff,std::ofstream::out);
-
-  std::ofstream USBlogfile; 
-  sprintf(buff,"%s/USB0_log.txt", raven_path);
-  USBlogfile.open(buff,std::ofstream::out);
-  USBlogfile.close(); 
-  sprintf(buff,"%s/USB1_log.txt", raven_path);
-  USBlogfile.open(buff,std::ofstream::out);
-  USBlogfile.close(); 
 #endif
 #endif
 

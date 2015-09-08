@@ -47,10 +47,6 @@
 #define BRL_RESET_BOARD     10
 #define BRL_START_READ      4
 
-#ifdef log_USB 
-extern char* raven_path;
-#endif
-
 // Keep board information
 std::vector<int> boardFile;
 std::map<int,int> boardFPs;
@@ -391,24 +387,6 @@ int usb_read(int id, void *buffer, size_t len)
  */
 int usb_write(int id, void *buffer, size_t len)
 {
-/*
-//Remove me
-    char buff[100];
-    sprintf(buff,"/home/junjie/homa_wksp/time_triger_inject_write2.txt");
-    std::ofstream USBlogfile;
-    USBlogfile.open(buff,std::ofstream::out | std::ofstream::app);  
-    struct timespec tnow, tnow2;
-    clock_gettime(CLOCK_REALTIME,&tnow);
-    tsnorm(&tnow);
-    // write to board
-    int ret = write(boardFPs[id], buffer, len);
-    clock_gettime(CLOCK_REALTIME,&tnow2);
-    tsnorm(&tnow2);
-    long int Diff = (tnow2.tv_nsec-tnow.tv_nsec)/1000;
-    USBlogfile << Diff << "\n";       
-    USBlogfile.close();
-//Remove me
-*/
     // write to board
     int ret = write(boardFPs[id], buffer, len);
 

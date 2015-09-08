@@ -160,6 +160,20 @@ void fwdMechCableCoupling(struct mechanism *mech)
 #else
 #ifdef dyn_simulator
 	// Estimate the current joint positions using dynamic model
+        /*if (mech->type == GREEN_ARM){
+              state_type current_state = {(double)mech->joint[SHOULDER].jpos, (double)mech->joint[ELBOW].jpos, 
+                                          (double)mech->joint[Z_INS].jpos, (double) mech->joint[TOOL_ROT].jpos, 
+                                          0.0, 0.0,0.0,0.0};
+	      float jpos_jvel_d[8] = integrate_adaptive(rk4, sys_dyn, current_state, 0.0, 0.001, 0.0001);  
+              mech->joint[SHOULDER].jpos 	= jpos_jvel_d[0];
+              mech->joint[ELBOW].jpos    	= jpos_jvel_d[1];        
+	      mech->joint[TOOL_ROT].jpos 	= jpos_jvel_d[3];
+  	      mech->joint[Z_INS].jpos           = jpos_jvel_d[2];
+	
+              mech->joint[SHOULDER].jvel 	= jpos_jvel_d[4];
+	      mech->joint[ELBOW].jvel 		= jpos_jvel_d[5];
+	      mech->joint[Z_INS].jvel 		= jpos_jvel_d[6];
+        }*/
 	mech->joint[SHOULDER].jpos 		= mech->joint[SHOULDER].jpos_d;// - mech->joint[SHOULDER].jpos_off;
 	mech->joint[ELBOW].jpos 		= mech->joint[ELBOW].jpos_d;// - mech->joint[ELBOW].jpos_off;
 	mech->joint[TOOL_ROT].jpos 		= mech->joint[TOOL_ROT].jpos_d;// - mech->joint[TOOL_ROT].jpos_off;
