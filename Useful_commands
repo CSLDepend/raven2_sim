@@ -1,0 +1,17 @@
+To record a trajectory:
+rostopic echo -p ravenstate > /home/raven/homa_wksp/Tests/test1.csv
+
+To run the RAVEN visualization:
+- Open a new terminal and run:
+- export ROS_PACKAGE_PATH=~/homa_wksp/raven_2:~/homa_wksp/raven_2/raven_visualization:$ROS_PACKAGE_PATH 
+- roscd raven_2
+- python run.py
+To stop running:
+- Press Ctrl+C
+- killall xterm
+
+To run with the real robot + packet generator:
+- In defines.h comment out the simulator macros (2 first Homa's macros commented out)
+
+To run with the real robot + teleoperation:
+- In defines.h comment out the simulator and packet_gen macros (4 first Homa's macros commented out)
