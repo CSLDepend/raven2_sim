@@ -27,6 +27,7 @@
 #include "fwd_cable_coupling.h"
 #include "log.h"
 #include "tool.h"
+#include "green_arm_dyn.h"
 
 extern struct DOF_type DOF_types[];
 extern int NUM_MECH;
@@ -120,7 +121,6 @@ void fwdMechCableCoupling(struct mechanism *mech)
 	th2_dot = (1.0/tr2) * m2_dot;
 	d4_dot  = (1.0/tr4) * m4_dot;
 
-
 	// Tool degrees of freedom ===========================================
     int sgn = 0;
     switch(mech->mech_tool.t_style){
@@ -160,20 +160,27 @@ void fwdMechCableCoupling(struct mechanism *mech)
 #else
 #ifdef dyn_simulator
 	// Estimate the current joint positions using dynamic model
-        /*if (mech->type == GREEN_ARM){
+       if (mech->type == GREEN_ARM){
               state_type current_state = {(double)mech->joint[SHOULDER].jpos, (double)mech->joint[ELBOW].jpos, 
                                           (double)mech->joint[Z_INS].jpos, (double) mech->joint[TOOL_ROT].jpos, 
                                           0.0, 0.0,0.0,0.0};
-	      float jpos_jvel_d[8] = integrate_adaptive(rk4, sys_dyn, current_state, 0.0, 0.001, 0.0001);  
-              mech->joint[SHOULDER].jpos 	= jpos_jvel_d[0];
-              mech->joint[ELBOW].jpos    	= jpos_jvel_d[1];        
-	      mech->joint[TOOL_ROT].jpos 	= jpos_jvel_d[3];
-  	      mech->joint[Z_INS].jpos           = jpos_jvel_d[2];
+
+	      state_type r_d = {(double)mech->joint[SHOULDER].jpos_d, (double)mech->joint[ELBOW].jpos_d, 
+                                          (double)mech->joint[Z_INS].jpos_d, (double) mech->joint[TOOL_ROT].jpos_d, 
+                                          0.0, 0.0,0.0,0.0};
+
+
+	      //integrate_adaptive(rk4(), sys_dyn, current_state, 0.0, 0.001, 0.0001);  
+
+              mech->joint[SHOULDER].jpos 	= (float)current_state[0];
+              mech->joint[ELBOW].jpos    	= (float)current_state[1];
+  	      mech->joint[Z_INS].jpos           = (float)current_state[2];        
+	      mech->joint[TOOL_ROT].jpos 	= (float)current_state[3];
 	
-              mech->joint[SHOULDER].jvel 	= jpos_jvel_d[4];
-	      mech->joint[ELBOW].jvel 		= jpos_jvel_d[5];
-	      mech->joint[Z_INS].jvel 		= jpos_jvel_d[6];
-        }*/
+              mech->joint[SHOULDER].jvel 	= (float)current_state[4];
+	      mech->joint[ELBOW].jvel 		= (float)current_state[5];
+	      mech->joint[Z_INS].jvel 		= (float)current_state[6];
+        }
 	mech->joint[SHOULDER].jpos 		= mech->joint[SHOULDER].jpos_d;// - mech->joint[SHOULDER].jpos_off;
 	mech->joint[ELBOW].jpos 		= mech->joint[ELBOW].jpos_d;// - mech->joint[ELBOW].jpos_off;
 	mech->joint[TOOL_ROT].jpos 		= mech->joint[TOOL_ROT].jpos_d;// - mech->joint[TOOL_ROT].jpos_off;
@@ -199,6 +206,10 @@ void fwdMechCableCoupling(struct mechanism *mech)
 	mech->joint[SHOULDER].jvel 		= th1_dot;// - mech->joint[SHOULDER].jpos_off;
 	mech->joint[ELBOW].jvel 		= th2_dot;// - mech->joint[ELBOW].jpos_off;
 	mech->joint[Z_INS].jvel 		= d4_dot;//  - mech->joint[Z_INS].jpos_off;
+	/*log_msg("Cable Coupling joint positions: (%f,%f,%f,%f,%f,%f,%f\n)",
+               		 mech->joint[0].jpos*180/M_PI, mech->joint[1].jpos*180/M_PI, mech->joint[2].jpos*180/M_PI,
+               		 mech->joint[3].jpos*180/M_PI, mech->joint[4].jpos*180/M_PI,mech->joint[5].jpos*180/M_PI,
+			 mech->joint[6].jpos*180/M_PI, mech->joint[7].jpos*180/M_PI);*/
 #endif
 #endif
 

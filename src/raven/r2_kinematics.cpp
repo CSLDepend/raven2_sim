@@ -221,6 +221,7 @@ int check_collision(ik_solution *iksols, double *gangels)
 			//cout << "\n";
 		}
 
+
 	    tf::Vector3 env = T6.getColumn(0) * radius[m];
 		cen[m][0] = posx+env[0];
         cen[m][1] = posy+env[1];
@@ -279,6 +280,7 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 
 		// convert from joint angle representation to DH theta convention
 		double lo_thetas[6];
+//cout<<joints[0]*r2d<<endl;
 		joint2theta(lo_thetas, joints, arm);
 
 #ifdef simulator 
@@ -288,6 +290,7 @@ int r2_fwd_kin(struct device *d0, int runlevel)
 //log_file("Arm %d - Current Thetas = %f, %f, %f, %f, %f, %f\n", m, lo_thetas[0] * r2d, lo_thetas[1] * r2d, lo_thetas[2], lo_thetas[3] * r2d, lo_thetas[4] * r2d,lo_thetas[5] * r2d);
 #endif
 		/// execute FK
+//cout<<lo_thetas[0]*r2d<<endl;
 		fwd_kin(lo_thetas, arm, xf);
 
 		d0->mech[m].pos.x = xf.getOrigin()[0] * (1000.0*1000.0);
@@ -472,7 +475,21 @@ int r2_inv_kin(struct device *d0, int runlevel)
 	struct position    * pos_d;
     ik_solution iksols[2] = {{},{}}; 
 	double gangles[2]={0,0};
-    
+#ifdef save_logs
+	for (int m=0; m<NUM_MECH; m++)
+	{
+     	//log_msg("Arm %d - Current Thetas = %f, %f, %f, %f, %f, %f\n", m, lo_thetas[0]*r2d, lo_thetas[1]*r2d, lo_thetas[2], lo_thetas[3]*r2d, lo_thetas[4]*r2d,lo_thetas[5]*r2d);
+	log_file("Input to IK: JPos - Arm %d = %f, %f, %f, %f, %f, %f, %f, %f\n", m, 
+               d0->mech[m].joint[0].jpos*r2d, 
+               d0->mech[m].joint[1].jpos*r2d,
+               d0->mech[m].joint[2].jpos, 
+               d0->mech[m].joint[3].jpos*r2d, 
+               d0->mech[m].joint[4].jpos*r2d,
+               d0->mech[m].joint[5].jpos*r2d,
+               d0->mech[m].joint[6].jpos*r2d,
+               d0->mech[m].joint[7].jpos*r2d);
+ 	}
+#endif
 	//  Do FK for each mechanism
 	for (int m=0; m<NUM_MECH; m++)
 	{
@@ -491,16 +508,21 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		pos_d = &(d0->mech[m].pos_d);       	
 
 #ifdef save_logs
-		//log_file("IK) Desired Pos = (%d, %d, %d)\n", pos_d->x, pos_d->y, pos_d->z);
+	log_file("IK) Desired Pos - Arm %d = (%d, %d, %d)\n", m, pos_d->x, pos_d->y, pos_d->z);
                   
-        //log_file("IK) Desired Ori = \n %f, %f, %f \n %f, %f, %f \n %f, %f, %f \n", ori_d->R[0][0], ori_d->R[0][1], ori_d->R[0][2], ori_d->R[1][0], ori_d->R[1][1], ori_d->R[1][2], ori_d->R[2][0], ori_d->R[2][1], ori_d->R[2][2]);
-
+        log_file("IK) Desired Ori + Grasp = \n %f, %f, %f \n %f, %f, %f \n %f, %f, %f \n %d\n", ori_d->R[0][0], ori_d->R[0][1], ori_d->R[0][2], ori_d->R[1][0], ori_d->R[1][1], ori_d->R[1][2], ori_d->R[2][0], ori_d->R[2][1], ori_d->R[2][2], d0->mech[m].ori_d.grasp);
+ 
 #endif
 
 		// copy R matrix
 		for (int i = 0; i < 3; i++)
 			for (int j = 0; j < 3; j++)
 				(xf.getBasis())[i][j] = ori_d->R[i][j];
+
+//for (int i = 0; i < 3; i++)
+		//	for (int j = 0; j < 3; j++)
+//cout<<pos_d->x<<" "<<pos_d->y<<" "<<pos_d->z<< endl;
+
 
 		xf.setBasis( tf::Matrix3x3(ori_d->R[0][0], ori_d->R[0][1], ori_d->R[0][2],
 			     ori_d->R[1][0], ori_d->R[1][1], ori_d->R[1][2],
@@ -525,6 +547,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
 */
 		// DO IK
 		ik_solution iksol[8] = {{},{},{},{},{},{},{},{}};
+
 		int ret = inv_kin(xf, arm, iksol);
 		if (ret < 0)
 		{
@@ -533,9 +556,9 @@ int r2_inv_kin(struct device *d0, int runlevel)
 			log_file("Error: ik failed gracefully (arm%d ret:%d)", arm, ret);                 	
 #endif		
 		}
-#ifdef save_logs	      
-/*		for (int i =0; i < 8;i++)
-	        log_file("Arm %d - IK Solution %d = %f, %f, %f, %f, %f, %f\n", m, i+1 ,iksol[i].th1 * r2d, iksol[i].th2 * r2d, iksol[i].d3, iksol[i].th4 * r2d, iksol[i].th5 * r2d, iksol[i].th6 * r2d);*/
+#ifdef save_logs	     		
+		for (int i =0; i < 8;i++)
+	        log_file("====== Arm %d - IK Solution %d = %f, %f, %f, %f, %f, %f\n", m, i+1 ,iksol[i].th1 * r2d, iksol[i].th2 * r2d, iksol[i].d3, iksol[i].th4 * r2d, iksol[i].th5 * r2d, iksol[i].th6 * r2d);
 
 #endif
 		// Check solutions - compare IK solutions to current joint angles...
@@ -560,14 +583,10 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		double sol_err;
 		int check_result = 0;
 
-
-#ifdef simulator
-     	//log_file("Arm %d - Current Thetas = %f, %f, %f, %f, %f, %f\n", m, lo_thetas[0] * r2d, lo_thetas[1] * r2d, lo_thetas[2], lo_thetas[3] * r2d, lo_thetas[4] * r2d,lo_thetas[5] * r2d);
-#endif
- 	
 		if ( (check_result = check_solutions(lo_thetas, iksol, sol_idx, sol_err)) < 0)
 		{
-			cout << "IK failed\n";
+			if(gTime%100 == 0)			
+				cout << "IK failed\n";	
 #ifdef save_logs
 			log_file("Error: IK failed (arm %d)\n",arm);                	
 #endif
@@ -581,7 +600,12 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		tf::Transform xf_sat;
 		double gangle = double(d0->mech[m].ori_d.grasp) / 1000.0;
 		theta2joint(iksol[sol_idx], Js);
-		
+/*		if(gTime%10 == 0)
+		{
+			cout<<" i am here============================================="<<endl;
+			cout<<Js[0]*r2d<<" "<<Js[1]*r2d<<" "<<Js[2]<<" "<<Js[3]*r2d<<" "<<Js[4]*r2d
+        	            << Js[5]*r2d<<" "<<Js[6]*r2d<<" "<<Js[7]<<endl;
+		}*/
 #ifdef simulator    
 		if (m == 0)
 		{
@@ -592,13 +616,24 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		{
 		    gangles[1] = gangle;
                     iksols[1] = iksol[sol_idx]; 
-	 	}		
-	   	/*log_file("IK_Thetas_Arm%d: %f, %f, %f, %f, %f, %f, %f\n", 
+	 	}	
+		/*if(gTime%1000 == 0)	 
+		   	log_msg("IK_Thetas_Arm%d: %f, %f, %f, %f, %f, %f, %f\n", 
                         m,iksol[sol_idx].th1*r2d,iksol[sol_idx].th2*r2d,
                         iksol[sol_idx].d3,
                         iksol[sol_idx].th4*r2d, iksol[sol_idx].th5*r2d,
                         iksol[sol_idx].th6*r2d, 
                         double(d0->mech[m].ori_d.grasp));*/
+#ifdef save_logs
+			log_file("IK Solution Js - Arm%d: %f, %f, %f, %f, %f, %f\n", 
+                        m,
+                        Js[0]*r2d,
+                        Js[1]*r2d,
+                        Js[2]*r2d,
+                        Js[3]*r2d, 
+                        Js[4]*r2d,
+                        Js[5]*r2d);             	
+#endif
 
 #endif
 		int limited = apply_joint_limits(Js,Js_sat);
@@ -632,7 +667,7 @@ int r2_inv_kin(struct device *d0, int runlevel)
 		d0->mech[m].joint[GRASP1  ].jpos_d = -Js[5] +  gangle / 2;
 		d0->mech[m].joint[GRASP2  ].jpos_d =  Js[5] +  gangle / 2;
 #ifdef save_logs
-	   	log_file("IK_Thetas_Arm%d: %f, %f, %f, %f, %f, %f, %f\n", 
+			log_file("IK Solution Changed: Jpos - Arm%d: %f, %f, %f, %f, %f, %f, %f\n", 
                         m,
                         d0->mech[m].joint[SHOULDER].jpos_d*r2d,
                         d0->mech[m].joint[ELBOW   ].jpos_d*r2d,
@@ -659,14 +694,14 @@ int r2_inv_kin(struct device *d0, int runlevel)
 			for (int i=0; i<8; i++)
 			{
 				theta2joint(iksol[i], Js);
-				log_msg("ik_joints[%d]:\t( %3f,\t %3f,\t %3f,\t %3f,\t %3f,\t %3f)",i,
+				/*log_msg("ik_joints[%d]:\t( %3f,\t %3f,\t %3f,\t %3f,\t %3f,\t %3f)",i,
 						Js[0] * r2d,
 						Js[1] * r2d,
 						Js[2],
 						Js[3] * r2d,
 						Js[4] * r2d,
 						Js[5] * r2d
-						);
+						);*/
 			}
 		}
 	}
@@ -722,7 +757,6 @@ int  __attribute__ ((optimize("0"))) inv_kin(tf::Transform in_T06, l_r in_arm, i
 	}
 
 	for (int i=0;i<8;i++)    iksol[i].arm = in_arm;
-
 
 	//  Step 1, Compute P5
 	tf::Transform  T60 = in_T06.inverse();
@@ -1027,15 +1061,17 @@ int check_solutions(double *in_thetas, ik_solution * iksol, int &out_idx, double
 			minerr=s2err;
 			minidx=i;
 		}
+        //cout << "==== Min Error"<< minerr << endl;
 	}
-
+	
+        for (int i = 0; i<10000000; i++);
 	if (minerr>eps)
 	{
 		minidx=9;
 		minerr = 0;
 		if (gTime %100 == 0 && iksol[minidx].arm == dh_left)
 		{
-			cout << "failed (err>eps) on j=\t\t(" << in_thetas[0] * r2d << ",\t" << in_thetas[1] *r2d << ",\t" << in_thetas[2] << ",\t" << in_thetas[3] * r2d << ",\t" << in_thetas[4] * r2d << ",\t" << in_thetas[5] * r2d << ")"<<endl;
+				cout << "failed (err>eps) on j=\t\t(" << in_thetas[0] * r2d << ",\t" << in_thetas[1] *r2d << ",\t" << in_thetas[2] << ",\t" << in_thetas[3] * r2d << ",\t" << in_thetas[4] * r2d << ",\t" << in_thetas[5] * r2d << ")"<<endl;
 
 			for (int idx=0;idx<8;idx++)
 			{
@@ -1051,7 +1087,7 @@ int check_solutions(double *in_thetas, ik_solution * iksol, int &out_idx, double
 		}
 		return -1;
 	}
-
+	//cout << "thetas" << in_thetas[4]*r2d << "-" << iksol[minidx].th5*r2d << endl;
 	out_idx=minidx;
 	out_err=minerr;
 	return rollover;

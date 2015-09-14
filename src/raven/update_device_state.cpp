@@ -51,7 +51,7 @@ t_controlmode newRobotControlMode = homing_mode;
  */
 int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdParams, struct device *device0)
 {
-    ///log_msg("updateDeviceState %d", currParams->runlevel);///Added
+    //log_file("updateDeviceState %d", currParams->runlevel);///Added
     currParams->last_sequence = rcvdParams->last_sequence;
 #ifdef packetgen
     program_state = 5;
@@ -103,8 +103,7 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 #ifdef simulator 
 	if (currParams->last_sequence == 1)
 	{
-            /*for (int j=0;j<16;j++)    
-                log_msg("jpos %d = %f\n", j,rcvdParams->jpos_d[j]);*/
+	    log_msg("I am updating jpos_d\n");
  	    device0->mech[0].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[0];
      	    device0->mech[0].joint[ELBOW].jpos_d = rcvdParams->jpos_d[1];
 	    device0->mech[0].joint[Z_INS].jpos_d = rcvdParams->jpos_d[2];
@@ -119,7 +118,11 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 	    device0->mech[1].joint[WRIST].jpos_d = rcvdParams->jpos_d[13];
 	    device0->mech[1].joint[GRASP1].jpos_d = rcvdParams->jpos_d[14];
 	    device0->mech[1].joint[GRASP2].jpos_d = rcvdParams->jpos_d[15];
-	    /*device0->mech[0].joint[SHOULDER].jpos_d = 0.521722;
+	}
+	/*if (currParams->last_sequence == 1)	
+ 	{
+	    log_msg("I am using some default jpos_d\n");
+ 	    device0->mech[0].joint[SHOULDER].jpos_d = 0.521722;
      	    device0->mech[0].joint[ELBOW].jpos_d = 1.585218;
 	    device0->mech[0].joint[Z_INS].jpos_d = 0.400515;
 	    device0->mech[0].joint[TOOL_ROT].jpos_d = -0.010442;
@@ -132,16 +135,10 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 	    device0->mech[1].joint[TOOL_ROT].jpos_d = 0.013722;
 	    device0->mech[1].joint[WRIST].jpos_d = -0.070899;
 	    device0->mech[1].joint[GRASP1].jpos_d = 0.702793;
-	    device0->mech[1].joint[GRASP2].jpos_d = 0.729010;*/
-	}
-        /*for (int i = 0; i < NUM_MECH; i++)
-        {        
-            for (int ch=0;ch<8;ch++)
-	    {
-                device0->mech[i].joint[ch].enc_val = rcvdParams->enc_d[i*8+ch];
-                device0->mech[i].joint[ch].enc_offset = rcvdParams->dac_d[i*8+ch]; 
-            }     
+	    device0->mech[1].joint[GRASP2].jpos_d = 0.729010;
 	}*/
+           /*for (int j=0;j<8;j++)    
+                log_msg("jpos %d = %f\n", j,device0->mech[0].joint[j].jpos_d*180/M_PI);*/
 #endif
         for (int i = 0; i < NUM_MECH; i++)
         {
@@ -150,10 +147,9 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
             device0->mech[i].pos_d.z = rcvdParams->xd[i].z;
             device0->mech[i].ori_d.grasp  = rcvdParams->rd[i].grasp;
 
-
             for (int j=0;j<3;j++)
                 for (int k=0;k<3;k++)
-                device0->mech[i].ori_d.R[j][k]  = rcvdParams->rd[i].R[j][k];
+	           device0->mech[i].ori_d.R[j][k]  = rcvdParams->rd[i].R[j][k];
         }
     }
 
@@ -185,12 +181,10 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
     {
         device0->surgeon_mode=rcvdParams->surgeon_mode; //store the surgeon_mode to DS0
     }
-#ifdef simulator
-/*    log_msg("Device desired end-effector positions: (%d,%d,%d)/(%d,%d,%d)",
-            device0->mech[0].pos_d.x, device0->mech[0].pos_d.y, device0->mech[0].pos_d.z,
-            device0->mech[1].pos_d.x, device0->mech[1].pos_d.y, device0->mech[1].pos_d.z);
-*/
-        //log_file("Current Control Mode: %d\n",currParams->robotControlMode);         
+#ifdef save_logs
+    //log_file("Surgoen mode = %d\n",device0->surgeon_mode);
+    //log_msg("-----> Runlevel = %d\n",currParams->runlevel);
+    //log_file("Current Control Mode: %d\n",currParams->robotControlMode);         
 #endif
  
     return 0;

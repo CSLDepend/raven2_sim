@@ -32,8 +32,8 @@
 // Homa's Macros
 //#define simulator // running with no hardware
 //#define dyn_simulator // run the dynamic models
-//#define packetgen  // use packet generator instead of GUI
-//#define packetgen_restart // packet generator can restart after an E-STOP
+#define packetgen  // use packet generator instead of GUI
+#define packetgen_restart // packet generator can restart after an E-STOP
 #define save_logs // save trajectory logs into sim_log.txt
 #define log_USB // log USB packets sent
 //#define no_logging // diable logging
@@ -210,8 +210,8 @@
 #define GRASP2_TR_GOLD_ARM     (GRASP2_TR_GREEN_ARM)
 
 //Link Angles/Lengths
-#define A12 (float)(1.30899694)    /*Link1 - 75deg in RAD*/
-#define A23 (float)(0.907571211)    /*Link2 - 52deg in RAD - was set to 60*/
+#define A12_ (float)(1.30899694)    /*Link1 - 75deg in RAD*/
+#define A23_ (float)(0.907571211)    /*Link2 - 52deg in RAD - was set to 60*/
 
 //Kinematic Zero Offset (encoder space)
 #define SHOULDER_GOLD_KIN_OFFSET (float)(0.0) //(62.0)

@@ -58,7 +58,6 @@ void stateMachine(struct device *device0, struct param_pass *currParams, struct 
     u_08 tmp;
     rlDesired = 9; // arbitrary large number
 
-
     // Checks runlevel of all mechanisms. Lowest runlevel is chosen.
     for (i=0;i<NUM_MECH;i++)
     {
@@ -85,7 +84,8 @@ void stateMachine(struct device *device0, struct param_pass *currParams, struct 
     *rl = rlDesired;            // Update Run Level
     device0->runlevel = *rl;    // Log runlevels in DS0.
     log_msg("Entered runlevel %d", *rl);
- 
+    log_file("Entered runlevel %d", *rl);
+	
     if (*rl == RL_E_STOP)
     {
         if (soft_estopped)
@@ -99,5 +99,4 @@ void stateMachine(struct device *device0, struct param_pass *currParams, struct 
         initialized = FALSE;
         currParams->sublevel = 0;
     }
-
 }

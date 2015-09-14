@@ -93,13 +93,16 @@ void updateAtmelInputs(struct device device0, int runlevel)
 
     //Update PLC State
     PLCState = (device0.mech[0].inputs & (PIN_PS0 | PIN_PS1)) >> 6;
-#ifdef skip_init_button
-    //log_msg("Mech0.inputs: %#x\n",device0.mech[0].inputs);
+#ifdef save_logs
+    //log_file("Mech0.inputs: %#x\n",device0.mech[0].inputs);
     static int j;
-    //if (j++ % 1000 == 0)
-        //log_msg("PLC State is %d\n",PLCState);
-        //log_msg("Run level is %d\n",runlevel);
-    //if (PLCState != runlevel)
-    //    log_msg("RunLevels on Linux Box and PLC do not match!!!\n");
+    if (PLCState != runlevel)
+    {
+        log_file("RunLevels on Linux Box and PLC do not match!!!\n");
+        log_file("PLC State is %d\n",PLCState);
+	log_file("Other PLC State is %d\n",(device0.mech[1].inputs & (PIN_PS0 | PIN_PS1)) >> 6);
+        log_file("Run level is %d\n",runlevel);
+        log_file("Surgeon Mode is %d\n",device0.surgeon_mode);
+    }
 #endif
 }

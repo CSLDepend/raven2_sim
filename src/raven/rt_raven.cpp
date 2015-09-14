@@ -100,10 +100,13 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
 
 //#ifndef simulator
     //Initialization code
+
     initRobotData(device0, currParams->runlevel, currParams);
 
     //Compute Mpos & Velocities
+
     stateEstimate(device0); 
+
 //#endif
 
 #ifdef packetgen
@@ -111,7 +114,6 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
 #endif
     //Foward Cable Coupling
     fwdCableCoupling(device0, currParams->runlevel);
-
 #ifdef packetgen
     program_state = 9;
 #endif
@@ -185,6 +187,9 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
             {
                 currParams->robotControlMode = cartesian_space_control;
                 newRobotControlMode = cartesian_space_control;
+	        /*log_msg("Homing Done: end-effector positions: (%d,%d,%d)/(%d,%d,%d)\n",
+		device0->mech[0].pos.x, device0->mech[0].pos.y, device0->mech[0].pos.z,
+	        device0->mech[1].pos.x, device0->mech[1].pos.y, device0->mech[1].pos.z);*/
             }
 #else            
 	    currParams->runlevel = RL_PEDAL_DN; 

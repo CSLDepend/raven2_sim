@@ -193,6 +193,14 @@ void teleopIntoDS1(struct u_struct *us_t)
         for (int j=0;j<3;j++)
             for (int k=0;k<3;k++)
                 data1.rd[i].R[j][k] = rot_mx_temp[j][k];
+        log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",
+               i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);  
+
+        const int graspmax = (M_PI/2 * 1000);
+        const int graspmin = (-30.0 * 1000.0 DEG2RAD);
+	data1.rd[i].grasp -= 2*us_t->grasp[armidx];
+	if (data1.rd[i].grasp>graspmax) data1.rd[i].grasp=graspmax;
+	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
 #else
 	// Set Position command
         data1.xd[i].x = us_t->delx[armidx];
@@ -200,8 +208,9 @@ void teleopIntoDS1(struct u_struct *us_t)
 	data1.xd[i].z = us_t->delz[armidx];
 
 	// commented debug output
-        //log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",
-        //       i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);      
+        log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",
+               i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);  
+  
 
         // Set rotation command
 	if (i == 0)
@@ -210,18 +219,14 @@ void teleopIntoDS1(struct u_struct *us_t)
 		    for (int k=0;k<3;k++)
 		        data1.rd[0].R[j][k] = us_t->R_l[j][k];
 	}        
-	else
+	else 
 	{
 		for (int j=0;j<3;j++)
 		    for (int k=0;k<3;k++)
 		        data1.rd[1].R[j][k] = us_t->R_r[j][k];
 	}  
 #endif
-        const int graspmax = (M_PI/2 * 1000);
-        const int graspmin = (-30.0 * 1000.0 DEG2RAD);
-	data1.rd[i].grasp -= 2*us_t->grasp[armidx];
-	if (data1.rd[i].grasp>graspmax) data1.rd[i].grasp=graspmax;
-	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
+
 #ifdef simulator 
         /*// Get the encoder values
 	for (int ch=0;ch<16;ch++)
@@ -232,10 +237,18 @@ void teleopIntoDS1(struct u_struct *us_t)
 	}*/
 
         // Get initial joint positions from input, assign them to the desired jpos
-	if (us_t->sequence == 1)	    
-            for (int j=0;j<16;j++)          
-      	        data1.jpos_d[j] = (us_t->jpos[j])*M_PI/180;  
-                       
+	if (us_t->sequence == 1)	
+        {    
+            for (int j=0;j<16;j++)  
+		data1.jpos_d[j] = (us_t->jpos[j])*M_PI/180;
+                         
+	    log_file("Local IO joint positions: (%f,%f,%f,%f,%f,%f,%f\n%f,%f,%f,%f,%f,%f,%f\n)",
+               		 data1.jpos_d[0]*r2d, data1.jpos_d[1]*r2d, data1.jpos_d[2]*d2r,
+               		 data1.jpos_d[4]*r2d, data1.jpos_d[5]*r2d, data1.jpos_d[6]*r2d,
+			 data1.jpos_d[7]*r2d, data1.jpos_d[8]*r2d, data1.jpos_d[9]*r2d,
+			 data1.jpos_d[10]*d2r, data1.jpos_d[12]*r2d, data1.jpos_d[13]*r2d,
+			 data1.jpos_d[14]*r2d, data1.jpos_d[15]*r2d);
+	}
 #endif
     }
 
@@ -251,7 +264,9 @@ void teleopIntoDS1(struct u_struct *us_t)
                //data1.xd[0].x, data1.xd[0].y, data1.xd[0].z,
                //data1.xd[1].x, data1.xd[1].y, data1.xd[1].z);
     data1.surgeon_mode = us_t->surgeon_mode;
-    
+
+    //log_file("Data1 Surgeon Mode is %d\n",us_t->surgeon_mode);
+
     pthread_mutex_unlock(&data1Mutex);
 }
 

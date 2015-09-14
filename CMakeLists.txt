@@ -27,17 +27,29 @@ if (CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} -g -Wall -ansi -pedantic")
 endif()
 
+#set(BOOST_INCLUDEDIR ~/Desktop/boost)
+#set(BOOST_ROOT ~/Desktop)
+#set(Boost_USE_STATIC_LIBS ON)
+#find_package(Boost 1.58.0 COMPONENTS math REQUIRED) 
+##include_directories(${Boost_INCLUDE_DIRS}) 
+
 #common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
+rosbuild_add_boost_directories()
+#rosbuild_add_library(dyn src/raven/green_arm_dyn.cpp)
+#target_link_libraries(dyn tnt jama125)
+#rosbuild_link_boost(dyn thread)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
 include_directories(src/raven)
 include_directories(include)
 include_directories(include/raven)
+
+#add include directories for dynamics integration
+include_directories(include/tnt)
+include_directories(include/jama125)
+#include_directories(include/boost)
+
 rosbuild_find_ros_package(dynamic_reconfigure)
 include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
 gencfg()
@@ -46,6 +58,8 @@ gencfg()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-result -Wno-missing-field-initializers")
 
 rosbuild_add_executable(r2_control
+# add right arm dynamics
+src/raven/green_arm_dyn.cpp
 #src/raven/asinw.cpp
 src/raven/dof.cpp
 src/raven/fwd_cable_coupling.cpp

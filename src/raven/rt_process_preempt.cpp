@@ -304,6 +304,7 @@ static void *rt_process(void* )
       //Get state updates from master
       if ( checkLocalUpdates() == TRUE)
       {
+	
 #ifdef packetgen
    	logging = 1;  
         no_pack_cnt++; 
@@ -313,8 +314,9 @@ static void *rt_process(void* )
       }
       else
       {
+	 
 #ifdef packetgen
-   	logging = 0;  
+   	logging = 0; 
         //log_file("RT_PROCESS) No new packets. Use previous parameters.\n");         
 #endif
         rcvdParams.runlevel = currParams.runlevel;
@@ -369,7 +371,10 @@ static void *rt_process(void* )
 */
 int init_module(void)
 {
-#ifndef simulator
+#ifdef simulator
+  device0.mech[0].type = GOLD_ARM;
+  device0.mech[1].type = GREEN_ARM;
+#else
   log_msg("Initializing USB I/O...");
 
   //Initiailze USB Board
@@ -378,9 +383,6 @@ int init_module(void)
      err_msg("\nERROR: Could not init USB. Boards on?");
      return STARTUP_ERROR;
   }
-#else
-  device0.mech[0].type = GOLD_ARM;
-  device0.mech[1].type = GREEN_ARM;
 #endif
   // Initialize Local_io datastructs.
   log_msg("Initializing Local I/O...");

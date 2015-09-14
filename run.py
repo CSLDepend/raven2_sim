@@ -29,10 +29,20 @@ import numpy as np
 import struct
 import time
 import signal
+from sys import argv
 
-src = '~/homa_wksp/raven_2/src/raven'
-raven_home = '~/homa_wksp/raven_2'
-root_dir = '~/homa_wksp'
+script, mode = argv
+if mode == "sim":
+    print "Run the Simulation"
+elif mode == "rob": 
+    print "Run the Real Robot"
+else:
+    print "Usage: python run.py <sim|rob>"
+    sys.exit(2)
+
+src = '~/test_wksp/raven_2/src/raven'
+raven_home = '~/test_wksp/raven_2'
+root_dir = '~/test_wksp'
 cur_inj = -1
 saved_param = []
 surgeon_simulator = 1;
@@ -52,7 +62,7 @@ s.close()
 
 env = os.environ.copy()
 '''splits = env['ROS_PACKAGE_PATH'].split(':')
-splits[-1] = '/home/alemzad1/homa_wksp/raven_2'
+splits[-1] = '/home/alemzad1/test_wksp/raven_2'
 os.environ['ROS_PACKAGE_PATH']=':'.join(splits)
 print os.environ['ROS_PACKAGE_PATH'] '''
 
@@ -60,7 +70,8 @@ goldenRavenTask= 'xterm -e roslaunch raven_2 raven_2.launch'
 ravenTask = 'xterm -hold -e roslaunch raven_2 raven_2.launch'
 visTask = 'xterm -hold -e roslaunch raven_visualization raven_visualization.launch'
 if (surgeon_simulator == 1):
-    packetTask = 'xterm -hold -e python '+raven_home+'/Real_Packet_Generator_Surgeon.py'
+    packetTask = 'xterm -hold -e python '+raven_home+'/Real_Packet_Generator_Surgeon.py '+ mode
+    #print(packetTask)
 else:
     packetTask = 'xterm -e python '+raven_home+'/Packet_Generator.py'
 
@@ -107,7 +118,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # Call visualization, packet generator, and Raven II software
 vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
-time.sleep(3.5)  
+time.sleep(4)  
 packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
 raven_proc = subprocess.Popen(ravenTask, env=env, shell=True, preexec_fn=os.setsid)
 
