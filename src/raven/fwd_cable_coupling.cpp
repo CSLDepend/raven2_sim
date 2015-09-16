@@ -27,10 +27,15 @@
 #include "fwd_cable_coupling.h"
 #include "log.h"
 #include "tool.h"
-#include "green_arm_dyn.h"
+#include "two_arm_dyn.h"
+#include <time.h>
 
 extern struct DOF_type DOF_types[];
 extern int NUM_MECH;
+extern long int iteration;
+
+state_type r_d_gold, r_d_green;
+struct timespec t1, t2; 
 
 /**
 * \fn void fwdCableCoupling(struct device *device0, int runlevel)
@@ -160,39 +165,87 @@ void fwdMechCableCoupling(struct mechanism *mech)
 #else
 #ifdef dyn_simulator
 	// Estimate the current joint positions using dynamic model
-       if (mech->type == GREEN_ARM){
-              state_type current_state = {(double)mech->joint[SHOULDER].jpos, (double)mech->joint[ELBOW].jpos, 
-                                          (double)mech->joint[Z_INS].jpos, (double) mech->joint[TOOL_ROT].jpos, 
-                                          0.0, 0.0,0.0,0.0};
+        //int current_runlevel = (mech->inputs & (0x40 | 0x80)) >> 6;
+	//if (current_runlevel == 3)
+        if (abs(mech->joint[SHOULDER].jpos)>0.1)
+	{
+	 	if (mech->type == GREEN_ARM)
+		{	
+		      state_type current_state = {(double)mech->joint[SHOULDER].jpos, (double)mech->joint[ELBOW].jpos, 
+		                                  (double)mech->joint[Z_INS].jpos, (double) mech->joint[TOOL_ROT].jpos, 
+		                                  (double)mech->joint[SHOULDER].jvel,(double)mech->joint[ELBOW].jvel ,(double)mech->joint[Z_INS].jvel,0.0};
 
-	      state_type r_d = {(double)mech->joint[SHOULDER].jpos_d, (double)mech->joint[ELBOW].jpos_d, 
-                                          (double)mech->joint[Z_INS].jpos_d, (double) mech->joint[TOOL_ROT].jpos_d, 
-                                          0.0, 0.0,0.0,0.0};
+		      r_d_green = {(double)mech->joint[SHOULDER].jpos_d, (double)mech->joint[ELBOW].jpos_d, 
+		                                  (double)mech->joint[Z_INS].jpos_d, (double) mech->joint[TOOL_ROT].jpos_d, 
+		                                  0.0, 0.0,0.0,0.0};
+		      clock_gettime(CLOCK_REALTIME,&t1);
+		      integrate_adaptive(rk4(), sys_dyn_green, current_state, 0.0, 0.001, 0.0001);  
+		      clock_gettime(CLOCK_REALTIME,&t2);
+		      double duration=  double((double)t2.tv_nsec/1000 - (double)t1.tv_nsec/1000);
 
+		      log_file("Green Arm Dynamics: %f ms\n",duration);
 
-	      //integrate_adaptive(rk4(), sys_dyn, current_state, 0.0, 0.001, 0.0001);  
-
-              mech->joint[SHOULDER].jpos 	= (float)current_state[0];
-              mech->joint[ELBOW].jpos    	= (float)current_state[1];
-  	      mech->joint[Z_INS].jpos           = (float)current_state[2];        
-	      mech->joint[TOOL_ROT].jpos 	= (float)current_state[3];
+		      mech->joint[SHOULDER].jpos 	= (float)current_state[0];
+		      mech->joint[ELBOW].jpos    	= (float)current_state[1];
+	  	      mech->joint[Z_INS].jpos           = (float)current_state[2];        
+		      mech->joint[TOOL_ROT].jpos 	= (float)current_state[3];
 	
-              mech->joint[SHOULDER].jvel 	= (float)current_state[4];
-	      mech->joint[ELBOW].jvel 		= (float)current_state[5];
-	      mech->joint[Z_INS].jvel 		= (float)current_state[6];
-        }
-	mech->joint[SHOULDER].jpos 		= mech->joint[SHOULDER].jpos_d;// - mech->joint[SHOULDER].jpos_off;
-	mech->joint[ELBOW].jpos 		= mech->joint[ELBOW].jpos_d;// - mech->joint[ELBOW].jpos_off;
-	mech->joint[TOOL_ROT].jpos 		= mech->joint[TOOL_ROT].jpos_d;// - mech->joint[TOOL_ROT].jpos_off;
-	mech->joint[Z_INS].jpos 		= mech->joint[Z_INS].jpos_d;//  - mech->joint[Z_INS].jpos_off;
-	// Short-circuiting: Assumes a perfect model for the last three degrees of freedom
-        mech->joint[WRIST].jpos 		= mech->joint[WRIST].jpos_d;// - mech->joint[WRIST].jpos_off;
-	mech->joint[GRASP1].jpos 		= mech->joint[GRASP1].jpos_d;// - mech->joint[GRASP1].jpos_off;
-	mech->joint[GRASP2].jpos 		= mech->joint[GRASP2].jpos_d;// - mech->joint[GRASP2].jpos_off;
-        // Estimate the current joint velocity using dynamic model
-	mech->joint[SHOULDER].jvel 		= th1_dot;// - mech->joint[SHOULDER].jpos_off;
-	mech->joint[ELBOW].jvel 		= th2_dot;// - mech->joint[ELBOW].jpos_off;
-	mech->joint[Z_INS].jvel 		= d4_dot;//  - mech->joint[Z_INS].jpos_off;
+		      mech->joint[SHOULDER].jvel 	= (float)current_state[4];
+		      mech->joint[ELBOW].jvel 		= (float)current_state[5];
+		      mech->joint[Z_INS].jvel 		= (float)current_state[6];
+
+
+		      mech->joint[WRIST].jpos 		= mech->joint[WRIST].jpos_d;// - mech->joint[WRIST].jpos_off;
+		      mech->joint[GRASP1].jpos 		= mech->joint[GRASP1].jpos_d;// - mech->joint[GRASP1].jpos_off;
+		      mech->joint[GRASP2].jpos 		= mech->joint[GRASP2].jpos_d;// - mech->joint[GRASP2].jpos_off;
+		}
+		else if (mech->type == GOLD_ARM)
+		{
+
+		     state_type current_state = {(double)mech->joint[SHOULDER].jpos, (double)mech->joint[ELBOW].jpos, 
+		                                  (double)mech->joint[Z_INS].jpos, (double) mech->joint[TOOL_ROT].jpos, 
+		                                  (double)mech->joint[SHOULDER].jvel,(double)mech->joint[ELBOW].jvel ,(double)mech->joint[Z_INS].jvel,0.0};
+
+		      r_d_gold = {(double)mech->joint[SHOULDER].jpos_d, (double)mech->joint[ELBOW].jpos_d, 
+		                                  (double)mech->joint[Z_INS].jpos_d, (double) mech->joint[TOOL_ROT].jpos_d, 
+		                                  0.0, 0.0,0.0,0.0};
+		      clock_gettime(CLOCK_REALTIME,&t1);
+		      integrate_adaptive(rk4(), sys_dyn_gold, current_state, 0.0, 0.001, 0.0001);  
+		      clock_gettime(CLOCK_REALTIME,&t2);
+		      double duration=  double((double)t2.tv_nsec/1000 - (double)t1.tv_nsec/1000);
+
+		      log_file("Gold Arm Dynamics: %f ms\n",duration);
+
+		      mech->joint[SHOULDER].jpos 	= (float)current_state[0];
+		      mech->joint[ELBOW].jpos    	= (float)current_state[1];
+	  	      mech->joint[Z_INS].jpos           = (float)current_state[2];        
+		      mech->joint[TOOL_ROT].jpos 	= (float)current_state[3];
+	
+		      mech->joint[SHOULDER].jvel 	= (float)current_state[4];
+		      mech->joint[ELBOW].jvel 		= (float)current_state[5];
+		      mech->joint[Z_INS].jvel 		= (float)current_state[6];
+
+
+		      mech->joint[WRIST].jpos 		= mech->joint[WRIST].jpos_d;// - mech->joint[WRIST].jpos_off;
+		      mech->joint[GRASP1].jpos 		= mech->joint[GRASP1].jpos_d;// - mech->joint[GRASP1].jpos_off;
+		      mech->joint[GRASP2].jpos 		= mech->joint[GRASP2].jpos_d;// - mech->joint[GRASP2].jpos_off;
+		}
+	}
+	else
+	{
+		// Short-circuiting: Assumes a perfect model for the last three degrees of freedom
+		mech->joint[SHOULDER].jpos 		= mech->joint[SHOULDER].jpos_d;// - mech->joint[SHOULDER].jpos_off;
+		mech->joint[ELBOW].jpos 		= mech->joint[ELBOW].jpos_d;// - mech->joint[ELBOW].jpos_off;
+		mech->joint[TOOL_ROT].jpos 		= mech->joint[TOOL_ROT].jpos_d;// - mech->joint[TOOL_ROT].jpos_off;
+		mech->joint[Z_INS].jpos 		= mech->joint[Z_INS].jpos_d;//  - mech->joint[Z_INS].jpos_off;
+		mech->joint[WRIST].jpos 		= mech->joint[WRIST].jpos_d;// - mech->joint[WRIST].jpos_off;
+		mech->joint[GRASP1].jpos 		= mech->joint[GRASP1].jpos_d;// - mech->joint[GRASP1].jpos_off;
+		mech->joint[GRASP2].jpos 		= mech->joint[GRASP2].jpos_d;// - mech->joint[GRASP2].jpos_off;
+		// Estimate the current joint velocity using dynamic model
+		mech->joint[SHOULDER].jvel 		= th1_dot;// - mech->joint[SHOULDER].jpos_off;
+		mech->joint[ELBOW].jvel 		= th2_dot;// - mech->joint[ELBOW].jpos_off;
+		mech->joint[Z_INS].jvel 		= d4_dot;//  - mech->joint[Z_INS].jpos_off;
+	}
 #else
         // Shortc-circuiting: Assume a perfect model for the last three degrees of freedom
 	mech->joint[SHOULDER].jpos 		= mech->joint[SHOULDER].jpos_d;// - mech->joint[SHOULDER].jpos_off;

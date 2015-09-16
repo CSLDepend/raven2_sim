@@ -35,7 +35,7 @@ endif()
 
 #common commands for building c++ executables and libraries
 rosbuild_add_boost_directories()
-#rosbuild_add_library(dyn src/raven/green_arm_dyn.cpp)
+#rosbuild_add_library(dyn src/raven/two_arm_dyn.cpp)
 #target_link_libraries(dyn tnt jama125)
 #rosbuild_link_boost(dyn thread)
 #rosbuild_add_executable(example examples/example.cpp)
@@ -58,8 +58,8 @@ gencfg()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-result -Wno-missing-field-initializers")
 
 rosbuild_add_executable(r2_control
-# add right arm dynamics
-src/raven/green_arm_dyn.cpp
+# add arm dynamics
+src/raven/two_arm_dyn.cpp
 #src/raven/asinw.cpp
 src/raven/dof.cpp
 src/raven/fwd_cable_coupling.cpp
