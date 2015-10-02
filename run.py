@@ -31,13 +31,13 @@ import time
 import signal
 from sys import argv
 
-script, mode = argv
+script, mode, packet_gen = argv
 if mode == "sim":
     print "Run the Simulation"
 elif mode == "rob": 
     print "Run the Real Robot"
 else:
-    print "Usage: python run.py <sim|rob>"
+    print "Usage: python run.py <sim|rob> <1:packet_gen|0:gui>"
     sys.exit(2)
 
 src = '~/test_wksp/raven_2/src/raven'
@@ -69,6 +69,7 @@ print os.environ['ROS_PACKAGE_PATH'] '''
 goldenRavenTask= 'xterm -e roslaunch raven_2 raven_2.launch'
 ravenTask = 'xterm -hold -e roslaunch raven_2 raven_2.launch'
 visTask = 'xterm -hold -e roslaunch raven_visualization raven_visualization.launch'
+rostopicTask = 'rostopic echo -p ravenstate >'+raven_home+'/latest_run.csv'
 if (surgeon_simulator == 1):
     packetTask = 'xterm -hold -e python '+raven_home+'/Real_Packet_Generator_Surgeon.py '+ mode
     #print(packetTask)
@@ -101,9 +102,15 @@ def quit():
         time.sleep(1)
     except:
         pass
+    try:
+        os.killpg(rostopic_proc.pid, signal.SIGINT)
+        time.sleep(1)
+    except:
+        pass
 
     os.system("killall python")
     os.system("killall roslaunch")
+    os.system("killall rostopic")    
     os.system("killall r2_control")
     os.system("killall xterm")
     os.system("killall xterm")
@@ -119,9 +126,15 @@ signal.signal(signal.SIGINT, signal_handler)
 # Call visualization, packet generator, and Raven II software
 vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
 time.sleep(4)  
-packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
+if packet_gen == "1":
+	packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
+elif packet_gen == "0":
+	print "Waiting for the GUI packets.."
+else:
+    print "Usage: python run.py <sim|rob> <1:packet_gen|0:gui>"
+    sys.exit(2)
 raven_proc = subprocess.Popen(ravenTask, env=env, shell=True, preexec_fn=os.setsid)
-
+rostopic_proc = subprocess.Popen(rostopicTask, env=env, shell=True, preexec_fn=os.setsid)
 print("Press Ctrl+C to exit.")
 
 #Wait for a response from the robot
