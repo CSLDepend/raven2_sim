@@ -543,6 +543,7 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
             msg_ravenstate.jpos_d[jtype]     = dev->mech[j].joint[i].jpos_d RAD2DEG;
             msg_ravenstate.mpos_d[jtype]     = dev->mech[j].joint[i].mpos_d RAD2DEG;
             msg_ravenstate.encoffsets[jtype] = dev->mech[j].joint[i].enc_offset;
+	    msg_ravenstate.current_cmd[jtype]    = dev->mech[j].joint[i].current_cmd;
         }
     }
 //    msg_ravenstate.f_secs = d.toSec();

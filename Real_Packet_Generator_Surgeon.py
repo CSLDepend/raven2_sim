@@ -103,6 +103,7 @@ def sendPackets():
     seq = 0;
     line = [];
     csvfile1 = open('./teleop_data/traj1.csv'); 
+    #csvfile1 = open('./teleop_data/test921_2.csv'); 
     reader = csv.reader(csvfile1)
     
     # Skip the first packets

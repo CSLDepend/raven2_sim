@@ -396,7 +396,7 @@ void* network_process(void* param1)
                 retval = write(logFile,logbuffer, strlen(logbuffer));
             }
         }
-
+// code i need 
 #ifdef packetgen_restart
 	if (device0.runlevel == 0)
 	{

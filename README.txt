@@ -8,7 +8,7 @@ For more information, please see: http://web.engr.illinois.edu/~alemzad1/papers/
 http://arxiv.org/abs/1504.07135v1
 
 Copyright (C) 2015 University of Illinois Board of Trustees, DEPEND Research Group
-Creators: Homa Alemzadeh, Daniel Chen, and Abishek Krishnamoorthy (rviz) 
+Homa Alemzadeh, Daniel Chen, Abishek Krishnamoorthy (rviz), and Xiao Li (dynamic models) 
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

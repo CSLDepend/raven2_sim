@@ -8,7 +8,7 @@ import genpy
 import std_msgs.msg
 
 class raven_state(genpy.Message):
-  _md5sum = "173f52385e84b98995f307af4bea25a2"
+  _md5sum = "d2da96eb7a75b8ae96854119dcaf9448"
   _type = "raven_2/raven_state"
   _has_header = False #flag to mark the presence of a Header object
   _full_text = """Header      hdr
@@ -31,6 +31,7 @@ float32[16] mpos_d
 float32[16] jpos_d
 float32[2]  grasp_d
 float32[16] encoffsets
+int32[16] current_cmd
 
 ================================================================================
 MSG: std_msgs/Header
@@ -51,8 +52,8 @@ time stamp
 string frame_id
 
 """
-  __slots__ = ['hdr','runlevel','sublevel','last_seq','type','pos','ori','ori_d','pos_d','dt','encVals','tau','mpos','jpos','mvel','jvel','mpos_d','jpos_d','grasp_d','encoffsets']
-  _slot_types = ['std_msgs/Header','int32','int32','int32','int32[2]','int32[6]','float32[18]','float32[18]','int32[6]','duration','int32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[2]','float32[16]']
+  __slots__ = ['hdr','runlevel','sublevel','last_seq','type','pos','ori','ori_d','pos_d','dt','encVals','tau','mpos','jpos','mvel','jvel','mpos_d','jpos_d','grasp_d','encoffsets','current_cmd']
+  _slot_types = ['std_msgs/Header','int32','int32','int32','int32[2]','int32[6]','float32[18]','float32[18]','int32[6]','duration','int32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[2]','float32[16]','int32[16]']
 
   def __init__(self, *args, **kwds):
     """
@@ -62,7 +63,7 @@ string frame_id
     changes.  You cannot mix in-order arguments and keyword arguments.
 
     The available fields are:
-       hdr,runlevel,sublevel,last_seq,type,pos,ori,ori_d,pos_d,dt,encVals,tau,mpos,jpos,mvel,jvel,mpos_d,jpos_d,grasp_d,encoffsets
+       hdr,runlevel,sublevel,last_seq,type,pos,ori,ori_d,pos_d,dt,encVals,tau,mpos,jpos,mvel,jvel,mpos_d,jpos_d,grasp_d,encoffsets,current_cmd
 
     :param args: complete set of field values, in .msg order
     :param kwds: use keyword arguments corresponding to message field names
@@ -111,6 +112,8 @@ string frame_id
         self.grasp_d = [0.,0.]
       if self.encoffsets is None:
         self.encoffsets = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
+      if self.current_cmd is None:
+        self.current_cmd = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
     else:
       self.hdr = std_msgs.msg.Header()
       self.runlevel = 0
@@ -132,6 +135,7 @@ string frame_id
       self.jpos_d = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
       self.grasp_d = [0.,0.]
       self.encoffsets = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
+      self.current_cmd = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
   def _get_types(self):
     """
@@ -175,6 +179,7 @@ string frame_id
       buff.write(_struct_16f.pack(*self.jpos_d))
       buff.write(_struct_2f.pack(*self.grasp_d))
       buff.write(_struct_16f.pack(*self.encoffsets))
+      buff.write(_struct_16i.pack(*self.current_cmd))
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(_x))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(_x))))
 
@@ -255,6 +260,9 @@ string frame_id
       start = end
       end += 64
       self.encoffsets = _struct_16f.unpack(str[start:end])
+      start = end
+      end += 64
+      self.current_cmd = _struct_16i.unpack(str[start:end])
       self.dt.canon()
       return self
     except struct.error as e:
@@ -298,6 +306,7 @@ string frame_id
       buff.write(self.jpos_d.tostring())
       buff.write(self.grasp_d.tostring())
       buff.write(self.encoffsets.tostring())
+      buff.write(self.current_cmd.tostring())
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(_x))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(_x))))
 
@@ -379,6 +388,9 @@ string frame_id
       start = end
       end += 64
       self.encoffsets = numpy.frombuffer(str[start:end], dtype=numpy.float32, count=16)
+      start = end
+      end += 64
+      self.current_cmd = numpy.frombuffer(str[start:end], dtype=numpy.int32, count=16)
       self.dt.canon()
       return self
     except struct.error as e:
