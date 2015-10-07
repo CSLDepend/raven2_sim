@@ -30,7 +30,7 @@
 #include <math.h>
 
 // Homa's Macros
-//#define simulator // running with no hardware
+#define simulator // running with no hardware
 //#define dyn_simulator // run the dynamic models
 #define packetgen  // use packet generator instead of GUI
 #define packetgen_restart // packet generator can restart after an E-STOP
