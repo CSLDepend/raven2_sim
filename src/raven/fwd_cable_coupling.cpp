@@ -33,6 +33,7 @@
 extern struct DOF_type DOF_types[];
 extern int NUM_MECH;
 extern long int iteration;
+extern unsigned long int gTime;
 
 state_type r_d_gold, r_d_green;
 struct timespec t1, t2; 
@@ -193,7 +194,6 @@ void fwdMechCableCoupling(struct mechanism *mech)
 		      mech->joint[SHOULDER].jvel 	= (float)current_state[4];
 		      mech->joint[ELBOW].jvel 		= (float)current_state[5];
 		      mech->joint[Z_INS].jvel 		= (float)current_state[6];
-
 
 		      mech->joint[WRIST].jpos 		= mech->joint[WRIST].jpos_d;// - mech->joint[WRIST].jpos_off;
 		      mech->joint[GRASP1].jpos 		= mech->joint[GRASP1].jpos_d;// - mech->joint[GRASP1].jpos_off;

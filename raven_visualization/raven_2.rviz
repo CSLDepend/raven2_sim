@@ -34,7 +34,7 @@ Panels:
         - /TF1
         - /TF1/Frames1
       Splitter Ratio: 0.5
-    Tree Height: 571
+    Tree Height: 356
 Visualization Manager:
   Class: ""
   Displays:
@@ -234,9 +234,7 @@ Visualization Manager:
   Tools:
     - Class: rviz/Interact
       Hide Inactive Objects: true
-    - Class: rviz/MoveCamera
     - Class: rviz/Select
-    - Class: rviz/FocusCamera
     - Class: rviz/Measure
     - Class: rviz/SetInitialPose
       Topic: /initialpose
@@ -249,7 +247,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 0.663013
+      Distance: 0.949426
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
@@ -261,10 +259,10 @@ Visualization Manager:
         Z: 0.0324322
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.0548
+      Pitch: 0.404797
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.58999
+      Yaw: 1.56999
     Saved: ~
 Window Geometry:
   Displays:
