@@ -1,6 +1,6 @@
 /* Raven 2 Control - Control software for the Raven II robot
  * Copyright (C) 2005-2012  H. Hawkeye King, Blake Hannaford, and the University of Washington BioRobotics Laboratory
- *
+// *
  * This file is part of Raven 2 Control.
  *
  * Raven 2 Control is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 
 // Homa's Macros
 #define simulator // running with no hardware
-//#define dyn_simulator // run the dynamic models
+#define dyn_simulator // run the dynamic models
 #define packetgen  // use packet generator instead of GUI
 #define packetgen_restart // packet generator can restart after an E-STOP
 #define save_logs // save trajectory logs into sim_log.txt

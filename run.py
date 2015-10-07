@@ -31,24 +31,76 @@ import time
 import signal
 from sys import argv
 
-script, mode, packet_gen = argv
-if mode == "sim":
-    print "Run the Simulation"
-elif mode == "rob": 
-    print "Run the Real Robot"
-else:
-    print "Usage: python run.py <sim|rob> <1:packet_gen|0:gui>"
-    sys.exit(2)
-
-src = '~/test_wksp/raven_2/src/raven'
-raven_home = '~/test_wksp/raven_2'
-root_dir = '~/test_wksp'
+src = '/home/raven/test_wksp/raven_2/src/raven'
+raven_home = '/home/raven/test_wksp/raven_2'
+root_dir = '/home/raven/test_wksp'
 cur_inj = -1
 saved_param = []
 surgeon_simulator = 1;
 UDP_IP = "127.0.0.1"
 UDP_PORT = 34000
 
+# Parse the arguments
+script, mode, packet_gen = argv
+if mode == "sim":
+    print "Run the Simulation"
+elif mode == "dyn_sim":
+    print "Run the Dynamic Simulation"
+elif mode == "rob": 
+    print "Run the Real Robot"
+else:
+    print "Usage: python run.py <sim|dyn_sim|rob> <1:packet_gen|0:gui>"
+    sys.exit(2)
+
+
+# Change define macros
+src_file = raven_home + "/include/raven/defines.h"
+bkup_file = raven_home + "/include/raven/defines_back.h"
+chk_file = raven_home + "/include/raven/defines_last_run"
+cmd = 'cp ' + src_file + ' ' + bkup_file
+os.system(cmd)
+#open files
+src_fp = open(src_file,'w')
+bkup_fp = open(bkup_file,'r')
+start_line = 0;
+for i, line in enumerate(bkup_fp):
+    if (line.find('Homa') > 0):
+	start_line = i   
+    if (i == start_line + 1): 
+    	if mode == "rob":
+    	    line = '//'+line
+    if (i == start_line + 2):
+    	if mode == "rob" or mode == "sim":
+    	    line = '//'+line
+    if (i == start_line + 3) or (i == start_line + 4):
+	if packet_gen == "0":   
+	    line = '//'+line
+    src_fp.write(line)
+src_fp.close()
+bkup_fp.close()
+# Make the file
+cmd = 'cd ' + raven_home + ';make clean;make -j > compile.output'
+make_ret = os.system(cmd)
+os.system(cmd)
+#save a check file
+cmd = 'cp ' + src_file + ' ' + chk_file
+os.system(cmd)
+#restore file
+cmd = 'chmod 777 '+bkup_file;
+os.system(cmd);
+cmd = 'cp ' + bkup_file + ' ' + src_file
+# delete backup
+if (os.system(cmd) == 0): 
+    cmd = 'rm ' + bkup_file;
+    os.system(cmd);   
+if (make_ret != 0):
+   print "Make Error: Compilation Failed..\n"
+   quit()
+   sys.exit(0)
+
+
+# Open Sockets
+os.system("killall xterm")
 sock = socket.socket(socket.AF_INET, # Internet
                       socket.SOCK_DGRAM) # UDP
 sock.bind((UDP_IP,UDP_PORT))
@@ -61,10 +113,11 @@ my_ip = s.getsockname()[0]
 s.close()
 
 env = os.environ.copy()
-'''splits = env['ROS_PACKAGE_PATH'].split(':')
-splits[-1] = '/home/alemzad1/test_wksp/raven_2'
-os.environ['ROS_PACKAGE_PATH']=':'.join(splits)
-print os.environ['ROS_PACKAGE_PATH'] '''
+print env
+splits = env['ROS_PACKAGE_PATH'].split(':')
+print splits[-1].split(':') 
+#os.environ['ROS_PACKAGE_PATH']=':'.join(splits)
+#print os.environ['ROS_PACKAGE_PATH'] '''
 
 goldenRavenTask= 'xterm -e roslaunch raven_2 raven_2.launch'
 ravenTask = 'xterm -hold -e roslaunch raven_2 raven_2.launch'
@@ -128,10 +181,11 @@ vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
 time.sleep(4)  
 if packet_gen == "1":
 	packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
+        print "Using the packet generator.."
 elif packet_gen == "0":
 	print "Waiting for the GUI packets.."
 else:
-    print "Usage: python run.py <sim|rob> <1:packet_gen|0:gui>"
+    print "Usage: python run.py <sim|dyn_sim|rob> <1:packet_gen|0:gui>"
     sys.exit(2)
 raven_proc = subprocess.Popen(ravenTask, env=env, shell=True, preexec_fn=os.setsid)
 rostopic_proc = subprocess.Popen(rostopicTask, env=env, shell=True, preexec_fn=os.setsid)

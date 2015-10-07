@@ -225,8 +225,6 @@ void teleopIntoDS1(struct u_struct *us_t)
 		    for (int k=0;k<3;k++)
 		        data1.rd[1].R[j][k] = us_t->R_r[j][k];
 	}  
-#endif
-
 #ifdef simulator 
         /*// Get the encoder values
 	for (int ch=0;ch<16;ch++)
@@ -249,6 +247,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 			 data1.jpos_d[10]*d2r, data1.jpos_d[12]*r2d, data1.jpos_d[13]*r2d,
 			 data1.jpos_d[14]*r2d, data1.jpos_d[15]*r2d);
 	}
+#endif
 #endif
     }
 
