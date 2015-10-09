@@ -31,11 +31,7 @@
 
 // Homa's Macros
 #define simulator // running with no hardware
-<<<<<<< HEAD
 #define dyn_simulator // run the dynamic models
-=======
-//#define dyn_simulator // run the dynamic models
->>>>>>> 88d4ad4843d6f3561ecdb7172019b200441e1b13
 #define packetgen  // use packet generator instead of GUI
 #define packetgen_restart // packet generator can restart after an E-STOP
 #define save_logs // save trajectory logs into sim_log.txt

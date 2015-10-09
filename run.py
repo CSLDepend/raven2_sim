@@ -79,7 +79,7 @@ for i, line in enumerate(bkup_fp):
 src_fp.close()
 bkup_fp.close()
 # Make the file
-cmd = 'cd ' + raven_home + ';make clean;make -j > compile.output'
+cmd = 'cd ' + raven_home + ';make -j > compile.output'
 make_ret = os.system(cmd)
 os.system(cmd)
 #save a check file
