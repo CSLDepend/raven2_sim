@@ -31,9 +31,20 @@ import time
 import signal
 from sys import argv
 
-src = '/home/raven/test_wksp/raven_2/src/raven'
-raven_home = '/home/raven/test_wksp/raven_2'
-root_dir = '/home/raven/test_wksp'
+env = os.environ.copy()
+#print env['ROS_PACKAGE_PATH']
+splits = env['ROS_PACKAGE_PATH'].split(':')
+raven_home = splits[0]
+print '\nRaven Home Found to be: '+raven_home
+rsp = str(raw_input("Is the Raven Home found correctly (Yes/No)? "))
+if rsp.lower() == 'yes' or rsp.lower() == 'y':
+    print 'Found Raven Home Directory.. Starting..\n'
+elif rsp.lower() == 'no' or rsp.lower() == 'n':
+    print 'Please change the ROS_PACKAGE_PATH environment variable.\n'
+    sys.exit(2)
+else:
+    rsp = input("Is this correct? (Yes/No)")
+
 cur_inj = -1
 saved_param = []
 surgeon_simulator = 1;
@@ -112,13 +123,6 @@ my_ip = s.getsockname()[0]
 #print my_ip
 s.close()
 
-env = os.environ.copy()
-print env
-splits = env['ROS_PACKAGE_PATH'].split(':')
-print splits[-1].split(':') 
-#os.environ['ROS_PACKAGE_PATH']=':'.join(splits)
-#print os.environ['ROS_PACKAGE_PATH'] '''
-
 goldenRavenTask= 'xterm -e roslaunch raven_2 raven_2.launch'
 ravenTask = 'xterm -hold -e roslaunch raven_2 raven_2.launch'
 visTask = 'xterm -hold -e roslaunch raven_visualization raven_visualization.launch'
@@ -161,12 +165,13 @@ def quit():
     except:
         pass
 
-    os.system("killall python")
     os.system("killall roslaunch")
     os.system("killall rostopic")    
     os.system("killall r2_control")
+    os.system("killall rviz")
+    os.system("killall rviz")
     os.system("killall xterm")
-    os.system("killall xterm")
+    os.system("killall python")
 
 def signal_handler(signal, frame):
     print "Ctrl+C Pressed!"
