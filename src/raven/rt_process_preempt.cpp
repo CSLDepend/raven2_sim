@@ -109,6 +109,12 @@ int serial_fd = -1;
 std::ofstream ReadUSBfile;
 std::ofstream WriteUSBfile; 
 #endif
+
+#ifdef dyn_simulator 
+int wrfd,rdfd; 
+#endif
+
+
 pthread_t rt_thread;
 pthread_t net_thread;
 pthread_t console_thread;
@@ -484,6 +490,18 @@ int main(int argc, char **argv)
 #endif
 #endif
 
+#ifdef dyn_simulator
+	char wrfifo[20] = "/tmp/djpos_fifo";
+	char rdfifo[20] = "/tmp/jpos_fifo";
+    /* create the FIFO (named pipe) */
+    mkfifo(wrfifo, 0666);
+    log_msg("djpos FIFO Created..");
+    /* open, read, and display the message from the FIFO */
+    wrfd = open(wrfifo, O_WRONLY);
+    log_msg("Write FIFO Opened..");
+    rdfd = open(rdfifo, O_RDONLY);
+    log_msg("Read FIFO Opened..");
+#endif
 
   // init reconfigure
   dynamic_reconfigure::Server<raven_2::MyStuffConfig> srv;
@@ -507,6 +525,14 @@ int main(int argc, char **argv)
   WriteUSBfile.close(); 
   ReadUSBfile.close();
 #endif
+
+#ifdef dyn_simulator
+  /* remove the FIFO */
+  unlink(wrfifo);
+  close(wrfd);
+  close(rdfd);
+#endif
+
   //Suspend main until all threads terminate
   pthread_join(rt_thread,NULL);
   pthread_join(console_thread, NULL);

@@ -46,8 +46,8 @@ include_directories(include)
 include_directories(include/raven)
 
 #add include directories for dynamics integration
-include_directories(include/tnt)
-include_directories(include/jama125)
+#include_directories(include/tnt)
+#include_directories(include/jama125)
 #include_directories(include/boost)
 
 rosbuild_find_ros_package(dynamic_reconfigure)
@@ -59,7 +59,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-result -Wno-missing-field-in
 
 rosbuild_add_executable(r2_control
 # add arm dynamics
-src/raven/two_arm_dyn.cpp
+#src/raven/two_arm_dyn.cpp
 #src/raven/asinw.cpp
 src/raven/dof.cpp
 src/raven/fwd_cable_coupling.cpp

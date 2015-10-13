@@ -101,7 +101,7 @@ short int tToDACVal(struct DOF *joint)
 
     TFmotor     = 1 / DOF_types[j_index].tau_per_amp;    // Determine the motor TF  = 1/(tau per amp)
     TFamplifier =     DOF_types[j_index].DAC_per_amp;    // Determine the amplifier TF = (DAC_per_amp)
-
+    //log_msg("Joint #%d: TFmotor = %f, TFamplifier = %f\n", j_index, TFmotor,TFamplifier);
     DACVal = (int)(joint->tau_d * TFmotor * TFamplifier);  //compute DAC value: DAC=[tau*(amp/torque)*(DACs/amp)]
     
     //Perform range checking and convert to short int

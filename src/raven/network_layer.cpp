@@ -274,7 +274,7 @@ void* network_process(void* param1)
 				sendto ( sock, (void*)&v, sizeof(v), 0,
 				(struct sockaddr *) &clientName, clientLength);          		
 #ifndef no_logging				
-                                printf("=================> Sent READY to Packet Generator at ADDR = %d, PORT = %d\n", clientName.sin_addr, clientName.sin_port);
+                printf("=================> Sent READY to Packet Generator at ADDR = %d, PORT = %d\n", clientName.sin_addr, clientName.sin_port);
 #endif
 			}
 			if ((first == 1) && (device0.runlevel == 2))

@@ -31,19 +31,22 @@ import time
 import signal
 from sys import argv
 
+def rsp_func():
+	rsp = str(raw_input("Is the Raven Home found correctly (Yes/No)? "))
+	if rsp.lower() == 'yes' or rsp.lower() == 'y':
+		print 'Found Raven Home Directory.. Starting..\n'
+	elif rsp.lower() == 'no' or rsp.lower() == 'n':
+		print 'Please change the ROS_PACKAGE_PATH environment variable.\n'
+		sys.exit(2)
+	else:
+		rsp_func()
+
 env = os.environ.copy()
 #print env['ROS_PACKAGE_PATH']
 splits = env['ROS_PACKAGE_PATH'].split(':')
 raven_home = splits[0]
 print '\nRaven Home Found to be: '+raven_home
-rsp = str(raw_input("Is the Raven Home found correctly (Yes/No)? "))
-if rsp.lower() == 'yes' or rsp.lower() == 'y':
-    print 'Found Raven Home Directory.. Starting..\n'
-elif rsp.lower() == 'no' or rsp.lower() == 'n':
-    print 'Please change the ROS_PACKAGE_PATH environment variable.\n'
-    sys.exit(2)
-else:
-    rsp = input("Is this correct? (Yes/No)")
+rsp_func()
 
 cur_inj = -1
 saved_param = []
@@ -126,6 +129,7 @@ s.close()
 goldenRavenTask= 'xterm -e roslaunch raven_2 raven_2.launch'
 ravenTask = 'xterm -hold -e roslaunch raven_2 raven_2.launch'
 visTask = 'xterm -hold -e roslaunch raven_visualization raven_visualization.launch'
+dynSimTask = 'xterm -hold -e "cd ../Li_DYN && ./two_arm_dyn"'
 rostopicTask = 'rostopic echo -p ravenstate >'+raven_home+'/latest_run.csv'
 if (surgeon_simulator == 1):
     packetTask = 'xterm -hold -e python '+raven_home+'/Real_Packet_Generator_Surgeon.py '+ mode
@@ -164,13 +168,19 @@ def quit():
         time.sleep(1)
     except:
         pass
-
+    try:
+        os.killpg(dynSim_proc.pid, signal.SIGINT)
+        time.sleep(1)
+    except:
+        pass
+    os.system("rm /tmp/jpos_fifo")
+    os.system("rm /tmp/djpos_fifo")
     os.system("killall roslaunch")
     os.system("killall rostopic")    
     os.system("killall r2_control")
     os.system("killall rviz")
-    os.system("killall rviz")
     os.system("killall xterm")
+    os.system("killall two_arm_dyn")
     os.system("killall python")
 
 def signal_handler(signal, frame):
@@ -194,6 +204,13 @@ else:
     sys.exit(2)
 raven_proc = subprocess.Popen(ravenTask, env=env, shell=True, preexec_fn=os.setsid)
 rostopic_proc = subprocess.Popen(rostopicTask, env=env, shell=True, preexec_fn=os.setsid)
+time.sleep(0.2);
+# Call Dynamic Simulator
+if mode == "dyn_sim":
+	dynSim_proc = subprocess.Popen(dynSimTask, env=env, shell=True, preexec_fn=os.setsid)
+	#os.system("cd ../Li_DYN && ./two_arm_dyn")
+	print "Started the dynamic simulator.."
+
 print("Press Ctrl+C to exit.")
 
 #Wait for a response from the robot
@@ -207,6 +224,5 @@ while not data:
         print("Raven is stopped, shutdown everything...")  
     else:
         data = ''
-
 quit()
 
