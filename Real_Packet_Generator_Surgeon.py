@@ -48,8 +48,6 @@ else:
     print "Usage: python Real_Packet_Generator_Surgoen <sim|rob>"
     sys.exit(2)
 
-# Should be at least 1
-SKIP = 2000
 fast_surgeon = 1
 if fast_surgeon:
    MAX_LINES = 15000
@@ -68,7 +66,6 @@ else:
 
 
 line_no = 0;
-
 sock1 = socket.socket(socket.AF_INET, # Internet
 	              socket.SOCK_DGRAM) # UDP
 sock1.bind((UDP_IP,UDP_PORT1))
@@ -102,126 +99,131 @@ def sendPackets():
     global line_no
     seq = 0;
     line = [];
-    csvfile1 = open('./teleop_data/traj1.csv'); 
-    #csvfile1 = open('./../Tests/test_1.csv'); 
+    csvfile1 = open('./teleop_data/test3.csv'); 
     reader = csv.reader(csvfile1)
+    headers = reader.next()
+    # Find the indices for the variables in the datasheet
+    runlevel_index = headers.index('field.runlevel');
     
-    # Skip the first packets
-    for i in range(0,SKIP):
-       line = reader.next()
+    # Skip the packets until runlevel 3
+    runlevel = 0;	
+    while not(runlevel == 3):
+        line = reader.next()
+        runlevel = int(line[runlevel_index])
+   
+    #for i in range(0,SKIP):
+    #   line = reader.next()
     
     global robot_state
-
     while (robot_state == 0):
-	print "\rWaiting for Raven...",  
+		print "\rWaiting for Raven...",  
   
     # Send trajectory packets until the operation is done (e.g. 300 steps) 
     # Skip every 10 packets in the trajectory  
     while (line_no < MAX_LINES):    
-	# If robot is ready, update the packet to be sent
-	if (robot_state == 1):
-	    for i in range(0,1):
-	        line = reader.next();
-	        line_no = line_no + 1;           
-	    print "Sending New Packet" 
-	    seq = seq + 1;
-	    # Construct the packet to send
-	    # Later should look at the runlevel and sublevel to set the surgeon_mode
-	    if (simulator):  
-	        tuple_to_send = u_struct(sequence = seq, 
-	            pactyp = 0, 
-	            version = 0, 
-	            delx1 = int(float(line[51])),
-	            delx0 = int(float(line[54])),
-	            dely1 = int(float(line[52])),
-	            dely0 = int(float(line[55])),
-	            delz1 = int(float(line[53])),
-	            delz0 = int(float(line[56])),
-	            R_r00 = float(line[33]),
-	            R_r01 = float(line[34]),
-	            R_r02 = float(line[35]),
-	            R_r10 = float(line[36]),
-	            R_r11 = float(line[37]), 
-	            R_r12 = float(line[38]),
-	            R_r20 = float(line[39]),
-	            R_r21 = float(line[40]),
-	            R_r22 = float(line[41]),
-	            R_l00 = float(line[42]),
-	            R_l01 = float(line[43]), 
-	            R_l02 = float(line[44]),
-	            R_l10 = float(line[45]),
-	            R_l11 = float(line[46]), 
-	            R_l12 = float(line[47]),
-	            R_l20 = float(line[48]),
-	            R_l21 = float(line[49]),
-	            R_l22 = float(line[50]),
-	            jpos8 = float(line[170]),
-		    jpos9 = float(line[171]),
-		    jpos10 = float(line[172]),
-		    jpos11 = float(line[173]),
-		    jpos12 = float(line[174]),
-		    jpos13 = float(line[175]),
-		    jpos14 = float(line[176]),
-		    jpos15 = float(line[177]),
-		    jpos0 = float(line[178]),
-		    jpos1 = float(line[179]),
-		    jpos2 = float(line[180]),
-		    jpos3 = float(line[181]),
-		    jpos4 = float(line[182]),
-		    jpos5 = float(line[183]),
-		    jpos6 = float(line[184]),
-		    jpos7 = float(line[185]),
-	            buttonstate1 = 0,
-	            buttonstate0 = 0, 
-	            grasp1 = float((float(line[177])+float(line[176]))*1000),
-	            grasp0 = float((float(line[185])+float(line[184]))*1000), 
-	            surgeon_mode = 1, 
-	            checksum=0);
-	    else:
-	        tuple_to_send = u_struct(sequence = seq, 
-	            pactyp = 0, 
-	            version = 0, 
-	            delx1 = int(float(line[51])),
-	            delx0 = int(float(line[54])),
-	            dely1 = int(float(line[52])),
-	            dely0 = int(float(line[55])),
-	            delz1 = int(float(line[53])),
-	            delz0 = int(float(line[56])),
-	            R_l00 = float(line[33]),
-	            R_l01 = float(line[34]),
-	            R_l02 = float(line[35]),
-	            R_l10 = float(line[36]),
-	            R_l11 = float(line[37]), 
-	            R_l12 = float(line[38]),
-	            R_l20 = float(line[39]),
-	            R_l21 = float(line[40]),
-	            R_l22 = float(line[41]),
-	            R_r00 = float(line[42]),
-	            R_r01 = float(line[43]), 
-	            R_r02 = float(line[44]),
-	            R_r10 = float(line[45]),
-	            R_r11 = float(line[46]), 
-	            R_r12 = float(line[47]),
-	            R_r20 = float(line[48]),
-	            R_r21 = float(line[49]),
-	            R_r22 = float(line[50]),
-	            buttonstate0 = 0,
-	            buttonstate1 = 0, 
-	            grasp0 = float((float(line[177])+float(line[176]))*1000),
-	            grasp1 = float((float(line[185])+float(line[184]))*1000), 
-	            surgeon_mode = 1, 
-	            checksum=0);                
-	    MESSAGE = struct.pack(format_,*tuple_to_send._asdict().values());
-	    if (robot_state == 1):
-	        print struct.unpack(format_,MESSAGE);
-	        print "\n"
-	    # Send the command to the robot
-	    sock2.sendto(MESSAGE, (UDP_IP, UDP_PORT2))
-	    time.sleep(FREQ)
-	# If in robot_s stay with the same packet but with new seq number
-	elif (robot_state == 2):
-	    print "\rWaiting for the robot to be restarted",
-	    sys.stdout.flush();
+		# If robot is ready, update the packet to be sent
+		if (robot_state == 1):
+			for i in range(0,1):
+			    line = reader.next();
+			    line_no = line_no + 1;           
+			print "Sending New Packet" 
+			seq = seq + 1;
+			# Construct the packet to send
+			if (simulator):  
+			    tuple_to_send = u_struct(sequence = seq, 
+			        pactyp = 0, 
+			        version = 0, 
+			        delx1 = int(float(line[51])),
+			        delx0 = int(float(line[54])),
+			        dely1 = int(float(line[52])),
+			        dely0 = int(float(line[55])),
+			        delz1 = int(float(line[53])),
+			        delz0 = int(float(line[56])),
+			        R_r00 = float(line[33]),
+			        R_r01 = float(line[34]),
+			        R_r02 = float(line[35]),
+			        R_r10 = float(line[36]),
+			        R_r11 = float(line[37]), 
+			        R_r12 = float(line[38]),
+			        R_r20 = float(line[39]),
+			        R_r21 = float(line[40]),
+			        R_r22 = float(line[41]),
+			        R_l00 = float(line[42]),
+			        R_l01 = float(line[43]), 
+			        R_l02 = float(line[44]),
+			        R_l10 = float(line[45]),
+			        R_l11 = float(line[46]), 
+			        R_l12 = float(line[47]),
+			        R_l20 = float(line[48]),
+			        R_l21 = float(line[49]),
+			        R_l22 = float(line[50]),
+			        jpos8 = float(line[170]),
+					jpos9 = float(line[171]),
+					jpos10 = float(line[172]),
+					jpos11 = float(line[173]),
+					jpos12 = float(line[174]),
+					jpos13 = float(line[175]),
+					jpos14 = float(line[176]),
+					jpos15 = float(line[177]),
+					jpos0 = float(line[178]),
+					jpos1 = float(line[179]),
+					jpos2 = float(line[180]),
+					jpos3 = float(line[181]),
+					jpos4 = float(line[182]),
+					jpos5 = float(line[183]),
+					jpos6 = float(line[184]),
+					jpos7 = float(line[185]),
+			        buttonstate1 = 0,
+			        buttonstate0 = 0, 
+			        grasp1 = float((float(line[177])+float(line[176]))*1000),
+			        grasp0 = float((float(line[185])+float(line[184]))*1000), 
+			        surgeon_mode = 1, 
+			        checksum=0);
+			else:
+			    tuple_to_send = u_struct(sequence = seq, 
+			        pactyp = 0, 
+			        version = 0, 
+			        delx1 = int(float(line[51])),
+			        delx0 = int(float(line[54])),
+			        dely1 = int(float(line[52])),
+			        dely0 = int(float(line[55])),
+			        delz1 = int(float(line[53])),
+			        delz0 = int(float(line[56])),
+			        R_l00 = float(line[33]),
+			        R_l01 = float(line[34]),
+			        R_l02 = float(line[35]),
+			        R_l10 = float(line[36]),
+			        R_l11 = float(line[37]), 
+			        R_l12 = float(line[38]),
+			        R_l20 = float(line[39]),
+			        R_l21 = float(line[40]),
+			        R_l22 = float(line[41]),
+			        R_r00 = float(line[42]),
+			        R_r01 = float(line[43]), 
+			        R_r02 = float(line[44]),
+			        R_r10 = float(line[45]),
+			        R_r11 = float(line[46]), 
+			        R_r12 = float(line[47]),
+			        R_r20 = float(line[48]),
+			        R_r21 = float(line[49]),
+			        R_r22 = float(line[50]),
+			        buttonstate0 = 0,
+			        buttonstate1 = 0, 
+			        grasp0 = float((float(line[177])+float(line[176]))*1000),
+			        grasp1 = float((float(line[185])+float(line[184]))*1000), 
+			        surgeon_mode = 1, 
+			        checksum=0);                
+			MESSAGE = struct.pack(format_,*tuple_to_send._asdict().values());
+			if (robot_state == 1):
+			    print struct.unpack(format_,MESSAGE);
+			    print "\n"
+			# Send the command to the robot
+			sock2.sendto(MESSAGE, (UDP_IP, UDP_PORT2))
+			time.sleep(FREQ)
+		# If in robot_s stay with the same packet but with new seq number
+		elif (robot_state == 2):
+			print "\rWaiting for the robot to be restarted",
+			sys.stdout.flush();
     
 def signal_handler(signal, frame):
     sock1.close()

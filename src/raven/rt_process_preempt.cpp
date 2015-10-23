@@ -289,6 +289,11 @@ static void *rt_process(void* )
          clock_nanosleep(0, TIMER_ABSTIME, &tbz, NULL);
          loops++;
       }
+#else 
+#ifdef dyn_simulator 
+	  //Get the estimated mpos and mvel from the simulator
+	  
+#endif
 #endif
       clock_gettime(CLOCK_REALTIME,&t2);
       t2 = tsSubtract(t2, tnow);
@@ -352,6 +357,11 @@ static void *rt_process(void* )
 #ifndef simulator  
       //Fill USB Packet and send it out   
       putUSBPackets(&device0); //disable usb for par port test
+#else
+#ifdef dyn_simulator 
+	  //Send the DACs, mvel, and mpos to the simulator
+	  
+#endif
 #endif
 
       //Publish current raven state

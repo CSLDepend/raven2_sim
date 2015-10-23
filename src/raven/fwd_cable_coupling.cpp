@@ -29,15 +29,6 @@
 #include "tool.h"
 #include <time.h>
 
-#ifdef dyn_simulator
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <sstream>
-extern int wrfd,rdfd; 
-#endif
-
 extern struct DOF_type DOF_types[];
 extern int NUM_MECH;
 extern unsigned long int gTime;
@@ -57,9 +48,6 @@ void fwdCableCoupling(struct device *device0, int runlevel)
 	// This should be run in all runlevels.
 	for (int i = 0; i < NUM_MECH; i++)
 		fwdMechCableCoupling(&(device0->mech[i]));
-#ifdef simulator
-        //log_file("RT_PROCESS) FWD Cable Coupling Done");         
-#endif
 }
 
 /**
@@ -168,60 +156,8 @@ void fwdMechCableCoupling(struct mechanism *mech)
 	mech->joint[ELBOW].jvel 		= th2_dot;// - mech->joint[ELBOW].jpos_off;
 	mech->joint[Z_INS].jvel 		= d4_dot;//  - mech->joint[Z_INS].jpos_off;
 #else
-#ifdef dyn_simulator 
-	int arm_type;
- 	if (mech->type == GREEN_ARM)
-		arm_type = 1;
-	else
-		arm_type = 0;
-	// Shortc-circuiting: Assume a perfect model for the last three degrees of freedom
-	// Estimate the current joint positions using dynamic model
-    if (fabs(mech->joint[SHOULDER].jpos) > 0.1)
-	{
-		printf("Arm %d: %f > 0\n",arm_type, fabs(mech->joint[SHOULDER].jpos));
-	    char buf[2048];
-	    double pos1, pos2, pos3, pos4, vel1, vel2, vel3;
-
-		log_msg("%f %f %f %f", (double)mech->joint[SHOULDER].jpos_d, (double)mech->joint[ELBOW].jpos_d,(double)mech->joint[Z_INS].jpos_d, (double) mech->joint[TOOL_ROT].jpos_d);            
-		// Make the data to be sent to simulator
-        sprintf(buf, "%d %f %f %f %f", arm_type, (double)mech->joint[SHOULDER].jpos_d, (double)mech->joint[ELBOW].jpos_d,(double)mech->joint[Z_INS].jpos_d, (double) mech->joint[TOOL_ROT].jpos_d);
-		write(wrfd, buf, sizeof(buf));
-        printf("** Send des. joint pos-arm %s\n",buf);
-		read(rdfd, buf, sizeof(buf));
-		std::stringstream ss(buf);        
-		ss >> pos1 >> pos2 >> pos3 >> pos4 >> vel1 >> vel2 >> vel3;
-		printf("** Receive est. joint pos/vel-arm: %d, %f, %f, %f, %f, %f, %f, %f\n", arm_type, pos1,pos2,pos3,pos4,vel1,vel2,vel3);
-		mech->joint[SHOULDER].jpos 	= (float)pos1;
-		mech->joint[ELBOW].jpos    	= (float)pos2;
-		mech->joint[Z_INS].jpos     = (float)pos3;        
-		mech->joint[TOOL_ROT].jpos 	= (float)pos4;
-
-		mech->joint[WRIST].jpos 		= mech->joint[WRIST].jpos_d;
-		mech->joint[GRASP1].jpos 		= mech->joint[GRASP1].jpos_d;
-		mech->joint[GRASP2].jpos 		= mech->joint[GRASP2].jpos_d;
-		
-		mech->joint[SHOULDER].jvel 	= (float)vel1;
-		mech->joint[ELBOW].jvel 	= (float)vel2;
-		mech->joint[Z_INS].jvel 	= (float)vel3;
-	}
-	else
-	{
-		printf("!!!!!!!!!!!!!!!!! %f < 0\n");
-		mech->joint[SHOULDER].jpos 		= mech->joint[SHOULDER].jpos_d;
-		mech->joint[ELBOW].jpos 		= mech->joint[ELBOW].jpos_d;
-		mech->joint[TOOL_ROT].jpos 		= mech->joint[TOOL_ROT].jpos_d;
-		mech->joint[Z_INS].jpos 		= mech->joint[Z_INS].jpos_d;
-		mech->joint[WRIST].jpos 		= mech->joint[WRIST].jpos_d;
-		mech->joint[GRASP1].jpos 		= mech->joint[GRASP1].jpos_d;
-		mech->joint[GRASP2].jpos 		= mech->joint[GRASP2].jpos_d;
-
-		mech->joint[SHOULDER].jvel 		= th1_dot;
-		mech->joint[ELBOW].jvel 		= th2_dot;
-		mech->joint[Z_INS].jvel 		= d4_dot;	
-
-	}
-#else
-    // Shortc-circuiting: Assume a perfect model for the last three degrees of freedom
+#ifndef dyn_simulator 
+    // Shortc-circuiting - Assuming ideal hardware
 	mech->joint[SHOULDER].jpos 		= mech->joint[SHOULDER].jpos_d;
 	mech->joint[ELBOW].jpos 		= mech->joint[ELBOW].jpos_d;
 	mech->joint[TOOL_ROT].jpos 		= mech->joint[TOOL_ROT].jpos_d;
