@@ -8,7 +8,7 @@ import genpy
 import std_msgs.msg
 
 class raven_state(genpy.Message):
-  _md5sum = "d2da96eb7a75b8ae96854119dcaf9448"
+  _md5sum = "a095134075f00acd8444684430eb0d73"
   _type = "raven_2/raven_state"
   _has_header = False #flag to mark the presence of a Header object
   _full_text = """Header      hdr
@@ -26,6 +26,7 @@ float32[16] tau
 float32[16] mpos
 float32[16] jpos
 float32[16] mvel
+float32[16] mvel_d
 float32[16] jvel
 float32[16] mpos_d
 float32[16] jpos_d
@@ -52,8 +53,8 @@ time stamp
 string frame_id
 
 """
-  __slots__ = ['hdr','runlevel','sublevel','last_seq','type','pos','ori','ori_d','pos_d','dt','encVals','tau','mpos','jpos','mvel','jvel','mpos_d','jpos_d','grasp_d','encoffsets','current_cmd']
-  _slot_types = ['std_msgs/Header','int32','int32','int32','int32[2]','int32[6]','float32[18]','float32[18]','int32[6]','duration','int32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[2]','float32[16]','int32[16]']
+  __slots__ = ['hdr','runlevel','sublevel','last_seq','type','pos','ori','ori_d','pos_d','dt','encVals','tau','mpos','jpos','mvel','mvel_d','jvel','mpos_d','jpos_d','grasp_d','encoffsets','current_cmd']
+  _slot_types = ['std_msgs/Header','int32','int32','int32','int32[2]','int32[6]','float32[18]','float32[18]','int32[6]','duration','int32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[2]','float32[16]','int32[16]']
 
   def __init__(self, *args, **kwds):
     """
@@ -63,7 +64,7 @@ string frame_id
     changes.  You cannot mix in-order arguments and keyword arguments.
 
     The available fields are:
-       hdr,runlevel,sublevel,last_seq,type,pos,ori,ori_d,pos_d,dt,encVals,tau,mpos,jpos,mvel,jvel,mpos_d,jpos_d,grasp_d,encoffsets,current_cmd
+       hdr,runlevel,sublevel,last_seq,type,pos,ori,ori_d,pos_d,dt,encVals,tau,mpos,jpos,mvel,mvel_d,jvel,mpos_d,jpos_d,grasp_d,encoffsets,current_cmd
 
     :param args: complete set of field values, in .msg order
     :param kwds: use keyword arguments corresponding to message field names
@@ -102,6 +103,8 @@ string frame_id
         self.jpos = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
       if self.mvel is None:
         self.mvel = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
+      if self.mvel_d is None:
+        self.mvel_d = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
       if self.jvel is None:
         self.jvel = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
       if self.mpos_d is None:
@@ -130,6 +133,7 @@ string frame_id
       self.mpos = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
       self.jpos = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
       self.mvel = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
+      self.mvel_d = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
       self.jvel = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
       self.mpos_d = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
       self.jpos_d = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
@@ -174,6 +178,7 @@ string frame_id
       buff.write(_struct_16f.pack(*self.mpos))
       buff.write(_struct_16f.pack(*self.jpos))
       buff.write(_struct_16f.pack(*self.mvel))
+      buff.write(_struct_16f.pack(*self.mvel_d))
       buff.write(_struct_16f.pack(*self.jvel))
       buff.write(_struct_16f.pack(*self.mpos_d))
       buff.write(_struct_16f.pack(*self.jpos_d))
@@ -247,6 +252,9 @@ string frame_id
       self.mvel = _struct_16f.unpack(str[start:end])
       start = end
       end += 64
+      self.mvel_d = _struct_16f.unpack(str[start:end])
+      start = end
+      end += 64
       self.jvel = _struct_16f.unpack(str[start:end])
       start = end
       end += 64
@@ -301,6 +309,7 @@ string frame_id
       buff.write(self.mpos.tostring())
       buff.write(self.jpos.tostring())
       buff.write(self.mvel.tostring())
+      buff.write(self.mvel_d.tostring())
       buff.write(self.jvel.tostring())
       buff.write(self.mpos_d.tostring())
       buff.write(self.jpos_d.tostring())
@@ -373,6 +382,9 @@ string frame_id
       start = end
       end += 64
       self.mvel = numpy.frombuffer(str[start:end], dtype=numpy.float32, count=16)
+      start = end
+      end += 64
+      self.mvel_d = numpy.frombuffer(str[start:end], dtype=numpy.float32, count=16)
       start = end
       end += 64
       self.jvel = numpy.frombuffer(str[start:end], dtype=numpy.float32, count=16)

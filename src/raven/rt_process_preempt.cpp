@@ -88,7 +88,6 @@ int    mech_gravcomp_done[2]={0};
 #ifdef packetgen
 int NUM_MECH=2;   // Define NUM_MECH as a C variable, not a c++ variable
 int done_homing = 0;
-int program_state = -1;
 #else
 int NUM_MECH=0;   // Define NUM_MECH as a C variable, not a c++ variable
 #endif
@@ -312,7 +311,7 @@ static void *rt_process(void* )
       {
 	
 #ifdef packetgen
-   	logging = 1;  
+   	    logging = 1;  
         no_pack_cnt++; 
         //log_file("RT_PROCESS) Update device state based on received packet.\n");         
 #endif
@@ -322,7 +321,7 @@ static void *rt_process(void* )
       {
 	 
 #ifdef packetgen
-   	logging = 0; 
+      	logging = 0; 
         //log_file("RT_PROCESS) No new packets. Use previous parameters.\n");         
 #endif
         rcvdParams.runlevel = currParams.runlevel;
@@ -333,13 +332,10 @@ static void *rt_process(void* )
 #endif
       //////////////// SURGICAL ROBOT CODE //////////////////////////
       if (deviceType == SURGICAL_ROBOT)
-        {
-#ifdef packetgen
-	    program_state = 6;
-#endif
+      {
 	  // Calculate Raven control
 	  controlRaven(&device0, &currParams);
-        }
+      }
       //////////////// END SURGICAL ROBOT CODE ///////////////////////////
 
       // Check for overcurrent and impose safe torque limits

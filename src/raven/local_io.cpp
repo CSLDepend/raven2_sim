@@ -53,11 +53,6 @@ ROS publishing is at the bottom half of this file.
 #include "r2_kinematics.h"
 #include "reconfigure.h"
 
-
-#ifdef packetgen
-extern int program_state;
-#endif
-
 extern int NUM_MECH;
 extern USBStruct USBBoards;
 extern unsigned long int gTime;
@@ -283,9 +278,6 @@ void teleopIntoDS1(struct u_struct *us_t)
  */
 int checkLocalUpdates()
 {
-#ifdef simulator_packet
-    program_state = 3;
-#endif
     static unsigned long int lastUpdated;
     if (isUpdated || lastUpdated == 0)
     {
@@ -318,9 +310,6 @@ int checkLocalUpdates()
 */
 struct param_pass * getRcvdParams(struct param_pass* d1)
 {
-#ifdef simulator_packet
-    program_state = 4;
-#endif
     // \TODO Check performance of trylock / default priority inversion scheme
     if (pthread_mutex_trylock(&data1Mutex)!=0)   //Use trylock since this function is called form rt-thread. return immediately with old values if unable to lock
         return d1;
@@ -543,6 +532,7 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
             msg_ravenstate.mpos_d[jtype]     = dev->mech[j].joint[i].mpos_d RAD2DEG;
             msg_ravenstate.encoffsets[jtype] = dev->mech[j].joint[i].enc_offset;
 	    msg_ravenstate.current_cmd[jtype]    = dev->mech[j].joint[i].current_cmd;
+        msg_ravenstate.mvel_d[jtype]    = dev->mech[j].joint[i].mvel_d;
         }
     }
 //    msg_ravenstate.f_secs = d.toSec();

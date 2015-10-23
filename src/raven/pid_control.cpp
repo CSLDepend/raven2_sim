@@ -87,7 +87,14 @@ void mpos_PD_control(struct DOF *joint, int reset_I)
 
     //Calculate integral term
     iTerm = errInt[joint->type] * ki;
-
+    
+    /*if (joint->type == 0)
+	{
+		log_msg("Joint %d iTerm = %f\n",joint->type, iTerm);
+		log_msg("Joint %d kp = %f\n",joint->type, kp);
+		log_msg("Joint %d kd = %f\n",joint->type, kd); 
+		log_msg("Joint %d ki = %f\n",joint->type, ki); 
+	}*/
     //Calculate feedforward friction term
 //    errSign = err < 0 ? -1 : 1;
 //    if (fabs(err) >= eps) {

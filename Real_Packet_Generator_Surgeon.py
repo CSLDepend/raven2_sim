@@ -49,7 +49,7 @@ else:
     sys.exit(2)
 
 # Should be at least 1
-SKIP = 4000
+SKIP = 2000
 fast_surgeon = 1
 if fast_surgeon:
    MAX_LINES = 15000
@@ -103,7 +103,7 @@ def sendPackets():
     seq = 0;
     line = [];
     csvfile1 = open('./teleop_data/traj1.csv'); 
-    #csvfile1 = open('./teleop_data/test921_2.csv'); 
+    #csvfile1 = open('./../Tests/test_1.csv'); 
     reader = csv.reader(csvfile1)
     
     # Skip the first packets

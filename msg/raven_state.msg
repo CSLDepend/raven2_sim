@@ -13,6 +13,7 @@ float32[16] tau
 float32[16] mpos
 float32[16] jpos
 float32[16] mvel
+float32[16] mvel_d
 float32[16] jvel
 float32[16] mpos_d
 float32[16] jpos_d

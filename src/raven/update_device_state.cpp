@@ -24,9 +24,7 @@
 extern int logging;
 int curr_pack_no = 0;
 #endif
-#ifdef packetgen
-extern int program_state;
-#endif
+
 
 extern struct DOF_type DOF_types[];
 extern struct traj trajectory[];
@@ -53,9 +51,7 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 {
     //log_file("updateDeviceState %d", currParams->runlevel);///Added
     currParams->last_sequence = rcvdParams->last_sequence;
-#ifdef packetgen
-    program_state = 5;
-#endif 
+
 #ifdef save_logs
     if ((currParams->last_sequence == 111) && (curr_pack_no == 0))
     {

@@ -52,7 +52,6 @@
 
 #ifdef packetgen
 extern int done_homing;
-extern int program_state;
 #endif
 extern int NUM_MECH; //Defined in rt_process_																								preempt.cpp
 extern unsigned long int gTime; //Defined in rt_process_preempt.cpp
@@ -91,9 +90,6 @@ extern int initialized; //Defined in rt_process_preempt.cpp
 *
 */
 int controlRaven(struct device *device0, struct param_pass *currParams){   
-#ifdef packetgen
-      program_state = 7;
-#endif  
     int ret = 0;
     //Desired control mode
     t_controlmode controlmode = (t_controlmode)currParams->robotControlMode;
@@ -109,14 +105,9 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
 
 //#endif
 
-#ifdef packetgen
-    program_state = 8;
-#endif
     //Foward Cable Coupling
     fwdCableCoupling(device0, currParams->runlevel);
-#ifdef packetgen
-    program_state = 9;
-#endif
+
     //Forward kinematics
     r2_fwd_kin(device0, currParams->runlevel);
 
@@ -125,11 +116,7 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         //CHECK ME: what is the purpose of this mode?
         case no_control:
         {
-#ifdef packetgen
-	    program_state = 10;
-        //log_file("RT_PROCESS) No Control");         
-#endif
-	    initialized = false;
+		    initialized = false;
             
             struct DOF *_joint = NULL;
             struct mechanism* _mech = NULL;
@@ -165,11 +152,6 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
             break;
         //Runs homing mode
         case homing_mode:
-#ifdef packetgen
-	   program_state = 12;
-           //log_file("RT_PROCESS) Homing Mode");         
-           //log_msg("Homing");
-#endif	
 	        static int hom = 0;
         	if (hom==0){
         		log_msg("Entered homing mode");
@@ -253,21 +235,12 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
     parport_out(0x01);
 #endif
 
-#ifdef packetgen
-    program_state = 13;
-#endif
     //Inverse kinematics
     r2_inv_kin(device0, currParams->runlevel);
 
-#ifdef packetgen
-    program_state = 14;
-#endif
     //Inverse Cable Coupling
     invCableCoupling(device0, currParams->runlevel);
 
-#ifdef packetgen
-    program_state = 15;
-#endif
    // Set all joints to zero torque
     _mech = NULL;  _joint = NULL;
     while (loop_over_joints(device0, _mech, _joint, i,j) )

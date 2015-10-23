@@ -204,7 +204,7 @@ else:
     sys.exit(2)
 raven_proc = subprocess.Popen(ravenTask, env=env, shell=True, preexec_fn=os.setsid)
 rostopic_proc = subprocess.Popen(rostopicTask, env=env, shell=True, preexec_fn=os.setsid)
-time.sleep(0.2);
+time.sleep(0.5);
 # Call Dynamic Simulator
 if mode == "dyn_sim":
 	dynSim_proc = subprocess.Popen(dynSimTask, env=env, shell=True, preexec_fn=os.setsid)
