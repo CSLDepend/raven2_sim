@@ -27,6 +27,7 @@ import threading
 import sys
 import signal
 import time
+import math
 from sys import argv
 
 UDP_IP = "127.0.0.1"
@@ -48,6 +49,7 @@ else:
     print "Usage: python Real_Packet_Generator_Surgoen <sim|rob>"
     sys.exit(2)
 
+SKIP = 1
 fast_surgeon = 1
 if fast_surgeon:
    MAX_LINES = 15000
@@ -99,12 +101,19 @@ def sendPackets():
     global line_no
     seq = 0;
     line = [];
-    csvfile1 = open('./teleop_data/test3.csv'); 
+    #csvfile1 = open('./teleop_data/traj1.csv'); 
+    csvfile1 = open('/home/raven/homa_wksp/Tests/test_1.csv');   
     reader = csv.reader(csvfile1)
     headers = reader.next()
     # Find the indices for the variables in the datasheet
     runlevel_index = headers.index('field.runlevel');
-    
+    dori_index = headers.index('field.ori_d0');
+    dpos_index = headers.index('field.pos_d0');
+    djpos_index = headers.index('field.jpos_d0');
+    mpos_index = headers.index('field.mpos0');
+    mvel_index = headers.index('field.mvel0');
+    enc_index = headers.index('field.encVals0');
+
     # Skip the packets until runlevel 3
     runlevel = 0;	
     while not(runlevel == 3):
@@ -119,98 +128,112 @@ def sendPackets():
 		print "\rWaiting for Raven...",  
   
     # Send trajectory packets until the operation is done (e.g. 300 steps) 
-    # Skip every 10 packets in the trajectory  
-    while (line_no < MAX_LINES):    
+    # Skip every SKIP-1 packets in the trajectory  
+    while (line_no < MAX_LINES):#(runlevel == 3):
 		# If robot is ready, update the packet to be sent
 		if (robot_state == 1):
-			for i in range(0,1):
-			    line = reader.next();
-			    line_no = line_no + 1;           
-			print "Sending New Packet" 
+			for i in range(0,SKIP):
+				line = reader.next();
+				runlevel = int(line[runlevel_index])
+				line_no = line_no + 1;    
+           
 			seq = seq + 1;
+			print "\nSending Packet #"+str(seq) 
+			print_line = '\nmpos = '
+			for i in range(0,16):
+				print_line = print_line + (str(float(line[mpos_index+i])*(math.pi/180))+',')
+			print print_line
+			print_line = '\nmvel = '
+			for i in range(0,16):
+				print_line = print_line + (str(float(line[mvel_index+i])*(math.pi/180))+',')
+			print print_line
+			print_line = '\nencVals = '
+			for i in range(0,16):
+				print_line = print_line + (str(float(line[enc_index+i])*(math.pi/180))+',')
+			print print_line  
 			# Construct the packet to send
 			if (simulator):  
 			    tuple_to_send = u_struct(sequence = seq, 
 			        pactyp = 0, 
 			        version = 0, 
-			        delx1 = int(float(line[51])),
-			        delx0 = int(float(line[54])),
-			        dely1 = int(float(line[52])),
-			        dely0 = int(float(line[55])),
-			        delz1 = int(float(line[53])),
-			        delz0 = int(float(line[56])),
-			        R_r00 = float(line[33]),
-			        R_r01 = float(line[34]),
-			        R_r02 = float(line[35]),
-			        R_r10 = float(line[36]),
-			        R_r11 = float(line[37]), 
-			        R_r12 = float(line[38]),
-			        R_r20 = float(line[39]),
-			        R_r21 = float(line[40]),
-			        R_r22 = float(line[41]),
-			        R_l00 = float(line[42]),
-			        R_l01 = float(line[43]), 
-			        R_l02 = float(line[44]),
-			        R_l10 = float(line[45]),
-			        R_l11 = float(line[46]), 
-			        R_l12 = float(line[47]),
-			        R_l20 = float(line[48]),
-			        R_l21 = float(line[49]),
-			        R_l22 = float(line[50]),
-			        jpos8 = float(line[170]),
-					jpos9 = float(line[171]),
-					jpos10 = float(line[172]),
-					jpos11 = float(line[173]),
-					jpos12 = float(line[174]),
-					jpos13 = float(line[175]),
-					jpos14 = float(line[176]),
-					jpos15 = float(line[177]),
-					jpos0 = float(line[178]),
-					jpos1 = float(line[179]),
-					jpos2 = float(line[180]),
-					jpos3 = float(line[181]),
-					jpos4 = float(line[182]),
-					jpos5 = float(line[183]),
-					jpos6 = float(line[184]),
-					jpos7 = float(line[185]),
+			        delx1 = int(float(line[dpos_index])),
+			        delx0 = int(float(line[dpos_index+3])),
+			        dely1 = int(float(line[dpos_index+1])),
+			        dely0 = int(float(line[dpos_index+4])),
+			        delz1 = int(float(line[dpos_index+2])),
+			        delz0 = int(float(line[dpos_index+5])),
+			        R_r00 = float(line[dori_index]),
+			        R_r01 = float(line[dori_index+1]),
+			        R_r02 = float(line[dori_index+2]),
+			        R_r10 = float(line[dori_index+3]),
+			        R_r11 = float(line[dori_index+4]), 
+			        R_r12 = float(line[dori_index+5]),
+			        R_r20 = float(line[dori_index+6]),
+			        R_r21 = float(line[dori_index+7]),
+			        R_r22 = float(line[dori_index+8]),
+			        R_l00 = float(line[dori_index+9]),
+			        R_l01 = float(line[dori_index+10]), 
+			        R_l02 = float(line[dori_index+11]),
+			        R_l10 = float(line[dori_index+12]),
+			        R_l11 = float(line[dori_index+13]), 
+			        R_l12 = float(line[dori_index+14]),
+			        R_l20 = float(line[dori_index+15]),
+			        R_l21 = float(line[dori_index+16]),
+			        R_l22 = float(line[dori_index+17]),
+			        jpos8 = float(line[djpos_index]),
+					jpos9 = float(line[djpos_index+1]),
+					jpos10 = float(line[djpos_index+2]),
+					jpos11 = float(line[djpos_index+3]),
+					jpos12 = float(line[djpos_index+4]),
+					jpos13 = float(line[djpos_index+5]),
+					jpos14 = float(line[djpos_index+6]),
+					jpos15 = float(line[djpos_index+7]),
+					jpos0 = float(line[djpos_index+8]),
+					jpos1 = float(line[djpos_index+9]),
+					jpos2 = float(line[djpos_index+10]),
+					jpos3 = float(line[djpos_index+11]),
+					jpos4 = float(line[djpos_index+12]),
+					jpos5 = float(line[djpos_index+13]),
+					jpos6 = float(line[djpos_index+14]),
+					jpos7 = float(line[djpos_index+15]),
 			        buttonstate1 = 0,
 			        buttonstate0 = 0, 
-			        grasp1 = float((float(line[177])+float(line[176]))*1000),
-			        grasp0 = float((float(line[185])+float(line[184]))*1000), 
+			        grasp1 = float((float(line[djpos_index+7])+float(line[djpos_index+6]))*1000),
+			        grasp0 = float((float(line[djpos_index+15])+float(line[djpos_index+14]))*1000), 
 			        surgeon_mode = 1, 
 			        checksum=0);
 			else:
 			    tuple_to_send = u_struct(sequence = seq, 
 			        pactyp = 0, 
 			        version = 0, 
-			        delx1 = int(float(line[51])),
-			        delx0 = int(float(line[54])),
-			        dely1 = int(float(line[52])),
-			        dely0 = int(float(line[55])),
-			        delz1 = int(float(line[53])),
-			        delz0 = int(float(line[56])),
-			        R_l00 = float(line[33]),
-			        R_l01 = float(line[34]),
-			        R_l02 = float(line[35]),
-			        R_l10 = float(line[36]),
-			        R_l11 = float(line[37]), 
-			        R_l12 = float(line[38]),
-			        R_l20 = float(line[39]),
-			        R_l21 = float(line[40]),
-			        R_l22 = float(line[41]),
-			        R_r00 = float(line[42]),
-			        R_r01 = float(line[43]), 
-			        R_r02 = float(line[44]),
-			        R_r10 = float(line[45]),
-			        R_r11 = float(line[46]), 
-			        R_r12 = float(line[47]),
-			        R_r20 = float(line[48]),
-			        R_r21 = float(line[49]),
-			        R_r22 = float(line[50]),
+			        delx1 = int(float(line[dpos_index])),
+			        delx0 = int(float(line[dpos_index+3])),
+			        dely1 = int(float(line[dpos_index+1])),
+			        dely0 = int(float(line[dpos_index+4])),
+			        delz1 = int(float(line[dpos_index+2])),
+			        delz0 = int(float(line[dpos_index+5])),
+			        R_l00 = float(line[dori_index]),
+			        R_l01 = float(line[dori_index+1]),
+			        R_l02 = float(line[dori_index+2]),
+			        R_l10 = float(line[dori_index+3]),
+			        R_l11 = float(line[dori_index+4]),
+			        R_l12 = float(line[dori_index+5]),
+			        R_l20 = float(line[dori_index+6]),
+			        R_l21 = float(line[dori_index+7]),
+			        R_l22 = float(line[dori_index+8]),
+			        R_r00 = float(line[dori_index+9]),
+			        R_r01 = float(line[dori_index+10]),
+			        R_r02 = float(line[dori_index+11]),
+			        R_r10 = float(line[dori_index+12]),
+			        R_r11 = float(line[dori_index+13]),
+			        R_r12 = float(line[dori_index+14]),
+			        R_r20 = float(line[dori_index+15]),
+			        R_r21 = float(line[dori_index+16]),
+			        R_r22 = float(line[dori_index+17]),
 			        buttonstate0 = 0,
 			        buttonstate1 = 0, 
-			        grasp0 = float((float(line[177])+float(line[176]))*1000),
-			        grasp1 = float((float(line[185])+float(line[184]))*1000), 
+			        grasp0 = float((float(line[djpos_index+7])+float(line[djpos_index+6]))*1000),
+			        grasp1 = float((float(line[djpos_index+15])+float(line[djpos_index+14]))*1000), 
 			        surgeon_mode = 1, 
 			        checksum=0);                
 			MESSAGE = struct.pack(format_,*tuple_to_send._asdict().values());

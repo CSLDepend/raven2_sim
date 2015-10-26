@@ -231,13 +231,13 @@ void teleopIntoDS1(struct u_struct *us_t)
 
         // Get initial joint positions from input, assign them to the desired jpos
 	if (us_t->sequence == 1)	
-        {    
-            for (int j=0;j<16;j++)  
-		data1.jpos_d[j] = (us_t->jpos[j])*M_PI/180;
-                         
-	    log_file("Local IO joint positions: (%f,%f,%f,%f,%f,%f,%f\n%f,%f,%f,%f,%f,%f,%f\n)",
-               		 data1.jpos_d[0]*r2d, data1.jpos_d[1]*r2d, data1.jpos_d[2]*d2r,
-               		 data1.jpos_d[4]*r2d, data1.jpos_d[5]*r2d, data1.jpos_d[6]*r2d,
+    {    
+        for (int j=0;j<16;j++)  
+		{		
+			data1.jpos_d[j] = (us_t->jpos[j])*M_PI/180;    
+		}                 
+	    	log_file("Local IO joint positions: (%f,%f,%f,%f,%f,%f,%f\n%f,%f,%f,%f,%f,%f,%f\n)",    data1.jpos_d[0]*r2d, data1.jpos_d[1]*r2d, data1.jpos_d[2]*d2r,
+             data1.jpos_d[4]*r2d, data1.jpos_d[5]*r2d, data1.jpos_d[6]*r2d,
 			 data1.jpos_d[7]*r2d, data1.jpos_d[8]*r2d, data1.jpos_d[9]*r2d,
 			 data1.jpos_d[10]*d2r, data1.jpos_d[12]*r2d, data1.jpos_d[13]*r2d,
 			 data1.jpos_d[14]*r2d, data1.jpos_d[15]*r2d);

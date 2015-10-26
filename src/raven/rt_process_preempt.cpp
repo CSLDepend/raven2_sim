@@ -111,6 +111,10 @@ std::ofstream WriteUSBfile;
 
 #ifdef dyn_simulator 
 int wrfd,rdfd; 
+char sim_buf[4096];
+int first_run = 0;
+char outfile[40] = "/home/raven/homa_wksp/Li_DYN/output.csv";
+FILE *sim_file = fopen(outfile, "w");;
 #endif
 
 
@@ -289,11 +293,6 @@ static void *rt_process(void* )
          clock_nanosleep(0, TIMER_ABSTIME, &tbz, NULL);
          loops++;
       }
-#else 
-#ifdef dyn_simulator 
-	  //Get the estimated mpos and mvel from the simulator
-	  
-#endif
 #endif
       clock_gettime(CLOCK_REALTIME,&t2);
       t2 = tsSubtract(t2, tnow);
@@ -360,7 +359,73 @@ static void *rt_process(void* )
 #else
 #ifdef dyn_simulator 
 	  //Send the DACs, mvel, and mpos to the simulator
-	  
+	  for (int i = 0; i < NUM_MECH; i++)
+	  {
+		int arm_type;
+	 	if (device0.mech[i].type == GREEN_ARM)
+			arm_type = 1;
+		else
+			arm_type = 0;
+		if ((first_run < 10) && (currParams.last_sequence != 111))
+		{
+			first_run = first_run + 1;
+			printf("\nmpos/mvel/DACs -arm %d:\n%f,%f,%f,%f,\n%f,%f,%f,%f,\n%d,%d,%d,%d\n", 					  arm_type, 
+	          (float)device0.mech[i].joint[SHOULDER].mpos,
+			  (float)device0.mech[i].joint[ELBOW].mpos,
+			  (float)device0.mech[i].joint[Z_INS].mpos,
+			  (float)device0.mech[i].joint[TOOL_ROT].mpos,
+	          (float)device0.mech[i].joint[SHOULDER].mvel,
+			  (float)device0.mech[i].joint[ELBOW].mvel,
+			  (float)device0.mech[i].joint[Z_INS].mvel,
+			  (float)device0.mech[i].joint[TOOL_ROT].mvel,
+ 			  (int)device0.mech[i].joint[SHOULDER].current_cmd,
+			  (s_16)device0.mech[i].joint[ELBOW].current_cmd,
+			  (s_16)device0.mech[i].joint[Z_INS].current_cmd,
+			  (s_16)device0.mech[i].joint[TOOL_ROT].current_cmd);
+		}
+		if ((arm_type == 1) && (fabs(device0.mech[i].joint[SHOULDER].mpos) > 0))
+	  	{
+            // Send simulator input to FIFO
+			sprintf(sim_buf, "%d %f %f %f %f %f %f %f %f %f %f %f %f",
+				  arm_type, 
+		          (double)device0.mech[i].joint[SHOULDER].mpos,
+				  (double)device0.mech[i].joint[ELBOW].mpos,
+				  (double)device0.mech[i].joint[Z_INS].mpos,
+				  (double)device0.mech[i].joint[TOOL_ROT].mpos,
+		          (double)device0.mech[i].joint[SHOULDER].mvel,
+				  (double)device0.mech[i].joint[ELBOW].mvel,
+				  (double)device0.mech[i].joint[Z_INS].mvel,
+				  (double)device0.mech[i].joint[TOOL_ROT].mvel,
+	 			  (double)device0.mech[i].joint[SHOULDER].current_cmd,
+				  (double)device0.mech[i].joint[ELBOW].current_cmd,
+				  (double)device0.mech[i].joint[Z_INS].current_cmd,
+				  (double)device0.mech[i].joint[TOOL_ROT].current_cmd);
+    	    write(wrfd, sim_buf, sizeof(sim_buf));
+ 	        
+			// Read estimates from FIFO
+			read(rdfd, sim_buf, sizeof(sim_buf));
+			// Write the results to the screen
+			stringstream ss(sim_buf);     
+			ss >> device0.mech[i].joint[SHOULDER].mpos >> 
+				device0.mech[i].joint[SHOULDER].mvel >> 
+				device0.mech[i].joint[ELBOW].mpos >> 
+				device0.mech[i].joint[ELBOW].mvel >>
+				device0.mech[i].joint[Z_INS].mpos >> 
+				device0.mech[i].joint[Z_INS].mvel >>
+				device0.mech[i].joint[TOOL_ROT].mpos >> 
+				device0.mech[i].joint[TOOL_ROT].mvel;
+			/*printf("Received estimated motor positions/velocties:\n(%f, %f),\n (%f, %f),\n (%f, %f),\n (%f, %f)\n",
+				device0.mech[i].joint[SHOULDER].mpos, 
+				device0.mech[i].joint[SHOULDER].mvel, 
+				device0.mech[i].joint[ELBOW].mpos,
+				device0.mech[i].joint[ELBOW].mvel,
+				device0.mech[i].joint[Z_INS].mpos, 
+				device0.mech[i].joint[Z_INS].mvel,
+				device0.mech[i].joint[TOOL_ROT].mpos, 
+				device0.mech[i].joint[TOOL_ROT].mvel);*/  
+			fprintf(sim_file,"%f,%f,%f,%f,%f,%f,%f,%f\n",device0.mech[i].joint[SHOULDER].mpos, device0.mech[i].joint[SHOULDER].mvel, device0.mech[i].joint[ELBOW].mpos, device0.mech[i].joint[ELBOW].mvel,device0.mech[i].joint[Z_INS].mpos, device0.mech[i].joint[Z_INS].mvel,device0.mech[i].joint[TOOL_ROT].mpos, device0.mech[i].joint[TOOL_ROT].mvel);  	 		
+		}
+	}
 #endif
 #endif
 
@@ -497,8 +562,8 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef dyn_simulator
-	char wrfifo[20] = "/tmp/djpos_fifo";
-	char rdfifo[20] = "/tmp/jpos_fifo";
+    char wrfifo[20] = "/tmp/dac_fifo";
+    char rdfifo[20] = "/tmp/mpos_vel_fifo";
     /* create the FIFO (named pipe) */
     mkfifo(wrfifo, 0666);
     log_msg("djpos FIFO Created..");
@@ -537,6 +602,7 @@ int main(int argc, char **argv)
   unlink(wrfifo);
   close(wrfd);
   close(rdfd);
+  fclose(sim_file);
 #endif
 
   //Suspend main until all threads terminate

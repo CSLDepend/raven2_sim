@@ -94,16 +94,14 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
     //Desired control mode
     t_controlmode controlmode = (t_controlmode)currParams->robotControlMode;
 
-//#ifndef simulator
     //Initialization code
 
     initRobotData(device0, currParams->runlevel, currParams);
 
+#ifndef dyn_simulator
     //Compute Mpos & Velocities
-
     stateEstimate(device0); 
-
-//#endif
+#endif
 
     //Foward Cable Coupling
     fwdCableCoupling(device0, currParams->runlevel);
