@@ -312,7 +312,7 @@ void* network_process(void* param1)
                                  NULL);
 
 #ifdef mfi
-      //MFI_CODE_INSERT
+//MFI_HOOK
 #endif
 
 #ifdef save_logs

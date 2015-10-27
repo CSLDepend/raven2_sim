@@ -99,7 +99,7 @@ class Raven():
             os.system(cmd);   
         self.defines_changed = 0
 
-    def __mfi_insert_code(self, file_name, line_num, trigger, target):
+    def __mfi_insert_code(self, file_name, mfi_hook, trigger, target):
         """
         Example: if (x > 3 && x < 5) {x = 40}
         """
@@ -125,7 +125,7 @@ class Raven():
         # For position the injected value is incremental
         else:
             code = 'if (' + trigger_line + ') { ' + target[0] + '+= ' + target[1] + ';}\n'
-        print file_name + ':' + line_num + '\n' + code
+        print file_name + ':' + mfi_hook + '\n' + code
 
         #save a backup file
         cmd = 'cp ' + self.mfi_src_file + ' ' + self.mfi_bkup_file
@@ -136,10 +136,10 @@ class Raven():
         src_fp = open(self.mfi_src_file, 'w')
         bkup_fp = open(self.mfi_bkup_file, 'r')
         
-        for i, line in enumerate(bkup_fp):
-            if i == int(line_num)-1:
-                src_fp.write(code)
+        for line in bkup_fp:
             src_fp.write(line)
+            if line.startswith(mfi_hook):
+                src_fp.write(code)
         src_fp.close()
         bkup_fp.close()
 
@@ -286,7 +286,7 @@ class Raven():
 
         with open(self.master_file) as fp:
             target_file = ''
-            line_num = 0
+            mfi_hook = ''
             trigger = []
             target = []
 
@@ -303,7 +303,7 @@ class Raven():
                 elif param[0] == 'location':
                     location_info = param[1].split(':')
                     target_file = location_info[0].lstrip()
-                    line_num = location_info[1]
+                    mfi_hook = location_info[1]
 
                 # Read trigger info
                 elif param[0] == 'trigger':
@@ -328,7 +328,7 @@ class Raven():
                                 for x in xrange(int(param[2])):
                                     #target = (mfi.generate_target_r(saved_param)).split(' ')
                                     target = (mfi.generate_target_r_stratified(saved_param, int(param[2]), x)).split(' ')
-                                    self.__mfi_insert_code(target_file, line_num, trigger, target)
+                                    self.__mfi_insert_code(target_file, mfi_hook, trigger, target)
                                     self._compile_raven()
                                     print("injecting to %d.%d" % (cur_inj, x))
                                     self._run_experiment()
@@ -337,7 +337,6 @@ class Raven():
                                 self.__mfi_insert_code(target_file, line, trigger, target)
                                 self._compile_raven()
                                 self._run_experiment()
-                print line
 
    
     def signal_handler(self, signal, frame):
