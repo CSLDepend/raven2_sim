@@ -189,6 +189,69 @@ def run_experiment(raven_home, mode, packet_gen):
         else:
             data = ''
     quit()
+"""
+def run_mfi(raven_home, mode, packet_gen):
+    cur_inj = -1
+    saved_param = []
+
+    with open(master_file) as fp:
+        target_file = ''
+        line_num = 0
+        trigger = []
+        target = []
+
+        for line in fp:
+            # Strip '\n' from each line then split by ','
+            line = line.strip('\n')
+            param = line.split(',')
+
+            # Skip lines begin with # or empty line
+            if param[0] == '' or param[0] == '#':
+                continue
+           
+            # Read location info
+            elif param[0] == 'location':
+                location_info = param[1].split(':')
+                target_file = location_info[0].lstrip()
+                line_num = location_info[1]
+
+            # Read trigger info
+            elif param[0] == 'trigger':
+                param.pop(0)
+                trigger = [item.strip() for item in param]
+
+            elif param[0] == 'target_r':
+                param.pop(0)
+                saved_param = param
+                target = (mfi.generate_target_r(saved_param)).split(' ')
+
+            elif param[0] == 'injection':
+                if cur_inj != int(param[1]):
+                    cur_inj = int(param[1])
+                    print("setup param for %d" % cur_inj)
+                else:
+                    # Injection starts at argv[1]
+                    # Example starting_inj_num is 3.2
+                    starting_inj_num = (sys.argv[1]).split('.')
+                    if int(param[1]) >= int(starting_inj_num[0]):
+                        # If param == 3, indicate do random injection param[2] times.
+                        if len(param) == 3:
+                            for x in xrange(int(param[2])):
+                                if len(starting_inj_num) > 1:
+                                    if x < int(starting_inj_num):
+                                        next
+                                #target = (mfi.generate_target_r(saved_param)).split(' ')
+                                target = (mfi.generate_target_r_stratified(saved_param, int(param[2]), x)).split(' ')
+                                mfi.insert_code(raven_home, target_file, line_num, trigger, target)
+
+                                print("injecting to %d.%d" % (cur_inj, x))
+                                run_experiment(raven_home, mode, packet_gen)
+                        else:
+                            print("injecting to %d" % (cur_inj))
+                            mfi.insert_code(raven_home, target_file, line, trigger, target)
+                            run_experiment(raven_home, mode, packet_gen)
+
+"""
 
 env = os.environ.copy()
 #print env['ROS_PACKAGE_PATH']
@@ -199,9 +262,8 @@ rsp_func()
 src_file = raven_home + "/include/raven/defines.h"
 bkup_file = raven_home + "/include/raven/defines_back.h"
 chk_file = raven_home + "/include/raven/defines_last_run"
+master_file = './selected_injection.txt'
 
-cur_inj = -1
-saved_param = []
 surgeon_simulator = 1;
 UDP_IP = "127.0.0.1"
 UDP_PORT = 34000
@@ -226,9 +288,13 @@ else:
     print "Usage: python run.py <sim|dyn_sim|rob> <1:packet_gen|0:gui> <none|mfi>"
     sys.exit(2)
 
-# Change defines.h
+# Change Source
 change_defines_h(mode, packet_gen, injection)
+
+# Compile Raven
 make_ret = compile_raven()
+
+# Restore Source
 restore_defines_h()
 
 if (make_ret != 0):
