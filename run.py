@@ -32,16 +32,19 @@ from sys import argv
 import mfi
 
 def rsp_func():
-	rsp = str(raw_input("Is the Raven Home found correctly (Yes/No)? "))
-	if rsp.lower() == 'yes' or rsp.lower() == 'y':
-		print 'Found Raven Home Directory.. Starting..\n'
-	elif rsp.lower() == 'no' or rsp.lower() == 'n':
-		print 'Please change the ROS_PACKAGE_PATH environment variable.\n'
-		sys.exit(2)
-	else:
-		rsp_func()
+    """ Get response from user to check if raven_home directory is correct"""
+    rsp = str(raw_input("Is the Raven Home found correctly (Yes/No)? "))
+    if rsp.lower() == 'yes' or rsp.lower() == 'y':
+            print 'Found Raven Home Directory.. Starting..\n'
+    elif rsp.lower() == 'no' or rsp.lower() == 'n':
+            print 'Please change the ROS_PACKAGE_PATH environment variable.\n'
+            sys.exit(2)
+    else:
+            rsp_func()
 class Raven():
+    """ Implements the Raven class to run different Raven experiments"""
     def __init__(self, raven_home, mode, packet_gen, injection):
+        """ Init variables """
         self.mode = mode
         self.packet_gen = packet_gen
         self.raven_home = raven_home
@@ -60,6 +63,7 @@ class Raven():
             self.starting_inj_num = 0
 
     def __change_defines_h(self):
+        """ Modifies <raven_home>/include/raven/defines.h """
         # Change define macros
         cmd = 'cp ' + self.defines_src_file + ' ' + self.defines_bkup_file
         os.system(cmd)
@@ -89,6 +93,7 @@ class Raven():
         self.defines_changed = 1
 
     def __restore_defines_h(self):
+        """ Restores <raven_home>/include/raven/defines.h """
         #restore file
         cmd = 'chmod 777 ' + self.defines_bkup_file;
         os.system(cmd);
@@ -100,7 +105,7 @@ class Raven():
         self.defines_changed = 0
 
     def __mfi_insert_code(self, file_name, mfi_hook, trigger, target):
-        """
+        """ Insert code to <file_name> at location <mfi_hook>
         Example: if (x > 3 && x < 5) {x = 40}
         """
         # Compute all the variable
@@ -148,6 +153,7 @@ class Raven():
         os.system(cmd)
 
     def __restore_mfi(self):
+        """ Restores the source file which changed by __mfi_insert_code()"""
         #restore file
         cmd = 'chmod 777 '+self.mfi_bkup_file;
         os.system(cmd);
@@ -160,6 +166,7 @@ class Raven():
         self.mfi_changed = 0
 
     def __quit(self): 
+        """ Terminate all process started by _run_experiment() """
         try:
             r2_control_pid = subprocess.check_output("pgrep r2_control", 
                     shell=True)
@@ -205,6 +212,7 @@ class Raven():
         #os.system("killall python") # Don't work with run_mfi_experiment()
 
     def _compile_raven(self):
+        """ Compile Raven source code """
 
         self.__change_defines_h()
 
@@ -223,6 +231,7 @@ class Raven():
            sys.exit(0)
 
     def _run_experiment(self):
+        """ Run Raven experiment once. """
         # Open Sockets
         UDP_IP = "127.0.0.1"
         UDP_PORT = 34000
@@ -281,6 +290,7 @@ class Raven():
         self.__quit()
     
     def _run_mfi_experiment(self):
+        """ Run mfi experiment according to the master_file """
         cur_inj = -1
         saved_param = []
 
@@ -340,11 +350,13 @@ class Raven():
 
    
     def signal_handler(self, signal, frame):
+        """ Signal handler to catch Ctrl+C to shutdown everything"""
         print "Ctrl+C Pressed!"
         self.__quit()
         sys.exit(0)
 
     def run(self):
+        """ Run Raven experiments """
         if self.injection == 'mfi':
             self._run_mfi_experiment()
         else:
