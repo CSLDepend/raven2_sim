@@ -101,10 +101,7 @@ def generate_target_r_stratified(param, num_of_bin, current_bin):
     for item in param:
         p = item.lstrip()
         param2 = p.split(' ')
-        print param2[0]
-        print param2[1]
-        print param2[2]
-        print param2[3]
+        print p
         newline = ''
         if param2[1] == 'rand_float':
             min_val = int_or_float(param2[2])
@@ -133,6 +130,5 @@ def generate_target_r_stratified(param, num_of_bin, current_bin):
             newline = "%s %s" % (param2[0], new_val)
         else:
             newline = item
-        print "debug: " + newline
     return newline;
 

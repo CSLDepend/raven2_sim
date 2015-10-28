@@ -30,6 +30,7 @@ import time
 import signal
 from sys import argv
 import mfi
+import logging
 
 def rsp_func():
     """ Get response from user to check if raven_home directory is correct"""
@@ -41,6 +42,25 @@ def rsp_func():
             sys.exit(2)
     else:
             rsp_func()
+
+def initLogger(logger, log_file):
+    """ Initialize a logger for console and file"""
+
+    fh = logging.FileHandler(log_file)
+    fh.setLevel(logging.INFO)
+
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+
+    FORMAT = '%(asctime)s - %(message)s'
+    formatter = logging.Formatter(FORMAT)
+    ch.setFormatter(formatter)
+    fh.setFormatter(formatter)
+
+    logger.addHandler(ch)
+    logger.addHandler(fh)
+    logger.setLevel(logging.INFO)
+
 class Raven():
     """ Implements the Raven class to run different Raven experiments"""
     def __init__(self, raven_home, mode, packet_gen, injection):
@@ -104,33 +124,11 @@ class Raven():
             os.system(cmd);   
         self.defines_changed = 0
 
-    def __mfi_insert_code(self, file_name, mfi_hook, trigger, target):
-        """ Insert code to <file_name> at location <mfi_hook>
-        Example: if (x > 3 && x < 5) {x = 40}
-        """
-        # Compute all the variable
+    def __mfi_insert_code(self, file_name, mfi_hook, code):
+        """ Insert code to <file_name> at location <mfi_hook>"""
         self.mfi_src_file = self.raven_home + "/src/raven/" + file_name
         self.mfi_bkup_file = self.raven_home + "/src/raven/" + file_name + '.bkup'
         self.mfi_chk_file = self.raven_home + "/src/raven/" + file_name + '.chk'
-        trigger_line = ' && '.join(trigger)
-        # target[0] variable name, target[1] value
-
-        # For R matrices injected values are based on absolute values of yaw, roll, pitch
-        if ((target[0] == 'u.R_l') or (target[0] == 'u.R_r')):
-            code = 'if (' + trigger_line + ') { '; 
-            elems = target[1].split(';');
-            for i in range(0,3):
-                for j in range(0,3):
-                    code =code+target[0]+'['+str(i)+']['+str(j)+']='+ elems[i*3+j]+'; '; 
-            code = code + '}\n';  
-            print code
-        # For thetas and USBs the injected value is absolute 
-        elif (target[0].find('jpos') > -1) or (file_name.find('USB') > -1):
-            code = 'if (' + trigger_line + ') { ' + target[0] + ' = ' + target[1] + ';}\n'
-        # For position the injected value is incremental
-        else:
-            code = 'if (' + trigger_line + ') { ' + target[0] + '+= ' + target[1] + ';}\n'
-        print file_name + ':' + mfi_hook + '\n' + code
 
         #save a backup file
         cmd = 'cp ' + self.mfi_src_file + ' ' + self.mfi_bkup_file
@@ -152,6 +150,31 @@ class Raven():
         cmd = 'cp ' + self.mfi_src_file + ' ' + self.mfi_chk_file
         os.system(cmd)
 
+    def __mfi_insert_code2(self, file_name, mfi_hook, trigger, target):
+        """ Insert code to <file_name> at location <mfi_hook>
+        Example: if (x > 3 && x < 5) {x = 40}
+        """
+        trigger_line = ' && '.join(trigger)
+        # target[0] variable name, target[1] value
+
+        # For R matrices injected values are based on absolute values of yaw, roll, pitch
+        if ((target[0] == 'u.R_l') or (target[0] == 'u.R_r')):
+            code = 'if (' + trigger_line + ') { '; 
+            elems = target[1].split(';');
+            for i in range(0,3):
+                for j in range(0,3):
+                    code =code+target[0]+'['+str(i)+']['+str(j)+']='+ elems[i*3+j]+'; '; 
+            code = code + '}\n';  
+        # For thetas and USBs the injected value is absolute 
+        elif (target[0].find('jpos') > -1) or (file_name.find('USB') > -1):
+            code = 'if (' + trigger_line + ') { ' + target[0] + ' = ' + target[1] + ';}\n'
+        # For position the injected value is incremental
+        else:
+            code = 'if (' + trigger_line + ') { ' + target[0] + '+= ' + target[1] + ';}\n'
+
+        self.__mfi_insert_code(file_name, mfi_hook, code)
+        return (file_name + ':' + mfi_hook + ':' + code)
+
     def __restore_mfi(self):
         """ Restores the source file which changed by __mfi_insert_code()"""
         #restore file
@@ -167,6 +190,12 @@ class Raven():
 
     def __quit(self): 
         """ Terminate all process started by _run_experiment() """
+        # Restore changes to source code
+        if self.defines_changed:
+            self.__restore_defines_h()
+        if self.mfi_changed:
+            self.__restore_mfi()
+        
         try:
             r2_control_pid = subprocess.check_output("pgrep r2_control", 
                     shell=True)
@@ -201,14 +230,14 @@ class Raven():
             time.sleep(1)
         except:
             pass
-        os.system("rm /tmp/dac_fifo")
-        os.system("rm /tmp/mpos_vel_fifo")
-        os.system("killall roslaunch")
-        os.system("killall rostopic")    
-        os.system("killall r2_control")
-        os.system("killall rviz")
-        os.system("killall xterm")
-        os.system("killall two_arm_dyn")
+        os.system("rm /tmp/dac_fifo > /dev/null 2>&1")
+        os.system("rm /tmp/mpos_vel_fifo > /dev/null 2>&1")
+        os.system("killall roslaunch > /dev/null 2>&1")
+        os.system("killall rostopic > /dev/null 2>&1")
+        os.system("killall r2_control > /dev/null 2>&1")
+        os.system("killall rviz > /dev/null 2>&1")
+        os.system("killall xterm > /dev/null 2>&1")
+        os.system("killall two_arm_dyn > /dev/null 2>&1")
         #os.system("killall python") # Don't work with run_mfi_experiment()
 
     def _compile_raven(self):
@@ -217,7 +246,8 @@ class Raven():
         self.__change_defines_h()
 
         # Make the file
-        cmd = 'cd ' + self.raven_home + ';make -j > compile.output'
+        print "Compiling Raven...logged to compile.output."
+        cmd = 'cd ' + self.raven_home + ';make -j 1> compile.output 2>&1'
         make_ret = os.system(cmd)
 
         if self.defines_changed:
@@ -235,7 +265,6 @@ class Raven():
         # Open Sockets
         UDP_IP = "127.0.0.1"
         UDP_PORT = 34000
-        os.system("killall xterm")
         sock = socket.socket(socket.AF_INET, # Internet
                               socket.SOCK_DGRAM) # UDP
         sock.bind((UDP_IP,UDP_PORT))
@@ -328,7 +357,7 @@ class Raven():
                 elif param[0] == 'injection':
                     if cur_inj != int(param[1]):
                         cur_inj = int(param[1])
-                        print("setup param for %d" % cur_inj)
+                        print("mfi: setup injection %d" % cur_inj)
                     else:
                         # Injection starts at argv[1]
                         # Example starting_inj_num is 3.2
@@ -338,17 +367,39 @@ class Raven():
                                 for x in xrange(int(param[2])):
                                     #target = (mfi.generate_target_r(saved_param)).split(' ')
                                     target = (mfi.generate_target_r_stratified(saved_param, int(param[2]), x)).split(' ')
-                                    self.__mfi_insert_code(target_file, mfi_hook, trigger, target)
+                                    inj_info = self.__mfi_insert_code2(target_file, mfi_hook, trigger, target)
+                                    logger.info("injecting to %d.%d %s" % (cur_inj, x, inj_info))
                                     self._compile_raven()
-                                    print("injecting to %d.%d" % (cur_inj, x))
                                     self._run_experiment()
                             else:
-                                print("injecting to %d" % (cur_inj))
-                                self.__mfi_insert_code(target_file, line, trigger, target)
+                                inj_info = self.__mfi_insert_code2(target_file, line, trigger, target)
+                                logger.info("injecting to %d %s" % (cur_inj, inj_info))
                                 self._compile_raven()
                                 self._run_experiment()
 
-   
+    def _run_mfi2_experiment(self):
+        """ New mfi injection using the file generated by generate_mfi2.py"""
+        code_file = 'mfi2.txt'
+        file_name = ''
+        mfi_hook = ''
+        with open(code_file, 'r') as infile:
+            """ Example lines:
+                location:network_layer.cpp://MFI_HOOK
+                injection 1:if(u.sequence>1000 && u.sequence<1100) {u.del[0]=100;}
+            """
+            for line in infile:
+                l = line.split(':')
+                if l[0].startswith('location'):
+                    file_name = l[1]
+                    mfi_hook = l[2]
+                elif l[0].startswith('injection'):
+                    curr_inj = int(l[0].split(' ')[1])
+                    if curr_inj > self.starting_inj_num:
+                        self.__mfi_insert_code(file_name, mfi_hook, l[1])
+                        logger.info(line)
+                        self._compile_raven()
+                        self._run_experiment()
+
     def signal_handler(self, signal, frame):
         """ Signal handler to catch Ctrl+C to shutdown everything"""
         print "Ctrl+C Pressed!"
@@ -359,6 +410,8 @@ class Raven():
         """ Run Raven experiments """
         if self.injection == 'mfi':
             self._run_mfi_experiment()
+        elif self.injection == 'mfi2':
+            self._run_mfi2_experiment()
         else:
             self._compile_raven()
             self._run_experiment()
@@ -366,13 +419,19 @@ class Raven():
 
 # Main code starts here
 
+
+# Init Logger
+logger = logging.getLogger(__name__)
+initLogger(logger, 'mfi.log')
+
 # Get raven_home directory
 env = os.environ.copy()
 splits = env['ROS_PACKAGE_PATH'].split(':')
 raven_home = splits[0]
 print '\nRaven Home Found to be: '+ raven_home
 rsp_func()
-usage = "Usage: python run.py <sim|dyn_sim|rob> <1:packet_gen|0:gui> <none|mfi:start#>"
+usage = "Usage: python run.py <sim|dyn_sim|rob> <1:packet_gen|0:gui> <none|mfi:start#|mfi2:start#>"
+
 # Parse the arguments
 try:
     script, mode, packet_gen, injection = argv
@@ -382,16 +441,17 @@ except:
     sys.exit(2)
 
 if mode == "sim":
-    print "Run the Simulation"
+    print "Run Simulation"
 elif mode == "dyn_sim":
-    print "Run the Dynamic Simulation"
+    print "Run Dynamic Simulation"
 elif mode == "rob": 
-    print "Run the Real Robot"
+    print "Run Real Robot"
 else:
     print usage
     sys.exit(2)
 
 # Init Raven
+
 raven = Raven(raven_home, mode, packet_gen, injection)
 signal.signal(signal.SIGINT, raven.signal_handler)
 
