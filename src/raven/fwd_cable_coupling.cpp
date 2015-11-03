@@ -49,7 +49,7 @@ void fwdCableCoupling(struct device *device0, int runlevel)
 	for (int i = 0; i < NUM_MECH; i++)
 	{
 		fwdMechCableCoupling(&(device0->mech[i]));
-		log_msg("i = %d, mech_type = %d\n", i,device0->mech[i].type);	
+		//log_msg("i = %d, mech_type = %d\n", i,device0->mech[i].type);	
 	}
 }
 

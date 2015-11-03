@@ -292,7 +292,7 @@ int raven_sinusoidal_joint_motion(struct device *device0, struct param_pass *cur
     static unsigned long int delay=0;
     //const float f_period[8] = {6, 7, 10, 9999999, 10, 5, 10, 6};
     const float f_period[8] = {6, 7, 4, 9999999, 10, 5, 10, 6};
-    const float f_magnitude[8] = {10 DEG2RAD, 0 DEG2RAD, 0, 9999999, 0 DEG2RAD, 0 DEG2RAD, 0 DEG2RAD, 0 DEG2RAD};
+    const float f_magnitude[8] = {10 DEG2RAD, 10 DEG2RAD, 0, 9999999, 0 DEG2RAD, 0 DEG2RAD, 0 DEG2RAD, 0 DEG2RAD};
     //const float f_magnitude[8] = {10 DEG2RAD, 10 DEG2RAD, 0.02, 9999999, 30 DEG2RAD, 30 DEG2RAD, 30 DEG2RAD, 30 DEG2RAD};
 
 
