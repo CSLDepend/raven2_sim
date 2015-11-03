@@ -32,6 +32,7 @@
 
 extern struct DOF_type DOF_types[];
 extern int NUM_MECH;
+int fi = 0;
 
 void getStateLPF(struct DOF *joint);
 
@@ -87,8 +88,6 @@ void getStateLPF(struct DOF *joint, int tool_type)
     float *oldFiltPos= DOF_types[joint->type].old_filtered_mpos;
     float filtPos = 0;
     float f_enc_val = joint->enc_val;
-
-
 
 //#ifdef RAVEN_II
 //    if ( (joint->type == SHOULDER_GOLD) ||
@@ -349,7 +348,6 @@ void getStateLPF(struct DOF *joint, style t_style)
     // This is safe b/c noise is removed by LPF
     joint->mvel = (filtPos - oldFiltPos[0]) / STEP_PERIOD;
     joint->mpos = filtPos;
-
 
     // Update old values for filter
     oldPos[2] = oldPos[1];

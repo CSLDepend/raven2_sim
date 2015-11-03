@@ -129,7 +129,7 @@ s.close()
 goldenRavenTask= 'xterm -e roslaunch raven_2 raven_2.launch'
 ravenTask = 'xterm -hold -e roslaunch raven_2 raven_2.launch'
 visTask = 'xterm -hold -e roslaunch raven_visualization raven_visualization.launch'
-dynSimTask = 'xterm -hold -e "cd ../Li_DYN && ./two_arm_dyn"'
+dynSimTask = 'xterm -hold -e "cd ../Li_DYN && make && ./two_arm_dyn"'
 rostopicTask = 'rostopic echo -p ravenstate >'+raven_home+'/latest_run.csv'
 if (surgeon_simulator == 1):
     packetTask = 'xterm -hold -e python '+raven_home+'/Real_Packet_Generator_Surgeon.py '+ mode
@@ -173,8 +173,8 @@ def quit():
         time.sleep(1)
     except:
         pass
-    os.system("rm /tmp/jpos_fifo")
-    os.system("rm /tmp/djpos_fifo")
+    os.system("rm /tmp/dac_fifo")
+    os.system("rm /tmp/mpos_vel_fifo")
     os.system("killall roslaunch")
     os.system("killall rostopic")    
     os.system("killall r2_control")
@@ -207,7 +207,7 @@ rostopic_proc = subprocess.Popen(rostopicTask, env=env, shell=True, preexec_fn=o
 time.sleep(0.5);
 # Call Dynamic Simulator
 if mode == "dyn_sim":
-	dynSim_proc = subprocess.Popen(dynSimTask, env=env, shell=True, preexec_fn=os.setsid)
+	#dynSim_proc = subprocess.Popen(dynSimTask, env=env, shell=True, preexec_fn=os.setsid)
 	#os.system("cd ../Li_DYN && ./two_arm_dyn")
 	print "Started the dynamic simulator.."
 
