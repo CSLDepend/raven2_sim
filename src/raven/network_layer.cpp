@@ -311,6 +311,9 @@ void* network_process(void* param1)
                                  NULL,
                                  NULL);
 
+#ifdef mfi
+//MFI_HOOK
+#endif
 
 #ifdef save_logs
         log_file("NETWORK) Receieved Data on Socket, Size = %d", uSize);         

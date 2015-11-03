@@ -365,6 +365,11 @@ static void *rt_process(void* )
 		{
 			first_run = first_run + 1;
 			printf("\nmpos/mvel/DACs -arm %d:\n%f,%f,%f,%f,\n%f,%f,%f,%f,\n%d,%d,%d,%d\n", i, 
+
+		if ((first_run < 10) && (currParams.last_sequence != 111))
+		{
+			first_run = first_run + 1;
+			printf("\nmpos/mvel/DACs -arm %d:\n%f,%f,%f,%f,\n%f,%f,%f,%f,\n%d,%d,%d,%d\n", i
 	          (float)device0.mech[i].joint[SHOULDER].mpos,
 			  (float)device0.mech[i].joint[ELBOW].mpos,
 			  (float)device0.mech[i].joint[Z_INS].mpos,
