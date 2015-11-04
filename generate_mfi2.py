@@ -1,4 +1,11 @@
 from pprint import pprint
+import sys
+from math import cos, sin, sqrt, acos, asin, atan2, pow as pow_f
+import os
+from rotation_math import tsp_to_r
+
+
+
 def _generate_ow_code(trigger, t1, t2, variable, stuck_value):
     """ Example 
         trigger = 'u.sequence'

@@ -33,6 +33,10 @@ extern struct DOF_type DOF_types[];
 extern int NUM_MECH;
 extern unsigned long int gTime;
 
+#ifdef dyn_simulator 
+extern int runlevel;
+extern int packet_num;
+#endif
 /**
 * \fn void fwdCableCoupling(struct device *device0, int runlevel)
 * \brief Calls fwdMechCableCoupling for each mechanism in device
@@ -162,22 +166,21 @@ void fwdMechCableCoupling(struct mechanism *mech)
 #else
 #ifdef dyn_simulator 
     // Only for the Gold Arm (type is flipped), get jpos from the estimated mpos 
-	if((mech->type == GREEN_ARM) && (fabs(mech->joint[SHOULDER].jpos) > 0))
+	if((mech->type == GREEN_ARM) && (runlevel == 3) && (packet_num != 111))
 	{
 		// Now have solved for th1, th2, d3, th4, th5, th6
 		mech->joint[SHOULDER].jpos 		= th1;// - mech->joint[SHOULDER].jpos_off;
 		mech->joint[ELBOW].jpos 		= th2;// - mech->joint[ELBOW].jpos_off;
-		mech->joint[TOOL_ROT].jpos 		= th3;// - mech->joint[TOOL_ROT].jpos_off;
 		mech->joint[Z_INS].jpos 		= d4;//  - mech->joint[Z_INS].jpos_off;
 	}	
 	else	
 	{
 		mech->joint[SHOULDER].jpos 		= mech->joint[SHOULDER].jpos_d;
 		mech->joint[ELBOW].jpos 		= mech->joint[ELBOW].jpos_d;
-		mech->joint[TOOL_ROT].jpos 		= mech->joint[TOOL_ROT].jpos_d;
 		mech->joint[Z_INS].jpos 		= mech->joint[Z_INS].jpos_d;	
 	}	
 	// Short circuit the last three joints
+	mech->joint[TOOL_ROT].jpos 		= mech->joint[TOOL_ROT].jpos_d;
 	mech->joint[WRIST].jpos 		= mech->joint[WRIST].jpos_d;
 	mech->joint[GRASP1].jpos 		= mech->joint[GRASP1].jpos_d;
 	mech->joint[GRASP2].jpos 		= mech->joint[GRASP2].jpos_d;

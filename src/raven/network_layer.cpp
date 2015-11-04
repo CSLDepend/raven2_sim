@@ -313,6 +313,19 @@ void* network_process(void* param1)
 
 #ifdef mfi
 //MFI_HOOK
+//Conditions to check:
+//If robot state is pedal down:
+//if (device0.runlevel == 3)
+
+//Start at packet 10 and continue for 100 packets: 
+//if ((u.sequence >= 10) && (u.sequence < 110))
+
+//Variables to change (single or multiple, within or outside range):
+//u.delx[0], u.dely[0], u.delz[0]
+//R_l[3][3]
+//int surgeon_mode
+//Data files to find the ranges for variables are inside: /home/raven/homa_wksp/Tests/
+//Test_1, Test_2, Test_3 and others
 #endif
 
 #ifdef save_logs
