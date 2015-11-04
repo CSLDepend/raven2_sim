@@ -189,8 +189,7 @@ void teleopIntoDS1(struct u_struct *us_t)
         for (int j=0;j<3;j++)
             for (int k=0;k<3;k++)
                 data1.rd[i].R[j][k] = rot_mx_temp[j][k];
-        log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",
-               i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);  
+        log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);  
 
         const int graspmax = (M_PI/2 * 1000);
         const int graspmin = (-30.0 * 1000.0 DEG2RAD);
@@ -204,8 +203,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 	data1.xd[i].z = us_t->delz[i];
 
 	// commented debug output
-    log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",
-            armidx, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);  
+    //log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",armidx, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);  
   
     // Set rotation command
 	//log_msg("Arm %d: User desired Rotations:",armidx);
@@ -214,9 +212,9 @@ void teleopIntoDS1(struct u_struct *us_t)
 	    for (int k=0;k<3;k++)
 		{
 	        data1.rd[i].R[j][k] = (i == 1)? us_t->R_r[j][k]:us_t->R_l[j][k];
-			log_msg("%f", data1.rd[i].R[j][k]);
+			//log_msg("%f", data1.rd[i].R[j][k]);
 		}
-		log_msg("\n");
+		//log_msg("\n");
 	}
  
 #ifdef simulator 

@@ -115,6 +115,8 @@ char sim_buf[4096];
 int first_run = 0;
 char outfile[40] = "/home/raven/homa_wksp/Li_DYN/output.csv";
 FILE *sim_file = fopen(outfile, "w");;
+int runlevel = 0;
+int packet_num = 0;
 #endif
 
 
@@ -358,47 +360,46 @@ static void *rt_process(void* )
       putUSBPackets(&device0); //disable usb for par port test
 #else
 #ifdef dyn_simulator 
+      runlevel = currParams.runlevel;
+      packet_num = currParams.last_sequence;
 	  //Send the DACs, mvel, and mpos to the simulator
 	  for (int i = 0; i < NUM_MECH; i++)
 	  {
 		if ((first_run < 10) && (currParams.last_sequence != 111))
 		{
 			first_run = first_run + 1;
-			printf("\nmpos/mvel/DACs -arm %d:\n%f,%f,%f,%f,\n%f,%f,%f,%f,\n%d,%d,%d,%d\n", i,
+			printf("\nmpos/mvel/DACs -arm %d:\n%f,%f,%f,\n%f,%f,%f,\n%d,%d,%d\n", i,
 	          (float)device0.mech[i].joint[SHOULDER].mpos,
 			  (float)device0.mech[i].joint[ELBOW].mpos,
 			  (float)device0.mech[i].joint[Z_INS].mpos,
-			  (float)device0.mech[i].joint[TOOL_ROT].mpos,
 	          (float)device0.mech[i].joint[SHOULDER].mvel,
 			  (float)device0.mech[i].joint[ELBOW].mvel,
 			  (float)device0.mech[i].joint[Z_INS].mvel,
-			  (float)device0.mech[i].joint[TOOL_ROT].mvel,
  			  (int)device0.mech[i].joint[SHOULDER].current_cmd,
 			  (s_16)device0.mech[i].joint[ELBOW].current_cmd,
-			  (s_16)device0.mech[i].joint[Z_INS].current_cmd,
-			  (s_16)device0.mech[i].joint[TOOL_ROT].current_cmd);
+			  (s_16)device0.mech[i].joint[Z_INS].current_cmd);
 		}
-		if ((i == 0) && (fabs(device0.mech[i].joint[SHOULDER].mpos) > 0))
+		if ((i == 0) && ((currParams.runlevel == 3)) && (currParams.last_sequence != 111))
 	  	{
             // Send simulator input to FIFO
-			sprintf(sim_buf, "%d %f %f %f %f %f %f %f %f %f %f %f %f",
-				  i, 
+			sprintf(sim_buf, "%d %d %f %f %f %f %f %f %f %f %f",
+				  i, currParams.last_sequence,
 		          (double)device0.mech[i].joint[SHOULDER].mpos,
 				  (double)device0.mech[i].joint[ELBOW].mpos,
 				  (double)device0.mech[i].joint[Z_INS].mpos,
-				  (double)device0.mech[i].joint[TOOL_ROT].mpos,
 		          (double)device0.mech[i].joint[SHOULDER].mvel,
 				  (double)device0.mech[i].joint[ELBOW].mvel,
 				  (double)device0.mech[i].joint[Z_INS].mvel,
-				  (double)device0.mech[i].joint[TOOL_ROT].mvel,
 	 			  (double)device0.mech[i].joint[SHOULDER].current_cmd,
 				  (double)device0.mech[i].joint[ELBOW].current_cmd,
-				  (double)device0.mech[i].joint[Z_INS].current_cmd,
-				  (double)device0.mech[i].joint[TOOL_ROT].current_cmd);
-    	    write(wrfd, sim_buf, sizeof(sim_buf));
- 	        
+				  (double)device0.mech[i].joint[Z_INS].current_cmd);
+            int rt = 0;
+    	    rt = write(wrfd, sim_buf, sizeof(sim_buf)); 	        
+            //printf("write rt = %d", rt);
+			printf("Packet %d: Sent:\n%s\n",currParams.last_sequence,sim_buf); 
 			// Read estimates from FIFO
-			read(rdfd, sim_buf, sizeof(sim_buf));
+			rt = read(rdfd, sim_buf, sizeof(sim_buf));
+            //printf("read rt = %d", rt);
 			// Write the results to the screen
 			stringstream ss(sim_buf);     
 			ss >> device0.mech[i].joint[SHOULDER].mpos >> 
@@ -406,19 +407,15 @@ static void *rt_process(void* )
 				device0.mech[i].joint[ELBOW].mpos >> 
 				device0.mech[i].joint[ELBOW].mvel >>
 				device0.mech[i].joint[Z_INS].mpos >> 
-				device0.mech[i].joint[Z_INS].mvel >>
-				device0.mech[i].joint[TOOL_ROT].mpos >> 
-				device0.mech[i].joint[TOOL_ROT].mvel;
-			/*printf("Received estimated motor positions/velocties:\n(%f, %f),\n (%f, %f),\n (%f, %f),\n (%f, %f)\n",
+				device0.mech[i].joint[Z_INS].mvel;
+			printf("Packet %d: Received estimated mpos:\n(%f, %f),\n (%f, %f),\n (%f, %f),\n",currParams.last_sequence,
 				device0.mech[i].joint[SHOULDER].mpos, 
 				device0.mech[i].joint[SHOULDER].mvel, 
 				device0.mech[i].joint[ELBOW].mpos,
 				device0.mech[i].joint[ELBOW].mvel,
 				device0.mech[i].joint[Z_INS].mpos, 
-				device0.mech[i].joint[Z_INS].mvel,
-				device0.mech[i].joint[TOOL_ROT].mpos, 
-				device0.mech[i].joint[TOOL_ROT].mvel);*/  
-			fprintf(sim_file,"%f,%f,%f,%f,%f,%f,%f,%f\n",device0.mech[i].joint[SHOULDER].mpos, device0.mech[i].joint[SHOULDER].mvel, device0.mech[i].joint[ELBOW].mpos, device0.mech[i].joint[ELBOW].mvel,device0.mech[i].joint[Z_INS].mpos, device0.mech[i].joint[Z_INS].mvel,device0.mech[i].joint[TOOL_ROT].mpos, device0.mech[i].joint[TOOL_ROT].mvel);  	 		
+				device0.mech[i].joint[Z_INS].mvel); 
+			fprintf(sim_file,"%f,%f,%f,%f,%f,%f\n",device0.mech[i].joint[SHOULDER].mpos, device0.mech[i].joint[SHOULDER].mvel, device0.mech[i].joint[ELBOW].mpos, device0.mech[i].joint[ELBOW].mvel,device0.mech[i].joint[Z_INS].mpos, device0.mech[i].joint[Z_INS].mvel);  	 		
 		}
 	}
 #endif

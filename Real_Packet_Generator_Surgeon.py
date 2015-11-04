@@ -52,7 +52,7 @@ else:
 SKIP = 1
 fast_surgeon = 1
 if fast_surgeon:
-   MAX_LINES = 15000
+   MAX_LINES = 70#15000
    FREQ = 0.001
 else: 
    MAX_LINES = 3000
@@ -102,7 +102,7 @@ def sendPackets():
     seq = 0;
     line = [];
     #csvfile1 = open('./teleop_data/traj1.csv'); 
-    csvfile1 = open('/home/raven/homa_wksp/Tests/test2.csv');   
+    csvfile1 = open('/home/raven/homa_wksp/Tests/test_1.csv');   
     reader = csv.reader(csvfile1)
     headers = reader.next()
     # Find the indices for the variables in the datasheet
