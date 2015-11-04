@@ -191,6 +191,12 @@ class Raven():
     def __quit(self): 
         """ Terminate all process started by _run_experiment() """
         # Restore changes to source code
+        if self.curr_inj:
+            cmd = 'mkdir running_csv > /dev/null 2>&1'
+            os.system(cmd)
+            cmd = 'cp latest_run.csv ./running_csv/latest_run.csv_injection' + str(self.curr_inj).zfill(4)
+            os.system(cmd)
+
         if self.defines_changed:
             self.__restore_defines_h()
         if self.mfi_changed:
@@ -394,6 +400,7 @@ class Raven():
                     mfi_hook = l[2]
                 elif l[0].startswith('injection'):
                     curr_inj = int(l[0].split(' ')[1])
+                    self.curr_inj = curr_inj
                     if curr_inj > self.starting_inj_num:
                         self.__mfi_insert_code(file_name, mfi_hook, l[1])
                         logger.info(line)
@@ -451,7 +458,6 @@ else:
     sys.exit(2)
 
 # Init Raven
-
 raven = Raven(raven_home, mode, packet_gen, injection)
 signal.signal(signal.SIGINT, raven.signal_handler)
 
