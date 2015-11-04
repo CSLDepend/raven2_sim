@@ -93,7 +93,7 @@ class Raven():
 
         for line in bkup_fp:
             if line.startswith('//#define simulator'):
-                if self.mode == 'sim':
+                if self.mode == 'sim' or self.mode == 'dyn_sim':
                     line = line.lstrip('//')
             elif line.startswith('//#define dyn_simulator'):
                 if self.mode == 'dyn_sim':

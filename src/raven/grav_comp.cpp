@@ -215,7 +215,6 @@ void getGravityTorque(struct device &d0, struct param_pass &params)
 		_mech->joint[SHOULDER].tau = MT1; 
 		_mech->joint[ELBOW   ].tau = MT2;
 		_mech->joint[Z_INS   ].tau = MT3;
-
 	}
 
 

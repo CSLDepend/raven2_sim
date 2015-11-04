@@ -227,7 +227,7 @@ int USBInit(struct device *device0)
     vector<string> files = vector<string>();
     getdir(BRL_USB_DEV_DIR, files);
 	sort(files.begin(), files.end());
-reverse(files.begin(),files.end());
+    reverse(files.begin(),files.end());
 
     log_msg("  Found board files::");
     for (unsigned int i = 0;i < files.size();i++) {
@@ -271,6 +271,7 @@ reverse(files.begin(),files.end());
 	            okboards++;
 	            log_msg("  Green Arm on board #%d.",boardid);
 	            device0->mech[mechcounter].type = GREEN_ARM;
+				log_msg("Mech Num for board %d = %d\n",boardid, mechcounter);
 				mechcounter++;
 	        }
 	        else if (boardid == GOLD_ARM_SERIAL)
@@ -278,6 +279,7 @@ reverse(files.begin(),files.end());
 	            okboards++;
 	            log_msg("  Gold Arm on board #%d.",boardid);
 	            device0->mech[mechcounter].type = GOLD_ARM;
+				log_msg("Mech Num for board %d = %d\n",boardid, mechcounter);
 				mechcounter++;
 	        }
 	        else
@@ -288,7 +290,7 @@ reverse(files.begin(),files.end());
 	        // Store usb dev parameters
 	        boardFile.push_back(tmp_fileHandle);  // Store file handle
 	        USBBoards.boards.push_back(boardid);  // Store board array index
-	        boardFPs[boardid] = tmp_fileHandle;   // Map serial (i) to fileHandle (tmp_fileHandle)
+            boardFPs[boardid] = tmp_fileHandle;   // Map serial (i) to fileHandle (tmp_fileHandle)
 	        USBBoards.activeAtStart++;            // Increment board count
 	
 	        log_msg("board FPs ---> %i", boardFPs[boardid]);

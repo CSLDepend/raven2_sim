@@ -47,7 +47,10 @@ void fwdCableCoupling(struct device *device0, int runlevel)
 	//Run fwd cable coupling for each mechanism.
 	// This should be run in all runlevels.
 	for (int i = 0; i < NUM_MECH; i++)
+	{
 		fwdMechCableCoupling(&(device0->mech[i]));
+		//log_msg("i = %d, mech_type = %d\n", i,device0->mech[i].type);	
+	}
 }
 
 /**
@@ -95,6 +98,7 @@ void fwdMechCableCoupling(struct mechanism *mech)
 		tr5=DOF_types[WRIST_GREEN].TR;
 		tr6=DOF_types[GRASP1_GREEN].TR;
 		tr7=DOF_types[GRASP2_GREEN].TR;
+        //log_msg("tr1 = %f, tr2 = %f, tr3 = %f, tr4 = %f, tr5 = %f, tr6 = %f, tr7 = %f\n",tr1,tr2,tr3,tr4,tr5,tr6,tr7);
 	}
 	else {
 		log_msg("ERROR: incorrect device type in fwdMechCableCoupling");
@@ -157,8 +161,8 @@ void fwdMechCableCoupling(struct mechanism *mech)
 	mech->joint[Z_INS].jvel 		= d4_dot;//  - mech->joint[Z_INS].jpos_off;
 #else
 #ifdef dyn_simulator 
-    // Only for the Green Arm, get the jpos from the estimated mpos 
-	if((mech->type == GREEN_ARM) && (fabs(mech->joint[SHOULDER].mpos) > 0))
+    // Only for the Gold Arm (type is flipped), get jpos from the estimated mpos 
+	if((mech->type == GREEN_ARM) && (fabs(mech->joint[SHOULDER].jpos) > 0))
 	{
 		// Now have solved for th1, th2, d3, th4, th5, th6
 		mech->joint[SHOULDER].jpos 		= th1;// - mech->joint[SHOULDER].jpos_off;

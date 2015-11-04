@@ -92,6 +92,9 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
         currParams->rd[i].pitch = rcvdParams->rd[i].pitch * WRIST_SCALE_FACTOR;
         currParams->rd[i].roll  = rcvdParams->rd[i].roll;
         currParams->rd[i].grasp = rcvdParams->rd[i].grasp;
+		// commented debug output
+    	//log_msg("Device State: Arm %d : User desired end-effector positions: (%d,%d,%d)", i, currParams->xd[i].x, currParams->xd[i].y, currParams->xd[i].z);  
+
     }
 
     // set desired mech position in pedal_down runlevel

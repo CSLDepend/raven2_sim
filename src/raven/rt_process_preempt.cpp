@@ -221,8 +221,8 @@ static void *rt_process(void* )
 
   // Initializations (run here and again in init.cpp)
 #ifdef simulator
-  device0.mech[0].type = GOLD_ARM;
-  device0.mech[1].type = GREEN_ARM;
+  device0.mech[1].type = GOLD_ARM;
+  device0.mech[0].type = GREEN_ARM;
 #endif
   initDOFs(&device0);
 
@@ -361,15 +361,10 @@ static void *rt_process(void* )
 	  //Send the DACs, mvel, and mpos to the simulator
 	  for (int i = 0; i < NUM_MECH; i++)
 	  {
-		int arm_type;
-	 	if (device0.mech[i].type == GREEN_ARM)
-			arm_type = 1;
-		else
-			arm_type = 0;
 		if ((first_run < 10) && (currParams.last_sequence != 111))
 		{
 			first_run = first_run + 1;
-			printf("\nmpos/mvel/DACs -arm %d:\n%f,%f,%f,%f,\n%f,%f,%f,%f,\n%d,%d,%d,%d\n", 					  arm_type, 
+			printf("\nmpos/mvel/DACs -arm %d:\n%f,%f,%f,%f,\n%f,%f,%f,%f,\n%d,%d,%d,%d\n", i,
 	          (float)device0.mech[i].joint[SHOULDER].mpos,
 			  (float)device0.mech[i].joint[ELBOW].mpos,
 			  (float)device0.mech[i].joint[Z_INS].mpos,
@@ -383,11 +378,11 @@ static void *rt_process(void* )
 			  (s_16)device0.mech[i].joint[Z_INS].current_cmd,
 			  (s_16)device0.mech[i].joint[TOOL_ROT].current_cmd);
 		}
-		if ((arm_type == 1) && (fabs(device0.mech[i].joint[SHOULDER].mpos) > 0))
+		if ((i == 0) && (fabs(device0.mech[i].joint[SHOULDER].mpos) > 0))
 	  	{
             // Send simulator input to FIFO
 			sprintf(sim_buf, "%d %f %f %f %f %f %f %f %f %f %f %f %f",
-				  arm_type, 
+				  i, 
 		          (double)device0.mech[i].joint[SHOULDER].mpos,
 				  (double)device0.mech[i].joint[ELBOW].mpos,
 				  (double)device0.mech[i].joint[Z_INS].mpos,
@@ -428,7 +423,6 @@ static void *rt_process(void* )
 	}
 #endif
 #endif
-
       //Publish current raven state
       publish_ravenstate_ros(&device0,&currParams);   // from local_io
 

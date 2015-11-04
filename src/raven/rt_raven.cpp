@@ -103,6 +103,10 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
     stateEstimate(device0); 
 #endif
 
+	// commented debug output
+    /*log_msg("User desired end-effector positions: Arm %d(%d,%d,%d)\n Arm %d(%d,%d,%d)\n",
+                device0->mech[0].type,  device0->mech[0].pos_d.x, device0->mech[0].pos_d.y,device0->mech[0].pos_d.z,device0->mech[1].type,  device0->mech[1].pos_d.x, device0->mech[1].pos_d.y,device0->mech[1].pos_d.z); */
+
     //Foward Cable Coupling
     fwdCableCoupling(device0, currParams->runlevel);
 
@@ -253,6 +257,7 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
         }
     }
 
+    //log_msg("original tau_d = %f\n",_joint->tau_d);
     // Gravity compensation calculation
     getGravityTorque(*device0, *currParams);
     _mech = NULL;  _joint = NULL;
@@ -260,6 +265,7 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
     {
         _joint->tau_d += _joint->tau_g;  // Add gravity torque
     }
+    //log_msg("changed tau_d to = %f\n",_joint->tau_d);
 
     TorqueToDAC(device0);
 
@@ -284,10 +290,10 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
 int raven_sinusoidal_joint_motion(struct device *device0, struct param_pass *currParams){
     static int controlStart = 0;
     static unsigned long int delay=0;
-    const float f_period[8] = {6, 7, 10, 9999999, 10, 5, 10, 6};
-//    const float f_magnitude[8] = {0 DEG2RAD, 0 DEG2RAD, 0.0, 9999999, 0 DEG2RAD, 25 DEG2RAD, 0 DEG2RAD, 0 DEG2RAD};
-    const float f_magnitude[8] = {10 DEG2RAD, 10 DEG2RAD, 0.02, 9999999,
-    		30 DEG2RAD, 30 DEG2RAD, 30 DEG2RAD, 30 DEG2RAD};
+    //const float f_period[8] = {6, 7, 10, 9999999, 10, 5, 10, 6};
+    const float f_period[8] = {6, 7, 4, 9999999, 10, 5, 10, 6};
+    const float f_magnitude[8] = {10 DEG2RAD, 10 DEG2RAD, 0, 9999999, 0 DEG2RAD, 0 DEG2RAD, 0 DEG2RAD, 0 DEG2RAD};
+    //const float f_magnitude[8] = {10 DEG2RAD, 10 DEG2RAD, 0.02, 9999999, 30 DEG2RAD, 30 DEG2RAD, 30 DEG2RAD, 30 DEG2RAD};
 
 
 
