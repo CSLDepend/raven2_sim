@@ -98,10 +98,8 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
 
     initRobotData(device0, currParams->runlevel, currParams);
 
-#ifndef dyn_simulator
     //Compute Mpos & Velocities
     stateEstimate(device0); 
-#endif
 
 	// commented debug output
     /*log_msg("User desired end-effector positions: Arm %d(%d,%d,%d)\n Arm %d(%d,%d,%d)\n",
@@ -137,7 +135,6 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
         //Cartesian Space Control is called to control the robot in cartesian space
         case cartesian_space_control:
 #ifdef packet_gen
-		done_homing = 1;
                 //log_msg("RT_PROCESS) Cartesian space control");         
 #endif		
         	ret = raven_cartesian_space_command(device0,currParams);
@@ -175,11 +172,18 @@ int controlRaven(struct device *device0, struct param_pass *currParams){
 		device0->mech[0].pos.x, device0->mech[0].pos.y, device0->mech[0].pos.z,
 	        device0->mech[1].pos.x, device0->mech[1].pos.y, device0->mech[1].pos.z);*/
             }
-#else            
-	    currParams->runlevel = RL_PEDAL_DN; 
-            device0->runlevel = 2;
+#else           
+		if (currParams->last_sequence != 1)
+		{		
+			done_homing = 1; 
+			currParams->runlevel = RL_PEDAL_DN; 
+        	device0->runlevel = 2;
+		}		
+		if (currParams->last_sequence == 1)
+		{			
             currParams->robotControlMode = cartesian_space_control;
-            newRobotControlMode = cartesian_space_control;
+   	        newRobotControlMode = cartesian_space_control;
+		}
 #endif
             break;
 	//Runs applyTorque() to set torque command (tau_d) to a joint for debugging purposes
@@ -240,10 +244,10 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
     //Inverse kinematics
     r2_inv_kin(device0, currParams->runlevel);
 
-    //Inverse Cable Coupling
+	//Inverse Cable Coupling
     invCableCoupling(device0, currParams->runlevel);
 
-   // Set all joints to zero torque
+    // Set all joints to zero torque
     _mech = NULL;  _joint = NULL;
     while (loop_over_joints(device0, _mech, _joint, i,j) )
     {
@@ -268,7 +272,14 @@ int raven_cartesian_space_command(struct device *device0, struct param_pass *cur
     //log_msg("changed tau_d to = %f\n",_joint->tau_d);
 
     TorqueToDAC(device0);
-
+	/*for (int i =0; i < 2; i++)
+	{  
+		printf("\nDACs -arm %d:\n%d,%d,%d\n", i, device0->mech[i].joint[SHOULDER].current_cmd,
+			  device0->mech[i].joint[ELBOW].current_cmd,
+			  device0->mech[i].joint[Z_INS].current_cmd);
+		printf("\nX,Y,Z -arm %d:\n%d,%d,%d\n", i, device0->mech[i].pos_d.x,device0->mech[i].pos_d.y,
+				  device0->mech[i].pos_d.z);
+	}*/
     return 0;
 }
 

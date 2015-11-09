@@ -36,6 +36,24 @@ int fi = 0;
 
 void getStateLPF(struct DOF *joint);
 
+#ifdef dyn_simulator 
+#include <iostream>
+#include <fstream>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string>
+#include <sstream>
+#include "cmath"
+extern int runlevel;
+extern int packet_num;
+extern int wrfd,rdfd; 
+extern char sim_buf[4096];
+#endif
+
 /*
  * stateEstimate()
  */
@@ -45,18 +63,80 @@ void stateEstimate(struct robot_device *device0)
     struct DOF *_joint;
     int i,j;
 
+#ifndef simulator
     //Loop through all joints
     for (i = 0; i < NUM_MECH; i++)
     {
         for (j = 0; j < MAX_DOF_PER_MECH; j++)
         {
             _joint = &(device0->mech[i].joint[j]);
+// For the robot get the motor positions from the encoder values
+
 //            if (_joint->type == TOOL_ROT_GOLD || _joint->type == TOOL_ROT_GOLD)
 //                encToMPos(_joint);
 //            else
                 getStateLPF(_joint, device0->mech[i].tool_type);
         }
     }
+#else
+// For the dynamic simulator, get the motor positions 0, 1, 2 for GOLD arm from dynamic model
+#ifdef dyn_simulator 
+    for (i = 0; i < NUM_MECH; i++)
+    {
+		// Get mpos for joints 0, 1, 2 from the dynamic model
+		if((i == 0) && (runlevel == 3) && (packet_num != 111))
+		{		
+			// Read estimates from FIFO
+			read(rdfd, sim_buf, sizeof(sim_buf));
+			// Write the results to the screen
+			std::istringstream ss(sim_buf);     
+			ss >> device0->mech[i].joint[SHOULDER].mpos >> 
+				device0->mech[i].joint[SHOULDER].mvel >> 
+				device0->mech[i].joint[ELBOW].mpos >> 
+				device0->mech[i].joint[ELBOW].mvel >>
+				device0->mech[i].joint[Z_INS].mpos >> 
+				device0->mech[i].joint[Z_INS].mvel;
+            //printf("\nRecieved: %s\n",sim_buf);
+			printf("Estimated (mpos,mvel):(%f, %f),(%f, %f),(%f, %f)\n",
+				device0->mech[i].joint[SHOULDER].mpos, 
+				device0->mech[i].joint[SHOULDER].mvel, 
+				device0->mech[i].joint[ELBOW].mpos,
+				device0->mech[i].joint[ELBOW].mvel,
+				device0->mech[i].joint[Z_INS].mpos, 
+				device0->mech[i].joint[Z_INS].mvel); 
+
+			// Shortc-circuiting others - Assuming ideal hardware	
+			for (j = 3; j < MAX_DOF_PER_MECH; j++)
+			{
+				device0->mech[0].joint[j].mpos = device0->mech[0].joint[j].mpos_d;			
+				device0->mech[0].joint[j].mvel = device0->mech[0].joint[j].mvel_d;			
+			}	
+		}
+		//For the Green Arm, just short-circuit the mpos and mvel
+		else 
+		{
+			// Shortc-circuiting - Assuming ideal hardware	
+			for (j = 0; j < MAX_DOF_PER_MECH; j++)
+			{
+				device0->mech[1].joint[j].mpos = device0->mech[1].joint[j].mpos_d;			
+				device0->mech[1].joint[j].mvel = device0->mech[1].joint[j].mvel_d;			
+			}
+		}
+	}
+// For the simple simulator, get the motor positions from the desired motor positions
+#else
+    for (i = 0; i < NUM_MECH; i++)
+    {
+        for (j = 0; j < MAX_DOF_PER_MECH; j++)
+        {
+			device0->mech[i].joint[j].mpos = device0->mech[i].joint[j].mpos_d;			
+			device0->mech[i].joint[j].mvel = device0->mech[i].joint[j].mvel_d;			
+		}
+	}	 		     
+#endif
+ 
+#endif
+
 }
 
 /*

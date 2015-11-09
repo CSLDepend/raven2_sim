@@ -71,12 +71,11 @@ int TorqueToDAC(struct device *device0)
             	continue;
             }
 
-            device0->mech[i].joint[j].current_cmd = tToDACVal( &(device0->mech[i].joint[j]) );  // Convert torque to DAC value
-           
-            if ( soft_estopped )
-                device0->mech[i].joint[j].current_cmd = 0;
-
-        }
+            device0->mech[i].joint[j].current_cmd = tToDACVal( &(device0->mech[i].joint[j]) );   
+		  // Convert torque to DAC value       	
+          if ( soft_estopped )
+              device0->mech[i].joint[j].current_cmd = 0;
+		}
     return 0;
 }
 
@@ -101,14 +100,18 @@ short int tToDACVal(struct DOF *joint)
 
     TFmotor     = 1 / DOF_types[j_index].tau_per_amp;    // Determine the motor TF  = 1/(tau per amp)
     TFamplifier =     DOF_types[j_index].DAC_per_amp;    // Determine the amplifier TF = (DAC_per_amp)
-    //log_msg("Joint #%d: TFmotor = %f, TFamplifier = %f\n", j_index, TFmotor,TFamplifier);
+    
     DACVal = (int)(joint->tau_d * TFmotor * TFamplifier);  //compute DAC value: DAC=[tau*(amp/torque)*(DACs/amp)]
     
     //Perform range checking and convert to short int
     //Note: toShort saturates at max value for short int.
     toShort(DACVal, &result);
-
-    return result;
+	/*if (j_index < 2)
+	{	
+		//log_msg("Joint #%d: TFmotor = %f, TFamplifier = %f\n", j_index, TFmotor,TFamplifier);	
+		log_msg("Joint #%d: Torque = %f, DAC = %d\n, result = %d\n", j_index, joint->tau_d,DACVal,result);
+	} */
+	return result;
 }
 
 

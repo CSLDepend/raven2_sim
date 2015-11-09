@@ -332,7 +332,12 @@ int r2_fwd_kin(struct device *d0, int runlevel)
             	  d0->mech[m].ori_d.R[k][j] = d0->mech[m].ori.R[k][j];
         }
         updateMasterRelativeOrigin( d0 );   // Update the origin, to which master-side deltas are added.
+
+                  
+
     }
+
+
 	return 0;
 }
 
@@ -649,8 +654,9 @@ int r2_inv_kin(struct device *d0, int runlevel)
 					d0->mech[m].ori_d.R[i][j] = (xf_sat.getBasis())[i][j];
 
 			updateMasterRelativeOrigin(d0);
+
 #ifdef save_logs
-			log_file("Error: Saturated to Joint Limits (arm %d)\n", arm);                  	
+			log_msg("Error: Saturated to Joint Limits (arm %d)\n", arm);                  	
 #endif
 		}
 		else
@@ -714,11 +720,11 @@ int r2_inv_kin(struct device *d0, int runlevel)
     if (counter % 100 == 0)
     {
 
-	if ((check_result = check_collision(iksols,gangles)) < 0 )
+	/*if ((check_result = check_collision(iksols,gangles)) < 0 )
 	{
 		log_msg("Collision Detected\n");	
 		log_file("Error: Collision Detected\n");
-	}  
+	}  */
     }
         //log_file("RT_PROCESS) INV Kinematics Done.\n");            
 #endif	

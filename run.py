@@ -77,6 +77,9 @@ class Raven():
         self.master_file = './selected_injection.txt'
         inj = injection.split(':')
         self.injection = inj[0]
+        self.curr_inj = 0
+        self.defines_changed = 0
+        self.mfi_changed = 0
         if len(inj) > 1:
             self.starting_inj_num = int(inj[1])
         else:
@@ -299,14 +302,14 @@ class Raven():
             print usage
             sys.exit(2)
         self.raven_proc = subprocess.Popen(ravenTask, env=env, shell=True, preexec_fn=os.setsid)
+        # Call rostopic to log the data from this RAVEN into latest_run.csv        
         self.rostopic_proc = subprocess.Popen(rostopicTask, env=env, shell=True, preexec_fn=os.setsid)
-        time.sleep(0.5);
-
+        time.sleep(0.2);
 
         # Call Dynamic Simulator
         if self.mode == "dyn_sim":
-                #self.dynSim_proc = subprocess.Popen(dynSimTask, env=env, shell=True, preexec_fn=os.setsid)
-                #os.system("cd ../Li_DYN && ./two_arm_dyn")
+                self.dynSim_proc = subprocess.Popen(dynSimTask, env=env, shell=True, preexec_fn=os.setsid)
+                #os.system("cd ../Li_DYN &&./two_arm_dyn")
                 print "Started the dynamic simulator.."
 
         print("Press Ctrl+C to exit.")
@@ -436,7 +439,7 @@ env = os.environ.copy()
 splits = env['ROS_PACKAGE_PATH'].split(':')
 raven_home = splits[0]
 print '\nRaven Home Found to be: '+ raven_home
-rsp_func()
+#rsp_func()
 usage = "Usage: python run.py <sim|dyn_sim|rob> <1:packet_gen|0:gui> <none|mfi:start#|mfi2:start#>"
 
 # Parse the arguments
@@ -463,4 +466,7 @@ signal.signal(signal.SIGINT, raven.signal_handler)
 
 # Run Raven
 raven.run()
+
+# Visualize and Analyze Results
+os.system('python '+raven_home+'/plot.py')
 

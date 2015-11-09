@@ -98,9 +98,9 @@ void updateAtmelInputs(struct device device0, int runlevel)
     static int j;
     if (PLCState != runlevel)
     {
-        log_file("RunLevels on Linux Box and PLC do not match!!!\n");
+        //log_file("RunLevels on Linux Box and PLC do not match!!!\n");
         log_file("PLC State is %d\n",PLCState);
-	log_file("Other PLC State is %d\n",(device0.mech[1].inputs & (PIN_PS0 | PIN_PS1)) >> 6);
+	    log_file("Other PLC State is %d\n",(device0.mech[1].inputs & (PIN_PS0 | PIN_PS1)) >> 6);
         log_file("Run level is %d\n",runlevel);
         log_file("Surgeon Mode is %d\n",device0.surgeon_mode);
     }
