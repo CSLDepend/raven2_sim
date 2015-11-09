@@ -102,77 +102,52 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
     {
 
 #ifdef simulator 
-	if (currParams->last_sequence == 1)
-	{
-	    log_msg("I am initizaling jpos_d\n");
- 	    device0->mech[0].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[0];
-     	device0->mech[0].joint[ELBOW].jpos_d = rcvdParams->jpos_d[1];
-	    device0->mech[0].joint[Z_INS].jpos_d = rcvdParams->jpos_d[2];
-	    device0->mech[0].joint[TOOL_ROT].jpos_d = rcvdParams->jpos_d[4];
-	    device0->mech[0].joint[WRIST].jpos_d = rcvdParams->jpos_d[5];
-	    device0->mech[0].joint[GRASP1].jpos_d = rcvdParams->jpos_d[6];
-	    device0->mech[0].joint[GRASP2].jpos_d = rcvdParams->jpos_d[7];
-	    device0->mech[1].joint[SHOULDER].jpos_d = rcvdParams->jpos_d[8];
-     	device0->mech[1].joint[ELBOW].jpos_d = rcvdParams->jpos_d[9];
-	    device0->mech[1].joint[Z_INS].jpos_d = rcvdParams->jpos_d[10];
-	    device0->mech[1].joint[TOOL_ROT].jpos_d = rcvdParams->jpos_d[12];
-	    device0->mech[1].joint[WRIST].jpos_d = rcvdParams->jpos_d[13];
-	    device0->mech[1].joint[GRASP1].jpos_d = rcvdParams->jpos_d[14];
-	    device0->mech[1].joint[GRASP2].jpos_d = rcvdParams->jpos_d[15];
-#ifdef dyn_simulator 	    
-		log_msg("I am intializing mpos and mvel\n");
-	    device0->mech[0].joint[SHOULDER].mpos = 4081.32153*M_PI/180;
-     	device0->mech[0].joint[ELBOW].mpos = 11504.9707*M_PI/180;
-	    device0->mech[0].joint[Z_INS].mpos = 51556.7734*M_PI/180;
-	    device0->mech[0].joint[TOOL_ROT].mpos = 17749.8008*M_PI/180; 
-	    device0->mech[0].joint[WRIST].mpos = 17769.3379*M_PI/180; 
-	    device0->mech[0].joint[GRASP1].mpos = 18116.2871*M_PI/180; 
-	    device0->mech[0].joint[GRASP2].mpos = 18135.9922*M_PI/180; 
-	    device0->mech[1].joint[SHOULDER].mpos = 4084.20044*M_PI/180; 
-     	device0->mech[1].joint[ELBOW].mpos = 11511.7217*M_PI/180; 
-	    device0->mech[1].joint[Z_INS].mpos = 51585.7656*M_PI/180; 
-	    device0->mech[1].joint[TOOL_ROT].mpos = -17781.395*M_PI/180; 
-	    device0->mech[1].joint[WRIST].mpos = -17770.863*M_PI/180; 
-	    device0->mech[1].joint[GRASP1].mpos = -17336.08*M_PI/180; 
-	    device0->mech[1].joint[GRASP2].mpos = -17344.986*M_PI/180; 	
+		if (currParams->last_sequence == 1)
+		{
+			log_msg("I am initizaling jpos, jvel, mpos, and mvel\n");
+		    for (int i = 0; i < NUM_MECH; i++)
+			{
+				for (int j = 0; j < 8; j++)
+				{
+				    device0->mech[i].joint[j].jpos_d = rcvdParams->jpos_d[i*8+j];
+					device0->mech[i].joint[j].jvel_d = rcvdParams->jvel_d[i*8+j];
+					device0->mech[i].joint[j].mpos = rcvdParams->mpos_d[i*8+j];			
+					device0->mech[i].joint[j].mvel = rcvdParams->mvel_d[i*8+j];	
+					device0->mech[i].joint[j].mpos_d = rcvdParams->mpos_d[i*8+j];			
+					device0->mech[i].joint[j].mvel_d = rcvdParams->mvel_d[i*8+j];			
+				}			
+			} 	    
+			/*log_msg("I am intializing mpos and mvel\n");
+			device0->mech[0].joint[SHOULDER].mpos = 4081.32153*M_PI/180;
+		 	device0->mech[0].joint[ELBOW].mpos = 11504.9707*M_PI/180;
+			device0->mech[0].joint[Z_INS].mpos = 51556.7734*M_PI/180;
+			device0->mech[0].joint[TOOL_ROT].mpos = 17749.8008*M_PI/180; 
+			device0->mech[0].joint[WRIST].mpos = 17769.3379*M_PI/180; 
+			device0->mech[0].joint[GRASP1].mpos = 18116.2871*M_PI/180; 
+			device0->mech[0].joint[GRASP2].mpos = 18135.9922*M_PI/180; 
+			device0->mech[1].joint[SHOULDER].mpos = 4084.20044*M_PI/180; 
+		 	device0->mech[1].joint[ELBOW].mpos = 11511.7217*M_PI/180; 
+			device0->mech[1].joint[Z_INS].mpos = 51585.7656*M_PI/180; 
+			device0->mech[1].joint[TOOL_ROT].mpos = -17781.395*M_PI/180; 
+			device0->mech[1].joint[WRIST].mpos = -17770.863*M_PI/180; 
+			device0->mech[1].joint[GRASP1].mpos = -17336.08*M_PI/180; 
+			device0->mech[1].joint[GRASP2].mpos = -17344.986*M_PI/180; 	
 
-	    device0->mech[0].joint[SHOULDER].mvel = 0*M_PI/180; 
-     	device0->mech[0].joint[ELBOW].mvel = 0*M_PI/180; 
-	    device0->mech[0].joint[Z_INS].mvel = 0*M_PI/180; 
-	    device0->mech[0].joint[TOOL_ROT].mvel = 0*M_PI/180; 
-	    device0->mech[0].joint[WRIST].mvel = 0*M_PI/180; 
-	    device0->mech[0].joint[GRASP1].mvel = 0*M_PI/180; 
-	    device0->mech[0].joint[GRASP2].mvel =-1.7485284*M_PI/180; 
-	    device0->mech[1].joint[SHOULDER].mvel = 0.43713209*M_PI/180; 
-     	device0->mech[1].joint[ELBOW].mvel = 0*M_PI/180; 
-	    device0->mech[1].joint[Z_INS].mvel = -3.4970567*M_PI/180; 
-	    device0->mech[1].joint[TOOL_ROT].mvel = 0*M_PI/180; 
-	    device0->mech[1].joint[WRIST].mvel = 3.49705672*M_PI/180; 
-	    device0->mech[1].joint[GRASP1].mvel = -1.7485284*M_PI/180; 
-	    device0->mech[1].joint[GRASP2].mvel = 1.74852836*M_PI/180; 	
-
-#endif
-	}
-	/*if (currParams->last_sequence == 1)	
- 	{
-	    log_msg("I am using some default jpos_d\n");
- 	    device0->mech[0].joint[SHOULDER].jpos_d = 0.521722;
-     	    device0->mech[0].joint[ELBOW].jpos_d = 1.585218;
-	    device0->mech[0].joint[Z_INS].jpos_d = 0.400515;
-	    device0->mech[0].joint[TOOL_ROT].jpos_d = -0.010442;
-	    device0->mech[0].joint[WRIST].jpos_d = -0.001124;
-	    device0->mech[0].joint[GRASP1].jpos_d = 0.774309;
-	    device0->mech[0].joint[GRASP2].jpos_d = 0.841388;
-	    device0->mech[1].joint[SHOULDER].jpos_d = 0.521301;
-     	    device0->mech[1].joint[ELBOW].jpos_d = 1.584427;
-	    device0->mech[1].joint[Z_INS].jpos_d = 0.400447;
-	    device0->mech[1].joint[TOOL_ROT].jpos_d = 0.013722;
-	    device0->mech[1].joint[WRIST].jpos_d = -0.070899;
-	    device0->mech[1].joint[GRASP1].jpos_d = 0.702793;
-	    device0->mech[1].joint[GRASP2].jpos_d = 0.729010;
-	}*/
-           /*for (int j=0;j<8;j++)    
-                log_msg("jpos %d = %f\n", j,device0->mech[0].joint[j].jpos_d*180/M_PI);*/
+			device0->mech[0].joint[SHOULDER].mvel = 0*M_PI/180; 
+		 	device0->mech[0].joint[ELBOW].mvel = 0*M_PI/180; 
+			device0->mech[0].joint[Z_INS].mvel = 0*M_PI/180; 
+			device0->mech[0].joint[TOOL_ROT].mvel = 0*M_PI/180; 
+			device0->mech[0].joint[WRIST].mvel = 0*M_PI/180; 
+			device0->mech[0].joint[GRASP1].mvel = 0*M_PI/180; 
+			device0->mech[0].joint[GRASP2].mvel =-1.7485284*M_PI/180; 
+			device0->mech[1].joint[SHOULDER].mvel = 0.43713209*M_PI/180; 
+		 	device0->mech[1].joint[ELBOW].mvel = 0*M_PI/180; 
+			device0->mech[1].joint[Z_INS].mvel = -3.4970567*M_PI/180; 
+			device0->mech[1].joint[TOOL_ROT].mvel = 0*M_PI/180; 
+			device0->mech[1].joint[WRIST].mvel = 3.49705672*M_PI/180; 
+			device0->mech[1].joint[GRASP1].mvel = -1.7485284*M_PI/180; 
+			device0->mech[1].joint[GRASP2].mvel = 1.74852836*M_PI/180;*/ 	
+		}
 #endif
         for (int i = 0; i < NUM_MECH; i++)
         {

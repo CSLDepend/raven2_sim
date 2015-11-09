@@ -68,10 +68,13 @@ struct u_struct {
 	int dely[2];
 	int delz[2];
 #ifdef packetgen
-        double R_l[3][3];
-        double R_r[3][3];
+    double R_l[3][3];
+    double R_r[3][3];
 #ifdef simulator
 	double jpos[16];
+	double jvel[16];
+	double mpos[16];
+	double mvel[16];
 #endif
 #else
         double Qx[2];

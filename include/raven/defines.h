@@ -30,11 +30,11 @@
 #include <math.h>
 
 // Homa's Macros
-#define simulator // running with no hardware
-#define dyn_simulator // run the dynamic models
-#define packetgen  // use packet generator instead of GUI
-#define packetgen_restart // packet generator can restart after an E-STOP
-#define mfi // perform mfi injection
+//#define simulator // running with no hardware
+//#define dyn_simulator // run the dynamic models
+//#define packetgen  // use packet generator instead of GUI
+//#define packetgen_restart // packet generator can restart after an E-STOP
+//#define mfi // perform mfi injection
 #define save_logs // save trajectory logs into sim_log.txt
 #define log_USB // log USB packets sent
 //#define no_logging // diable logging
@@ -276,8 +276,6 @@
 #define WRIST_MAX_DAC      2700//1900  // 20000
 #define GRASP1_MAX_DAC     4800//2400  // 15000
 #define GRASP2_MAX_DAC     4800//2400
-
-
 #endif
 
 

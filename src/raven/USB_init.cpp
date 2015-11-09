@@ -227,7 +227,7 @@ int USBInit(struct device *device0)
     vector<string> files = vector<string>();
     getdir(BRL_USB_DEV_DIR, files);
 	sort(files.begin(), files.end());
-    reverse(files.begin(),files.end());
+    //reverse(files.begin(),files.end());
 
     log_msg("  Found board files::");
     for (unsigned int i = 0;i < files.size();i++) {

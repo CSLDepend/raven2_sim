@@ -168,34 +168,6 @@ Visualization Manager:
           Value: true
         base_link_R:
           Value: true
-        grasper1_L:
-          Value: true
-        grasper1_R:
-          Value: true
-        grasper2_L:
-          Value: true
-        grasper2_R:
-          Value: true
-        instrument_shaft_L:
-          Value: true
-        instrument_shaft_R:
-          Value: true
-        link1_L:
-          Value: true
-        link1_R:
-          Value: true
-        link2_L:
-          Value: true
-        link2_R:
-          Value: true
-        link3_L:
-          Value: true
-        link3_R:
-          Value: true
-        wrist_L:
-          Value: true
-        wrist_R:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: false
@@ -204,25 +176,9 @@ Visualization Manager:
       Tree:
         0_link:
           base_link_L:
-            link1_L:
-              link2_L:
-                link3_L:
-                  instrument_shaft_L:
-                    wrist_L:
-                      grasper1_L:
-                        {}
-                      grasper2_L:
-                        {}
+            {}
           base_link_R:
-            link1_R:
-              link2_R:
-                link3_R:
-                  instrument_shaft_R:
-                    wrist_R:
-                      grasper1_R:
-                        {}
-                      grasper2_R:
-                        {}
+            {}
       Update Interval: 0
       Value: true
   Enabled: true

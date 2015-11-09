@@ -261,14 +261,14 @@ void* network_process(void* param1)
         {          
 #ifdef packetgen
 #ifdef packetgen_restart
-                        // To enable recieving packets again, set first	
+            // To enable recieving packets again, set first	
 			if (device0.runlevel == 0)
 				first = 0;
 #endif
-                        if ((first == 0) && (device0.runlevel == 2))
+            if ((first == 0) && (device0.runlevel == 2))
 			{                   
 				done_homing = 0;     
-	                        char v[6] = "Ready";
+	            char v[6] = "Ready";
 				clientName.sin_port = htons((u_short)atoi(PACK_GEN_PORT));
 				inet_aton(HOST_ADDR, &clientName.sin_addr);
 				sendto ( sock, (void*)&v, sizeof(v), 0,
@@ -315,21 +315,23 @@ void* network_process(void* param1)
 //MFI_HOOK
 //Conditions to check:
 //If robot state is pedal down:
-//if (device0.runlevel == 3)
+//if (device0.runlevel == 3) 
 
 //Start at packet 10 and continue for 100 packets: 
 //if ((u.sequence >= 10) && (u.sequence < 110))
 
 //Variables to change (single or multiple, within or outside range):
-//u.delx[0], u.dely[0], u.delz[0]
-//R_l[3][3]
+//int u.delx[0], u.dely[0], u.delz[0] DONE(generate_u_delta_faults())
+//float R_l[3][3] DONE(generate_u_R_l_faults())
 //int surgeon_mode
 //Data files to find the ranges for variables are inside: /home/raven/homa_wksp/Tests/
 //Test_1, Test_2, Test_3 and others
+// Result: t[1.194307:-1.269246], s[3.141593:-3.141593], p[3.141592:-3.141585]
+
 #endif
 
 #ifdef save_logs
-        log_file("NETWORK) Receieved Data on Socket, Size = %d", uSize);         
+      //log_msg("NETWORK) Receieved Data on Socket, Size = %d", uSize);         
       //log_msg("Pos Arm 0 = %d, %d, %d", u.delx[0], u.dely[0], u.delz[0]);         
       //log_msg("Pos Arm 1 = %d, %d, %d", u.delx[1], u.dely[1], u.delz[1]);         
 
