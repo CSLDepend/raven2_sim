@@ -15,6 +15,7 @@ raven_home = splits[0]
 
 csvfile1 = open(raven_home+'/latest_run.csv')
 reader = csv.reader(csvfile1)
+reader = csv.reader(x.replace('\0', '') for x in csvfile1)
 in_file = open(raven_home+'/input_data.txt','r')
 
 runlevel = 0

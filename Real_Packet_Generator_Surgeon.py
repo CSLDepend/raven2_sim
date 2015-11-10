@@ -143,7 +143,7 @@ def sendPackets():
 		runlevel = int(line[runlevel_index])
 		packet_no = int(line[packet_index])		
 		# If robot is ready, update the packet to be sent
-		if (robot_state == 1) and (runlevel == 3): #(seq < 9000): 
+		if (robot_state == 1) and (seq < 5000): #(runlevel == 3): 
 			# Print the mpos and mvel and write to the file for comparison
 			print_line = ''
 			for i in range(0,8):

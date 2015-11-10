@@ -549,7 +549,7 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
 
 #ifdef save_logs
 	for (int i = 0; i < 1024; i++)
-		if ((err_str[i] != '\n') && (err_str[i] != '\r'))
+		if ((err_str[i] != '\n') && (err_str[i] != '\0'))
 	    	msg_ravenstate.err_msg[i] = err_str[i]; 
 #endif
     // Publish the raven data to ROS

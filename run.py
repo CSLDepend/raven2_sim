@@ -105,7 +105,7 @@ class Raven():
                 if self.packet_gen == '1':
                     line = line.lstrip('//')
             elif line.startswith('//#define mfi'):
-                if self.injection == 'mfi':
+                if self.injection == 'mfi' or self.injection == 'mfi2': 
                     line = line.lstrip('//')
             src_fp.write(line)
         src_fp.close()
@@ -197,7 +197,8 @@ class Raven():
         if self.curr_inj:
             cmd = 'mkdir running_csv > /dev/null 2>&1'
             os.system(cmd)
-            cmd = 'cp latest_run.csv ./running_csv/latest_run.csv_injection' + str(self.curr_inj).zfill(4)
+            cmd = 'cp latest_run.csv ./running_csv/injection' \
+                    + str(self.curr_inj).zfill(4) + '.csv'
             os.system(cmd)
 
         if self.defines_changed:
@@ -468,5 +469,5 @@ signal.signal(signal.SIGINT, raven.signal_handler)
 raven.run()
 
 # Visualize and Analyze Results
-os.system('python '+raven_home+'/plot.py')
+#os.system('python '+raven_home+'/plot.py')
 

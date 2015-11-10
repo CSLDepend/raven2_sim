@@ -8,7 +8,7 @@ import genpy
 import std_msgs.msg
 
 class raven_state(genpy.Message):
-  _md5sum = "b35c52beea71553432c57abc395ea0fc"
+  _md5sum = "c2dbb7dd334060ccae86d0ad2a68778b"
   _type = "raven_2/raven_state"
   _has_header = False #flag to mark the presence of a Header object
   _full_text = """Header      hdr
@@ -33,7 +33,7 @@ float32[16] jpos_d
 float32[2]  grasp_d
 float32[16] encoffsets
 int32[16] current_cmd
-char[256] err_msg
+char[1024] err_msg
 
 ================================================================================
 MSG: std_msgs/Header
@@ -55,7 +55,7 @@ string frame_id
 
 """
   __slots__ = ['hdr','runlevel','sublevel','last_seq','type','pos','ori','ori_d','pos_d','dt','encVals','tau','mpos','jpos','mvel','mvel_d','jvel','mpos_d','jpos_d','grasp_d','encoffsets','current_cmd','err_msg']
-  _slot_types = ['std_msgs/Header','int32','int32','int32','int32[2]','int32[6]','float32[18]','float32[18]','int32[6]','duration','int32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[2]','float32[16]','int32[16]','char[256]']
+  _slot_types = ['std_msgs/Header','int32','int32','int32','int32[2]','int32[6]','float32[18]','float32[18]','int32[6]','duration','int32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[16]','float32[2]','float32[16]','int32[16]','char[1024]']
 
   def __init__(self, *args, **kwds):
     """
@@ -119,7 +119,7 @@ string frame_id
       if self.current_cmd is None:
         self.current_cmd = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
       if self.err_msg is None:
-        self.err_msg = chr(0)*256
+        self.err_msg = chr(0)*1024
     else:
       self.hdr = std_msgs.msg.Header()
       self.runlevel = 0
@@ -143,7 +143,7 @@ string frame_id
       self.grasp_d = [0.,0.]
       self.encoffsets = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
       self.current_cmd = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-      self.err_msg = chr(0)*256
+      self.err_msg = chr(0)*1024
 
   def _get_types(self):
     """
@@ -192,9 +192,9 @@ string frame_id
       _x = self.err_msg
       # - if encoded as a list instead, serialize as bytes instead of string
       if type(_x) in [list, tuple]:
-        buff.write(_struct_256B.pack(*_x))
+        buff.write(_struct_1024B.pack(*_x))
       else:
-        buff.write(_struct_256s.pack(_x))
+        buff.write(_struct_1024s.pack(_x))
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(_x))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(_x))))
 
@@ -282,7 +282,7 @@ string frame_id
       end += 64
       self.current_cmd = _struct_16i.unpack(str[start:end])
       start = end
-      end += 256
+      end += 1024
       self.err_msg = str[start:end]
       self.dt.canon()
       return self
@@ -332,9 +332,9 @@ string frame_id
       _x = self.err_msg
       # - if encoded as a list instead, serialize as bytes instead of string
       if type(_x) in [list, tuple]:
-        buff.write(_struct_256B.pack(*_x))
+        buff.write(_struct_1024B.pack(*_x))
       else:
-        buff.write(_struct_256s.pack(_x))
+        buff.write(_struct_1024s.pack(_x))
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(_x))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(_x))))
 
@@ -423,7 +423,7 @@ string frame_id
       end += 64
       self.current_cmd = numpy.frombuffer(str[start:end], dtype=numpy.int32, count=16)
       start = end
-      end += 256
+      end += 1024
       self.err_msg = str[start:end]
       self.dt.canon()
       return self
@@ -433,11 +433,11 @@ string frame_id
 _struct_I = genpy.struct_I
 _struct_18f = struct.Struct("<18f")
 _struct_16i = struct.Struct("<16i")
-_struct_256s = struct.Struct("<256s")
+_struct_1024B = struct.Struct("<1024B")
 _struct_6i = struct.Struct("<6i")
 _struct_16f = struct.Struct("<16f")
 _struct_3i = struct.Struct("<3i")
 _struct_3I = struct.Struct("<3I")
 _struct_2f = struct.Struct("<2f")
-_struct_256B = struct.Struct("<256B")
+_struct_1024s = struct.Struct("<1024s")
 _struct_2i = struct.Struct("<2i")

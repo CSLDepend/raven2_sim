@@ -33,6 +33,7 @@ def _generate_all_delta():
 
 def _generate_ow_code(pre_trig, trigger, t1, t2, variable, stuck_value):
     """ Example 
+		pre_trig = 'device0.runlevel == 0 &&'
         trigger = 'u.sequence'
         t1 = '1000'
         t2 = '1100'
@@ -46,7 +47,7 @@ def _generate_ow_code(pre_trig, trigger, t1, t2, variable, stuck_value):
     """
     assert(len(variable) == len(stuck_value))
     #code = 'if(device0.runlevel == 3 && %s>%s && %s<%s) {' % \
-    code = 'if(%s %s>%s && %s<%s) {' % \
+    code = 'if(%s %s>=%s && %s<%s) {' % \
             (pre_trig, trigger, t1, trigger, t2)
     for v, s in zip(variable, stuck_value):
         l = '%s=%s;' % (v,s)

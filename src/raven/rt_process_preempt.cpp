@@ -354,11 +354,16 @@ static void *rt_process(void* )
           log_file("ERROR: soft_estopped = %d\n",soft_estopped);
 		  logging = 0;
 #endif
-		  /*r2_kill = 1;
-	      if (ros::ok()) ros::shutdown();
-		  return 0;	*/
+	  }
+		  
+		 /*if (currParams.last_sequence > 2990)
+		  {
+			  r2_kill = 1;	
+		      if (ros::ok()) ros::shutdown();
+			  return 0;	
+		  }*/
 #endif
-      }
+      
 
       //Update Atmel Output Pins
       updateAtmelOutputs(&device0, currParams.runlevel);
