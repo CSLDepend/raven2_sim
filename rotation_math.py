@@ -26,10 +26,9 @@ def r_to_tsp(R_str):
 
 
 def tsp_to_r(tsp):
-    my_tsp = tsp.split(',')
-    t = float(my_tsp[0])
-    s = float(my_tsp[1])
-    p = float(my_tsp[2])
+    t = tsp[0]
+    s = tsp[1]
+    p = tsp[2]
 
     R00 = cos(t)*cos(p)
     R01 = sin(s)*sin(t)*cos(p)-cos(s)*sin(p)
@@ -42,8 +41,7 @@ def tsp_to_r(tsp):
     R20 = -sin(t)
     R21 = sin(s)*cos(t)
     R22 = cos(s)*cos(t)
-    R = '%5f;%5f;%5f;%5f;%5f;%5f;%5f;%5f;%5f' % \
-            (R00, R01, R02, R10, R11, R12, R20, R21, R22)
+    R = (R00, R01, R02, R10, R11, R12, R20, R21, R22)
 
     return R
 

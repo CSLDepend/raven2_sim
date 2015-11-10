@@ -1,10 +1,34 @@
 from pprint import pprint
 import sys
-from math import cos, sin, sqrt, acos, asin, atan2, pow as pow_f
 import os
+from math import pi
 from rotation_math import tsp_to_r
+from franges import frange
 
+def _generate_all_r():
+    """ Generate all combinations of rotation matrix. """
+    inc = 0.1 # Can change the increment
+    result = []
+    for t in frange(-pi/2, pi/2+inc, inc):
+        for s in frange(-pi, pi+inc, inc):
+            for p in frange(-pi, pi+inc, inc):
+                r = tsp_to_r((t,s,p))
+                result.append(r)
+    return result
 
+def _generate_all_delta():
+    """ Generate all combinations of delta. """
+    inc = 5 # Can change the increment
+    delta_min = -100
+    delta_max = 100
+
+    result = []
+    for x in range(delta_min, delta_max+inc, inc):
+        for y in range(delta_min, delta_max+inc, inc):
+            for z in range(delta_min, delta_max+inc, inc):
+                result.append((x,y,z))
+    return result
+    
 
 def _generate_ow_code(trigger, t1, t2, variable, stuck_value):
     """ Example 
@@ -14,13 +38,13 @@ def _generate_ow_code(trigger, t1, t2, variable, stuck_value):
         variable = ['u.delay[0]', 'u.delay[1]']
         stuck_value = ['100','110']
 
-        if(u.sequence > 1000 && u.sequqnce < 1100) {
+        if(device0.runlevel == 3 && u.sequence > 1000 && u.sequqnce < 1100) {
             u.delay[0] = 100;
             u.delay[1] = 110;
         }
     """
     assert(len(variable) == len(stuck_value))
-    code = 'if(%s>%s && %s<%s) {' % \
+    code = 'if(device0.runlevel == 3 && %s>%s && %s<%s) {' % \
             (trigger, t1, trigger, t2)
     for v, s in zip(variable, stuck_value):
         l = '%s=%s;' % (v,s)
@@ -36,13 +60,13 @@ def _generate_add_code(trigger, t1, t2, variable, stuck_value):
         variable = ['u.delay[0]', 'u.delay[1]']
         stuck_value = ['100','110']
 
-        if(u.sequence > 1000 && u.sequqnce < 1100) {
+        if(device0.runlevel == 3 && u.sequence >= 1000 && u.sequqnce < 1100) {
             u.delay[0] += 100;
             u.delay[1] += 110;
         }
     """
     assert(len(variable) == len(stuck_value))
-    code = 'if(%s>%s && %s<%s) {' % \
+    code = 'if(device0.runlevel == 3 && %s>=%s && %s<%s) {' % \
             (trigger, t1, trigger, t2)
     for v, s in zip(variable, stuck_value):
         l = '%s+=%s;' % (v,s)
@@ -57,17 +81,17 @@ def _generate_delay_code(trigger, t1, t2, usec):
         t2 = '1100'
         length = '100' in usec
 
-        if(u.sequence > 1000 && u.sequqnce < 1100) {
+        if(device0.runlevel == 3 && u.sequence >= 1000 && u.sequqnce < 1100) {
             usleep(100)
         }
     """
-    code = 'if(%s>%s && %s<%s) {usleep(%s);}' % \
+    code = 'if(device0.runlevel == 3 && %s>=%s && %s<%s) {usleep(%s);}' % \
             (trigger, t1, trigger, t2, usec)
     return code
 
 def generate_stuck_fault_list():
     trigger = 'u.sequence'
-    t_range = ['1000', '1100']
+    t_range = ['10', '110']
     code = []
     variable = [ \
             ['u.delay[0]', 'u.delay[1]'], \
@@ -80,6 +104,45 @@ def generate_stuck_fault_list():
     for v, s in zip(variable, stuck_val):
         code.append(_generate_ow_code(trigger, \
                 t_range[0], t_range[1], v, s))
+    return code
+
+def generate_u_delta_faults():
+    trigger = 'u.sequence'
+    t_range = ['10', '110']
+    code = []
+    variable = ['u.delx[0]', 'u.dely[0]','u.delz[0]']
+    val = _generate_all_delta()
+    for v in val:
+        code.append(_generate_ow_code(trigger, \
+                t_range[0], t_range[1], variable, v))
+    #pprint(code)
+    with open('mfi2_u_delta_faults.txt', 'w') as outfile:
+        for line in code:
+            outfile.write(line + '\n')
+    return code
+
+
+def generate_u_R_l_faults():
+    trigger = 'u.sequence'
+    t_range = ['10', '110']
+    code = []
+    variable = ['u.R_l[0][0]', \
+            'u.R_l[0][1]', \
+            'u.R_l[0][2]', \
+            'u.R_l[1][0]', \
+            'u.R_l[1][1]', \
+            'u.R_l[1][2]', \
+            'u.R_l[2][0]', \
+            'u.R_l[2][1]', \
+            'u.R_l[2][2]']
+    val = _generate_all_r()
+    for v in val:
+        code.append(_generate_ow_code(trigger, \
+                t_range[0], t_range[1], variable, v))
+    #pprint(code)
+    with open('mfi2_u_R_l_faults.txt', 'w') as outfile:
+        for line in code:
+            outfile.write(line + '\n')
     return code
 
 def generate_network_layer_skip():
@@ -116,7 +179,8 @@ def generate_network_layer_delay():
         for i, line in enumerate(code):
             outfile.writelines('injection %d:%s\n' % (i,line))
 
-#print _generate_add_code('u.sequence', '1000', '1100', ['u.delay[0]','hello'], ['100','11'])
 
-generate_network_layer_skip()
-generate_network_layer_delay()
+#generate_network_layer_skip()
+#generate_network_layer_delay()
+#generate_u_delta_faults()
+generate_u_R_l_faults()
