@@ -404,7 +404,7 @@ class Raven():
                 elif l[0].startswith('injection'):
                     curr_inj = int(l[0].split(' ')[1])
                     self.curr_inj = curr_inj
-                    if curr_inj > self.starting_inj_num:
+                    if curr_inj >= self.starting_inj_num:
                         self.__mfi_insert_code(file_name, mfi_hook, l[1])
                         logger.info(line)
                         self._compile_raven()

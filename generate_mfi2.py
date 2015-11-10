@@ -4,6 +4,7 @@ import os
 from math import pi
 from rotation_math import tsp_to_r
 from franges import frange
+from random import randint
 
 def _generate_all_r():
     """ Generate all combinations of rotation matrix. """
@@ -30,7 +31,7 @@ def _generate_all_delta():
     return result
     
 
-def _generate_ow_code(trigger, t1, t2, variable, stuck_value):
+def _generate_ow_code(pre_trig, trigger, t1, t2, variable, stuck_value):
     """ Example 
         trigger = 'u.sequence'
         t1 = '1000'
@@ -44,8 +45,9 @@ def _generate_ow_code(trigger, t1, t2, variable, stuck_value):
         }
     """
     assert(len(variable) == len(stuck_value))
-    code = 'if(device0.runlevel == 3 && %s>%s && %s<%s) {' % \
-            (trigger, t1, trigger, t2)
+    #code = 'if(device0.runlevel == 3 && %s>%s && %s<%s) {' % \
+    code = 'if(%s %s>%s && %s<%s) {' % \
+            (pre_trig, trigger, t1, trigger, t2)
     for v, s in zip(variable, stuck_value):
         l = '%s=%s;' % (v,s)
         code = code + l
@@ -90,6 +92,7 @@ def _generate_delay_code(trigger, t1, t2, usec):
     return code
 
 def generate_stuck_fault_list():
+    pre_trig = 'device0.runlevel == 3 &&'
     trigger = 'u.sequence'
     t_range = ['10', '110']
     code = []
@@ -102,7 +105,7 @@ def generate_stuck_fault_list():
             ['20','30']
             ]
     for v, s in zip(variable, stuck_val):
-        code.append(_generate_ow_code(trigger, \
+        code.append(_generate_ow_code(pre_trig, trigger, \
                 t_range[0], t_range[1], v, s))
     return code
 
@@ -179,8 +182,38 @@ def generate_network_layer_delay():
         for i, line in enumerate(code):
             outfile.writelines('injection %d:%s\n' % (i,line))
 
+def write_to_file(code, out_file, target_file_and_hook):
+    with open(out_file, 'w') as outfile:
+        outfile.write('location:' + target_file_and_hook + '\n')
+        for i, line in enumerate(code):
+            outfile.write('injection ' + str(i) + ':' + line + '\n')
+    return code
+
+# Generate rt_process.cpp faults
+def generate_rt_process_faults():
+    pre_trig = ''
+    code = []
+    trigger = 'packet_num'
+
+    variable = [['device0.mech[i].joint[SHOULDER].current_cmd'],
+            ['device0.mech[i].joint[ELBOW].current_cmd'],
+            ['device0.mech[i].joint[Z_INS].current_cmd']
+            ]
+
+    for var in variable:
+        for i in range(0, 10):
+            t1 = randint(10, 15000)
+            t2 = t1 + randint(1, 50)
+            val = [randint(-15000, 15000)]
+            code.append(_generate_ow_code(pre_trig, trigger, 
+                    t1, t2, var, val))
+    pprint(code)
+    write_to_file(code, 'mfi2_rt_process_faults.txt', 'rt_process_preempt.cpp://HOOK')
+
+
 
 #generate_network_layer_skip()
 #generate_network_layer_delay()
 #generate_u_delta_faults()
-generate_u_R_l_faults()
+#generate_u_R_l_faults()
+generate_rt_process_faults()
