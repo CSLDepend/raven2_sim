@@ -20,3 +20,4 @@ float32[16] jpos_d
 float32[2]  grasp_d
 float32[16] encoffsets
 int32[16] current_cmd
+char[1024] err_msg

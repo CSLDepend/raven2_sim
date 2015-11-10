@@ -117,36 +117,6 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 					device0->mech[i].joint[j].mvel_d = rcvdParams->mvel_d[i*8+j];			
 				}			
 			} 	    
-			/*log_msg("I am intializing mpos and mvel\n");
-			device0->mech[0].joint[SHOULDER].mpos = 4081.32153*M_PI/180;
-		 	device0->mech[0].joint[ELBOW].mpos = 11504.9707*M_PI/180;
-			device0->mech[0].joint[Z_INS].mpos = 51556.7734*M_PI/180;
-			device0->mech[0].joint[TOOL_ROT].mpos = 17749.8008*M_PI/180; 
-			device0->mech[0].joint[WRIST].mpos = 17769.3379*M_PI/180; 
-			device0->mech[0].joint[GRASP1].mpos = 18116.2871*M_PI/180; 
-			device0->mech[0].joint[GRASP2].mpos = 18135.9922*M_PI/180; 
-			device0->mech[1].joint[SHOULDER].mpos = 4084.20044*M_PI/180; 
-		 	device0->mech[1].joint[ELBOW].mpos = 11511.7217*M_PI/180; 
-			device0->mech[1].joint[Z_INS].mpos = 51585.7656*M_PI/180; 
-			device0->mech[1].joint[TOOL_ROT].mpos = -17781.395*M_PI/180; 
-			device0->mech[1].joint[WRIST].mpos = -17770.863*M_PI/180; 
-			device0->mech[1].joint[GRASP1].mpos = -17336.08*M_PI/180; 
-			device0->mech[1].joint[GRASP2].mpos = -17344.986*M_PI/180; 	
-
-			device0->mech[0].joint[SHOULDER].mvel = 0*M_PI/180; 
-		 	device0->mech[0].joint[ELBOW].mvel = 0*M_PI/180; 
-			device0->mech[0].joint[Z_INS].mvel = 0*M_PI/180; 
-			device0->mech[0].joint[TOOL_ROT].mvel = 0*M_PI/180; 
-			device0->mech[0].joint[WRIST].mvel = 0*M_PI/180; 
-			device0->mech[0].joint[GRASP1].mvel = 0*M_PI/180; 
-			device0->mech[0].joint[GRASP2].mvel =-1.7485284*M_PI/180; 
-			device0->mech[1].joint[SHOULDER].mvel = 0.43713209*M_PI/180; 
-		 	device0->mech[1].joint[ELBOW].mvel = 0*M_PI/180; 
-			device0->mech[1].joint[Z_INS].mvel = -3.4970567*M_PI/180; 
-			device0->mech[1].joint[TOOL_ROT].mvel = 0*M_PI/180; 
-			device0->mech[1].joint[WRIST].mvel = 3.49705672*M_PI/180; 
-			device0->mech[1].joint[GRASP1].mvel = -1.7485284*M_PI/180; 
-			device0->mech[1].joint[GRASP2].mvel = 1.74852836*M_PI/180;*/ 	
 		}
 #endif
         for (int i = 0; i < NUM_MECH; i++)
