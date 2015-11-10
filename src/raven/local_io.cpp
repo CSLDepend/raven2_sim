@@ -52,6 +52,7 @@ ROS publishing is at the bottom half of this file.
 #include "itp_teleoperation.h"
 #include "r2_kinematics.h"
 #include "reconfigure.h"
+#include "defines.h"
 
 extern int NUM_MECH;
 extern USBStruct USBBoards;
@@ -70,7 +71,9 @@ volatile int isUpdated; //TODO: HK volatile int instead of atomic_t ///Should we
 extern struct offsets offsets_l;
 extern struct offsets offsets_r;
 
-
+#ifdef save_logs
+extern char err_str[1024];
+#endif
 /**
  * \brief Initialize data arrays to zero and create mutex
  *
@@ -544,6 +547,11 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
     msg_ravenstate.runlevel=currParams->runlevel;
     msg_ravenstate.sublevel=currParams->sublevel;
 
+#ifdef save_logs
+	for (int i = 0; i < 1024; i++)
+		if ((err_str[i] != '\n') && (err_str[i] != '\r'))
+	    	msg_ravenstate.err_msg[i] = err_str[i]; 
+#endif
     // Publish the raven data to ROS
     pub_ravenstate.publish(msg_ravenstate);
 }

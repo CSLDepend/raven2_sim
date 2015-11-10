@@ -39,6 +39,7 @@ const static size_t MAX_MSG_LEN =1024;
 extern char* raven_path;
 extern int inject_mode;
 extern int logging;
+extern char err_str[1024];
 /**\fn int log_file(const char* fmt,...)
 *  \brief 
 *  \param fmt
@@ -48,30 +49,34 @@ extern int logging;
 int log_file(const char* fmt,...)
 {
 #ifdef no_logging
-        logging = 0; 
+    logging = 0; 
 #endif
-        if (logging == 1)
+    if (logging == 1)
 	{
 		std::ofstream logfile;
-    	        static char buff[50];
+    	static char buff[50];
 		if (inject_mode == 0)  
-                    sprintf(buff,"%s/sim_log.txt", raven_path);
-                else
+            sprintf(buff,"%s/sim_log.txt", raven_path);
+        else
 		    sprintf(buff,"%s/fault_log_%d.txt", raven_path, inject_mode);
                 logfile.open(buff,std::ofstream::out | std::ofstream::app); 
 		static char buf[MAX_MSG_LEN];
 		va_list args;
 		va_start (args, fmt);
-		//Do somethinh
+		//Do something
 		vsprintf(buf,fmt,args);
 		va_end(args);
 		// Log in the file
 		logfile << buf << "\n";
 		logfile.close();
-#ifdef simulator_logging
+		if (strstr(buf,"ERROR"))
+		{
+			printf("buf = %s",buf);
+			strcat(err_str, buf);
+		    printf("%s",err_str);
+		}
 		// Print on console
-		ROS_INFO("%s",buf);
-#endif
+		//ROS_INFO("%s",buf);
 	}
     return 0;
 }

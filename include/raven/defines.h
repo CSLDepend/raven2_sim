@@ -37,7 +37,7 @@
 //#define mfi // perform mfi injection
 #define save_logs // save trajectory logs into sim_log.txt
 #define log_USB // log USB packets sent
-//#define no_logging // diable logging
+//#define no_logging // disable logging
 //#define skip_init_button // skip the start physical button
 
 #define RAVEN_MODULE_VERSION RAVEN_II_RELEASE_02

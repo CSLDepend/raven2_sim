@@ -95,6 +95,7 @@ int NUM_MECH=0;   // Define NUM_MECH as a C variable, not a c++ variable
 #ifdef save_logs
 #include <fstream>
 char* raven_path = new char[100];
+char err_str[1024];
 int inject_mode;
 int logging = 0;
 int no_pack_cnt = 0;
@@ -348,10 +349,14 @@ static void *rt_process(void* )
 	      showInverseKinematicsSolutions(&device0, currParams.runlevel);
 	      outputRobotState();  
 #ifdef dyn_simulator 
-          log_msg("soft_estopped = %d\n",soft_estopped);
-		  r2_kill = 1;
+#ifdef save_logs
+		  logging = 1;
+          log_file("ERROR: soft_estopped = %d\n",soft_estopped);
+		  logging = 0;
+#endif
+		  /*r2_kill = 1;
 	      if (ros::ok()) ros::shutdown();
-		  return 0;	
+		  return 0;	*/
 #endif
       }
 
