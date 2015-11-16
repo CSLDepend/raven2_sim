@@ -387,6 +387,7 @@ static void *rt_process(void* )
 			    {
 #ifdef mfi
 //HOOK
+if( packet_num>=1010 && packet_num<1012) {int _v0;if(packet_num==1010) {_v0=device0.mech[i].joint[SHOULDER].current_cmd+(1000);}device0.mech[i].joint[SHOULDER].current_cmd=_v0;}
 //Start at packet S and continue for L packets:
 //if ((u.sequence >= 10) && (u.sequence < 20)) => S random, between 10 and 15000, L between 1 to 50
 //device0.mech[i].joint[SHOULDER].current_cmd => random int
