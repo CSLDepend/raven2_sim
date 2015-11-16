@@ -22,3 +22,10 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+======================================
+How to run
+======================================
+1. After downloading the repository, rename the folder to "raven_2"
+2. Change the ROS_PACKAGE_PATH environment variable to the location of raven_2 folder
+3. Unzip the "new_test_3.csv" datafile in the ./teleop_data folder
