@@ -31,6 +31,10 @@ import signal
 from sys import argv
 import mfi
 import logging
+import csv
+import matplotlib.pyplot as plt
+import math
+from parse_plot import * 
 
 def rsp_func():
     """ Get response from user to check if raven_home directory is correct"""
@@ -75,11 +79,15 @@ class Raven():
         self.defines_bkup_file = raven_home + "/include/raven/defines_back.h"
         self.defines_chk_file = raven_home + "/include/raven/defines_last_run"
         self.master_file = './selected_injection.txt'
+        self.inj_param_file = './mfi2_params.csv'
+        self.inj_param_reader = ''
         inj = injection.split(':')
         self.injection = inj[0]
-        self.curr_inj = 0
+        self.curr_inj = -1
+        self.inj_line = ''
         self.defines_changed = 0
         self.mfi_changed = 0
+        self.return_code = 0 #0 is normal, 1 is error
         if len(inj) > 1:
             self.starting_inj_num = int(inj[1])
         else:
@@ -194,10 +202,10 @@ class Raven():
     def __quit(self): 
         """ Terminate all process started by _run_experiment() """
         # Restore changes to source code
-        if self.curr_inj:
-            cmd = 'mkdir running_csv > /dev/null 2>&1'
+        if self.curr_inj >= 0 and self.return_code == 1:
+            cmd = 'mkdir /media/raven/My\ Passport/Logs/running_csv > /dev/null 2>&1'
             os.system(cmd)
-            cmd = 'cp latest_run.csv ./running_csv/injection' \
+            cmd = 'cp latest_run.csv /media/raven/My\ Passport/Logs/running_csv/injection' \
                     + str(self.curr_inj).zfill(4) + '.csv'
             os.system(cmd)
 
@@ -310,7 +318,7 @@ class Raven():
         # Call Dynamic Simulator
         if self.mode == "dyn_sim":
                 self.dynSim_proc = subprocess.Popen(dynSimTask, env=env, shell=True, preexec_fn=os.setsid)
-                #os.system("cd ../Li_DYN &&./two_arm_dyn")
+                #os.system("cd ../Li_DYN && make && ./two_arm_dyn")
                 print "Started the dynamic simulator.."
 
         print("Press Ctrl+C to exit.")
@@ -321,13 +329,100 @@ class Raven():
             print("Waiting for Raven to be done...")
             data = sock.recvfrom(100)
             if data[0].find('Done!') > -1:
-                print("Raven is done, shutdown everything...")  
+                print("Raven is done, shutdown everything...") 
+                self.return_code = 0 
             elif data[0].find('Stopped') > -1:
-                print("Raven is stopped, shutdown everything...")  
+                print("Raven is E-stopped, shutdown everything...")  
+                self.return_code = 1
             else:
                 data = ''
         self.__quit()
-    
+  
+
+    def _run_analyzer(self):       
+        # Open Log files
+        #csvfile1 = open(raven_home+'/robot_run.csv')
+        #reader1 = csv.reader(x.replace('\0', '') for x in csvfile1)
+        csvfile2 = open(raven_home+'/golden_run/latest_run.csv')
+        reader2 = csv.reader(x.replace('\0', '') for x in csvfile2)
+        # Parse the robot run
+        #orig_mpos, orig_mvel, orig_dac, orig_jpos, orig_pos, orig_err, orig_packets, orig_t = parse_latest_run(reader1)
+        # Parse the golden simulator run
+        gold_mpos, gold_mvel, gold_dac, gold_jpos, gold_pos, gold_err, gold_packets, gold_t = parse_latest_run(reader2)
+
+        # Parse the latest run of simulator
+        csvfile3 = open(raven_home+'/latest_run.csv')
+        reader3 = csv.reader(x.replace('\0', '') for x in csvfile3)
+        mpos, mvel, dac, jpos, pos, err, packets, t = parse_latest_run(reader3)
+        # Close files
+        #csvfile1.close()
+        csvfile2.close()
+        csvfile3.close()
+      
+        # Log the injection results
+        indices = [0,1,2,4,5,6,7]
+        posi = ['X','Y','Z']
+        if (self.curr_inj == 0):
+            csvfile4 = open(self.raven_home+'/error_log.csv','w')
+            writer4 = csv.writer(csvfile4,delimiter=',') 
+            # For rt_process_preempt:
+            output_line = 'Variable, Start, Duration, Value, Errors, '
+            for i in range(0,len(mpos)):
+                output_line = output_line + 'err_mpos' + str(indices[i]) + ','
+                output_line = output_line + 'err_mvel' + str(indices[i]) + ','
+                output_line = output_line + 'err_jpos' + str(indices[i]) + ','
+            for i in range(0,len(pos)):
+                if (i == len(pos)-1):
+		            output_line = output_line + 'err_pos' + str(posi[i])
+                else:
+                    output_line = output_line + 'err_pos' + str(posi[i]) + ','
+            writer4.writerow(output_line.split(',')) 
+            csvfile4.close()
+        
+        csvfile4 = open(self.raven_home+'/error_log.csv','a')
+        writer4 = csv.writer(csvfile4,delimiter=',') 
+        # Injection parameters
+        # For rt_process_preempt:
+        #param_line = self.inj_param_reader.next()
+        var_line = self.inj_line.split('{')[1].split('}')[0]
+        val = var_line.split('=')[1].split(';')[0]
+        start = self.inj_line.split('>=')[1].split('&&')[0]
+        end = self.inj_line.split('<')[1].split(')')[0]
+        duration = str(int(start) - int(end) + 1)
+        param_line = [var_line,start, duration, val]
+        print param_line
+
+        output_line = ''
+        # Error messages
+        gold_msgs = [s for s in gold_err if s]
+        err_msgs = [s for s in err if s]
+        # If there are any errors or different errors, print them all
+        if err_msgs or not(err_msgs == gold_msgs):  
+            for e in set(err_msgs):
+                output_line = output_line + '#Packet ' + str(packets[err.index(e)]) +': ' + e
+        output_line = output_line +  ','
+        
+        # Trajectory errors 
+        mpos_error = [];
+        mvel_error = [];
+        jpos_error = [];
+        pos_error = [];
+        for i in range(0,len(mpos)):
+		    traj_len = min(len(mpos[0]),len(gold_mpos[0]))
+		    mpos_error.append(float(sum(abs(np.array(mpos[i][1:traj_len])-np.array(gold_mpos[i][1:traj_len]))))/traj_len)
+		    mvel_error.append(float(sum(abs(np.array(mvel[i][1:traj_len])-np.array(gold_mvel[i][1:traj_len]))))/traj_len)
+		    jpos_error.append(float(sum(abs(np.array(jpos[i][1:traj_len])-np.array(gold_jpos[i][1:traj_len]))))/traj_len)
+		    output_line = output_line + str(mpos_error[i]) + ', '+ str(mvel_error[i]) +', '+ str(jpos_error[i])+',' 
+        for i in range(0,len(pos)):    
+            traj_len = min(len(pos[0]),len(gold_pos[0]))
+            pos_error.append(float(sum(abs(np.array(pos[i][1:traj_len])-np.array(gold_pos[i][1:traj_len]))))/traj_len)
+            if (i == len(pos)-1):
+                output_line = output_line + str(pos_error[i])
+            else:
+                output_line = output_line + str(pos_error[i])+','
+        writer4.writerow(param_line + output_line.split(','))    
+        csvfile4.close()
+          
     def _run_mfi_experiment(self):
         """ Run mfi experiment according to the master_file """
         cur_inj = -1
@@ -381,15 +476,19 @@ class Raven():
                                     logger.info("injecting to %d.%d %s" % (cur_inj, x, inj_info))
                                     self._compile_raven()
                                     self._run_experiment()
+                                    self._run_plot()
                             else:
                                 inj_info = self.__mfi_insert_code2(target_file, line, trigger, target)
                                 logger.info("injecting to %d %s" % (cur_inj, inj_info))
                                 self._compile_raven()
                                 self._run_experiment()
+                                self._run_plot()
 
     def _run_mfi2_experiment(self):
         """ New mfi injection using the file generated by generate_mfi2.py"""
         code_file = 'mfi2.txt'
+        #code_file = 'mfi2_empty_test.txt'
+        self.inj_param_reader = csv.reader(open(self.inj_param_file,'r'))
         file_name = ''
         mfi_hook = ''
         with open(code_file, 'r') as infile:
@@ -398,6 +497,7 @@ class Raven():
                 injection 1:if(u.sequence>1000 && u.sequence<1100) {u.del[0]=100;}
             """
             for line in infile:
+                self.inj_line = line;
                 l = line.split(':')
                 if l[0].startswith('location'):
                     file_name = l[1]
@@ -410,7 +510,10 @@ class Raven():
                         logger.info(line)
                         self._compile_raven()
                         self._run_experiment()
-
+                        self._run_analyzer()
+        self.inj_param_file.close()
+                        
+    
     def signal_handler(self, signal, frame):
         """ Signal handler to catch Ctrl+C to shutdown everything"""
         print "Ctrl+C Pressed!"
@@ -426,6 +529,7 @@ class Raven():
         else:
             self._compile_raven()
             self._run_experiment()
+            os.system('python '+raven_home+'/plot2.py')
 
 
 # Main code starts here
@@ -439,6 +543,7 @@ initLogger(logger, 'mfi.log')
 env = os.environ.copy()
 splits = env['ROS_PACKAGE_PATH'].split(':')
 raven_home = splits[0]
+golden_home = raven_home+'/golden_run'
 print '\nRaven Home Found to be: '+ raven_home
 #rsp_func()
 usage = "Usage: python run.py <sim|dyn_sim|rob> <1:packet_gen|0:gui> <none|mfi:start#|mfi2:start#>"
@@ -467,7 +572,3 @@ signal.signal(signal.SIGINT, raven.signal_handler)
 
 # Run Raven
 raven.run()
-
-# Visualize and Analyze Results
-#os.system('python '+raven_home+'/plot.py')
-
