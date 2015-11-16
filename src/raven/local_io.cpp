@@ -551,6 +551,7 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
 	for (int i = 0; i < 1024; i++)
 		if ((err_str[i] != '\n') && (err_str[i] != '\0'))
 	    	msg_ravenstate.err_msg[i] = err_str[i]; 
+    err_str[0] = '\0';
 #endif
     // Publish the raven data to ROS
     pub_ravenstate.publish(msg_ravenstate);

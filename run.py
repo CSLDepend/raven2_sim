@@ -88,6 +88,7 @@ class Raven():
         self.defines_changed = 0
         self.mfi_changed = 0
         self.return_code = 0 #0 is normal, 1 is error
+        self.rviz_enabled = 0
         if len(inj) > 1:
             self.starting_inj_num = int(inj[1])
         else:
@@ -253,7 +254,8 @@ class Raven():
         os.system("killall roslaunch > /dev/null 2>&1")
         os.system("killall rostopic > /dev/null 2>&1")
         os.system("killall r2_control > /dev/null 2>&1")
-        os.system("killall rviz > /dev/null 2>&1")
+        if self.rviz_enabled:
+            os.system("killall rviz > /dev/null 2>&1")
         os.system("killall xterm > /dev/null 2>&1")
         os.system("killall two_arm_dyn > /dev/null 2>&1")
         #os.system("killall python") # Don't work with run_mfi_experiment()
@@ -291,7 +293,7 @@ class Raven():
         goldenRavenTask= 'xterm -e roslaunch raven_2 raven_2.launch'
         ravenTask = 'xterm -hold -e roslaunch raven_2 raven_2.launch'
         visTask = 'xterm -hold -e roslaunch raven_visualization raven_visualization.launch'
-        dynSimTask = 'xterm -hold -e "cd ../Li_DYN && make && ./two_arm_dyn"'
+        dynSimTask = 'xterm -hold -e "cd ./Li_DYN && make -j && ./two_arm_dyn"'
         rostopicTask = 'rostopic echo -p ravenstate >'+self.raven_home+'/latest_run.csv'
         if (self.surgeon_simulator == 1):
             packetTask = 'xterm -hold -e python '+self.raven_home+'/Real_Packet_Generator_Surgeon.py '+ self.mode
@@ -301,7 +303,7 @@ class Raven():
 
         # Call visualization, packet generator, and Raven II software
         vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
-        time.sleep(4)  
+        time.sleep(2)  
         if self.packet_gen == "1":
                 self.packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
                 print "Using the packet generator.."
@@ -318,7 +320,7 @@ class Raven():
         # Call Dynamic Simulator
         if self.mode == "dyn_sim":
                 self.dynSim_proc = subprocess.Popen(dynSimTask, env=env, shell=True, preexec_fn=os.setsid)
-                #os.system("cd ../Li_DYN && make && ./two_arm_dyn")
+                #os.system("cd ./Li_DYN && make -j && ./two_arm_dyn")
                 print "Started the dynamic simulator.."
 
         print("Press Ctrl+C to exit.")
@@ -385,11 +387,12 @@ class Raven():
         # For rt_process_preempt:
         #param_line = self.inj_param_reader.next()
         var_line = self.inj_line.split('{')[1].split('}')[0]
+        var = var_line.split('=')[0]
         val = var_line.split('=')[1].split(';')[0]
         start = self.inj_line.split('>=')[1].split('&&')[0]
         end = self.inj_line.split('<')[1].split(')')[0]
-        duration = str(int(start) - int(end) + 1)
-        param_line = [var_line,start, duration, val]
+        duration = str(abs(int(start) - int(end)))
+        param_line = [var,start, duration, val]
         print param_line
 
         output_line = ''

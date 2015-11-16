@@ -36,7 +36,7 @@ int fi = 0;
 
 void getStateLPF(struct DOF *joint);
 
-#ifdef dyn_simulator 
+#ifdef dyn_simulator
 #include <iostream>
 #include <fstream>
 #include <fcntl.h>
@@ -50,7 +50,7 @@ void getStateLPF(struct DOF *joint);
 #include "cmath"
 extern int runlevel;
 extern int packet_num;
-extern int wrfd,rdfd; 
+extern int wrfd,rdfd;
 extern char sim_buf[4096];
 #endif
 
@@ -80,46 +80,48 @@ void stateEstimate(struct robot_device *device0)
     }
 #else
 // For the dynamic simulator, get the motor positions 0, 1, 2 for GOLD arm from dynamic model
-#ifdef dyn_simulator 
+#ifdef dyn_simulator
     for (i = 0; i < NUM_MECH; i++)
     {
 		// Get mpos for joints 0, 1, 2 from the dynamic model
 		if((i == 0) && (runlevel == 3) && (packet_num != 111))
-		{		
+		{
 			// Read estimates from FIFO
 			read(rdfd, sim_buf, sizeof(sim_buf));
 			// Write the results to the screen
-			std::istringstream ss(sim_buf);     
-			ss >> device0->mech[i].joint[SHOULDER].mpos >> 
-				device0->mech[i].joint[SHOULDER].mvel >> 
-				device0->mech[i].joint[ELBOW].mpos >> 
+			std::istringstream ss(sim_buf);
+			ss >> device0->mech[i].joint[SHOULDER].mpos >>
+				device0->mech[i].joint[SHOULDER].mvel >>
+				device0->mech[i].joint[ELBOW].mpos >>
 				device0->mech[i].joint[ELBOW].mvel >>
-				device0->mech[i].joint[Z_INS].mpos >> 
+				device0->mech[i].joint[Z_INS].mpos >>
 				device0->mech[i].joint[Z_INS].mvel;
             //printf("\nRecieved: %s\n",sim_buf);
+#ifndef no_logging
 			printf("Estimated (mpos,mvel):(%f, %f),(%f, %f),(%f, %f)\n",
-				device0->mech[i].joint[SHOULDER].mpos, 
-				device0->mech[i].joint[SHOULDER].mvel, 
+				device0->mech[i].joint[SHOULDER].mpos,
+				device0->mech[i].joint[SHOULDER].mvel,
 				device0->mech[i].joint[ELBOW].mpos,
 				device0->mech[i].joint[ELBOW].mvel,
-				device0->mech[i].joint[Z_INS].mpos, 
-				device0->mech[i].joint[Z_INS].mvel); 
+				device0->mech[i].joint[Z_INS].mpos,
+				device0->mech[i].joint[Z_INS].mvel);
+#endif
 
-			// Shortc-circuiting others - Assuming ideal hardware	
+			// Shortc-circuiting others - Assuming ideal hardware
 			for (j = 3; j < MAX_DOF_PER_MECH; j++)
 			{
-				device0->mech[0].joint[j].mpos = device0->mech[0].joint[j].mpos_d;			
-				device0->mech[0].joint[j].mvel = device0->mech[0].joint[j].mvel_d;			
-			}	
+				device0->mech[0].joint[j].mpos = device0->mech[0].joint[j].mpos_d;
+				device0->mech[0].joint[j].mvel = device0->mech[0].joint[j].mvel_d;
+			}
 		}
 		//For the Green Arm, just short-circuit the mpos and mvel
-		else 
+		else
 		{
-			// Shortc-circuiting - Assuming ideal hardware	
+			// Shortc-circuiting - Assuming ideal hardware
 			for (j = 0; j < MAX_DOF_PER_MECH; j++)
 			{
-				device0->mech[1].joint[j].mpos = device0->mech[1].joint[j].mpos_d;			
-				device0->mech[1].joint[j].mvel = device0->mech[1].joint[j].mvel_d;			
+				device0->mech[1].joint[j].mpos = device0->mech[1].joint[j].mpos_d;
+				device0->mech[1].joint[j].mvel = device0->mech[1].joint[j].mvel_d;
 			}
 		}
 	}
@@ -129,12 +131,12 @@ void stateEstimate(struct robot_device *device0)
     {
         for (j = 0; j < MAX_DOF_PER_MECH; j++)
         {
-			device0->mech[i].joint[j].mpos = device0->mech[i].joint[j].mpos_d;			
-			device0->mech[i].joint[j].mvel = device0->mech[i].joint[j].mvel_d;			
+			device0->mech[i].joint[j].mpos = device0->mech[i].joint[j].mpos_d;
+			device0->mech[i].joint[j].mvel = device0->mech[i].joint[j].mvel_d;
 		}
-	}	 		     
+	}
 #endif
- 
+
 #endif
 
 }
