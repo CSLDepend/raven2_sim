@@ -1,13 +1,18 @@
-# rotation_math.py
-# Math functions to transform Raven rotation data.
 # Created on 11/3/2015
 # Author: Daniel Chen (dchen8@illinois.edu)
+
+"""
+Math functions to transform Raven rotation data.
+"""
 
 from math import cos, sin, sqrt, acos, asin, atan2, pow as pow_f
 
 
-
 def r_to_tsp(R_str):
+    """ Convert rotation matrix to angle representation.
+    
+    Returns a tuple of three angles
+    """
     param = R_str.split(',')
     R00 = float(param[0])
     R02 = float(param[2])
@@ -20,12 +25,14 @@ def r_to_tsp(R_str):
     sai = atan2(R21/cos(theta), R22/cos(theta))
     phi = atan2(R10/cos(theta), R00/cos(theta))
 
-    tsp_str = (theta,sai,phi)
+    tsp = (theta,sai,phi)
 
-    return tsp_str
+    return tsp
 
 
 def tsp_to_r(tsp):
+    """ Convert angle to rotation matrix representation.
+    """
     t = tsp[0]
     s = tsp[1]
     p = tsp[2]
@@ -41,6 +48,8 @@ def tsp_to_r(tsp):
     R20 = -sin(t)
     R21 = sin(s)*cos(t)
     R22 = cos(s)*cos(t)
+    #R = '%5f;%5f;%5f;%5f;%5f;%5f;%5f;%5f;%5f' % \
+    #        (R00, R01, R02, R10, R11, R12, R20, R21, R22)
     R = (R00, R01, R02, R10, R11, R12, R20, R21, R22)
 
     return R

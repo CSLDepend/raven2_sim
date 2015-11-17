@@ -1,3 +1,22 @@
+'''/* Runs Raven 2 simulator by calling packet generator, Raven control software, and visualization code
+ * Copyright (C) 2015 University of Illinois Board of Trustees, DEPEND Research Group, Creators: Homa Alemzadeh and Daniel Chen
+ *
+ * This file is part of Raven 2 Surgical Simulator.
+ *
+ * Raven 2 Surgical Simulator is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Raven 2 Surgical Simulator is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Raven 2 Control.  If not, see <http://www.gnu.org/licenses/>.
+ */'''
+
 import csv
 import time
 import os
@@ -5,7 +24,7 @@ import subprocess
 import sys
 import matplotlib.pyplot as plt
 import math
-import numpy as np
+import numpy as np 
 
 print "\nPlotting the results.."
 # Get raven_home directory
