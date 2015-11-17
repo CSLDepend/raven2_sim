@@ -137,12 +137,19 @@ def _generate_delay_code(trigger, t1, t2, usec):
             (trigger, t1, trigger, t2, usec)
     return code
 
-def _write_to_file(code, out_file, target_file_and_hook):
+def _write_to_file(code, param, exp_name, target_file_and_hook):
+    out_file = 'mfi2.txt'
+    param_file = 'mfi2_params.csv'
+
     with open(out_file, 'w') as outfile:
+        outfile.write('title:' + exp_name + '\n')
         outfile.write('location:' + target_file_and_hook + '\n')
         for i, line in enumerate(code):
             outfile.write('injection ' + str(i) + ':' + line + '\n')
-    return code
+
+    with open(param_file, 'w') as outfile:
+        for i, line in enumerate(param):
+            outfile.write(str(i) + ',' + line + '\n')
 
 def generate_stuck_fault_list():
     pre_trig = 'device0.runlevel == 3 &&'
@@ -165,22 +172,28 @@ def generate_stuck_fault_list():
 
 # network_layer.cpp faults
 def generate_xyz_dist_faults():
+    pre_trig = ''
     trigger = 'u.sequence'
-    t1 = '10'
-    t2 = '110'
-    dist = range(0, 2000, 10)
+    dist = ('2','20','100', '200', '500', '1000', '2000')
     code = []
+    param = []
     variable = ['u.delx[0]', 'u.dely[0]','u.delz[0]']
     for d in dist:
-        delta = str(float(d)/sqrt(3))
-        code.append(_generate_add_code(trigger,
-                t1, t2, variable, [delta, delta, delta]))
+        for t1 in range(10, 3000,1000):
+            for dt in range(1,15):
+                t2 = t1 + dt
+                delta = str(float(d)/sqrt(3))
+                code.append(_generate_add_code(pre_trig, trigger,
+                        t1, t2, variable, [delta, delta, delta]))
+                param.append(','.join(['distance',str(t1),str(dt),str(delta)]))
     pprint(code)
-    _write_to_file(code, 'mfi2_xyz_dist_faults.txt', 
+    print(len(code))
+    _write_to_file(code, param, 'mfi2_xyz_dist_faults', 
             'network_layer.cpp://MFI_HOOK')
 
 def generate_toggle_surgeon_mode():
     code = []
+    param = []
     pre_trig = ''
     trigger = 'u.sequence'
     t1 = '10'
@@ -189,6 +202,7 @@ def generate_toggle_surgeon_mode():
     value = ['u.sequence % 2 ? 0:1']
     code.append(_generate_ow_code(pre_trig, trigger,
                 t1, t2, variable, value))
+    param.append(','.join([variable,t1,t2,value]))
     pprint(code)
     _write_to_file(code, 'mfi2_toggle_surgeon_mode.txt', 
             'network_layer.cpp://MFI_HOOK')
@@ -254,6 +268,7 @@ def generate_network_layer_delay():
 def generate_rt_process_faults():
     pre_trig = ''
     code = []
+    param = []
     trigger = 'packet_num'
 
     variable = [['device0.mech[i].joint[SHOULDER].current_cmd'],
@@ -269,25 +284,23 @@ def generate_rt_process_faults():
             code.append(_generate_ow_code(pre_trig, trigger, 
                     t1, t2, var, val))'''
     # Injection parameters
-    outfile = open('./mfi2_params.csv', 'w')
-    i = 0;
     for var in [['device0.mech[i].joint[SHOULDER].current_cmd']]:
         for t1 in range(10,5000,500):
             for dt in range(1,20):
                 for val in range(-15000, 15000, 500):
                     t2 = t1 + dt
                     code.append(_generate_ow_code(pre_trig, trigger,t1, t2, var, [val]))
-                    outfile.write(str(i)+','+str(var)+','+str(t1)+','+str(dt)+','+str(val)+'\n')
-                    i = i + 1 
+                    param.append(','.join([str(var),str(t1),str(dt),str(val)]))
+                            
                      
-    outfile.close()
     pprint(code)
-    _write_to_file(code, 'mfi2_rt_process_faults.txt', 
+    _write_to_file(code, param, 'mfi2_rt_process_faults', 
             'rt_process_preempt.cpp://HOOK')
 
 def generate_rt_process_once_faults():
     pre_trig = ''
     code = []
+    param = []
     trigger = 'packet_num'
     vtype = ['int']
     variable = [['device0.mech[i].joint[SHOULDER].current_cmd']]
@@ -303,23 +316,21 @@ def generate_rt_process_once_faults():
             code.append(_generate_ow_code(pre_trig, trigger, 
                     t1, t2, var, val))'''
     # Injection parameters
-    outfile = open('./mfi2_params.csv', 'w')
-    i = 0;
     for var in variable:
         for t1 in range(10, 3000,1000):
             for dt in range(1,15):
                 for val in [-120000, -1000, 100, 1000, 120000]:#range(-12000, 15000, 1000):
                     t2 = t1 + dt
                     code.append(_generate_add_once_code(pre_trig, trigger,t1, t2, vtype, var, [val]))
-                    outfile.write(str(i)+','+str(var)+','+str(t1)+','+str(dt)+','+str(val)+'\n')
-                    i = i +1  
-    outfile.close()
+                    param.append(','.join([str(var),str(t1),str(dt),str(val)]))
+                            
     pprint(code)
-    _write_to_file(code, 'mfi2_rt_process_once_faults.txt', 
+    _write_to_file(code, param, 'mfi2_rt_process_once_faults', 
             'rt_process_preempt.cpp://HOOK')
 def generate_empty_test():
     code = [';']*100
-    _write_to_file(code, 'mfi2_empty_test.txt', 
+    param = ['']*100
+    _write_to_file(code, param, 'mfi2_empty_test', 
             'rt_process_preempt.cpp://HOOK')
 
 def _compute_euclidean_distance(tsp):
@@ -387,10 +398,10 @@ def generate_test():
 
 #generate_network_layer_skip()
 #generate_network_layer_delay()
-#generate_xyz_dist_faults()
+generate_xyz_dist_faults()
 #generate_u_R_l_faults()
 #generate_rt_process_faults()
-generate_rt_process_once_faults()
+#generate_rt_process_once_faults()
 #generate_toggle_surgeon_mode()
 #generate_empty_test()
 #generate_r_faults()

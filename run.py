@@ -205,12 +205,14 @@ class Raven():
     def __quit(self): 
         """ Terminate all process started by _run_experiment() """
         # Restore changes to source code
+        """ TODO verify this later
         if self.curr_inj >= 0 and self.return_code == 1:
             cmd = 'mkdir /media/raven/My\ Passport/Logs/running_csv > /dev/null 2>&1'
             os.system(cmd)
             cmd = 'cp latest_run.csv /media/raven/My\ Passport/Logs/running_csv/injection' \
                     + str(self.curr_inj).zfill(4) + '.csv'
             os.system(cmd)
+        """
 
         if self.defines_changed:
             self.__restore_defines_h()
@@ -510,10 +512,7 @@ class Raven():
             for line in infile:
                 self.inj_line = line;
                 l = line.split(':')
-                if l[0].startswith('location'):
-                    file_name = l[1]
-                    mfi_hook = l[2]
-                elif l[0].startswith('injection'):
+                if l[0].startswith('injection'):
                     curr_inj = int(l[0].split(' ')[1])
                     self.curr_inj = curr_inj
                     if curr_inj >= self.starting_inj_num:
@@ -524,6 +523,13 @@ class Raven():
                         self._run_analyzer()
                         if self.curr_inj == self.end_inj_num:
                             break
+                elif l[0].startswith('location'):
+                    file_name = l[1]
+                    mfi_hook = l[2]
+                    logger.info("Location: %s:%s" % (file_name, mfi_hook))
+                elif l[0].startswith('title'):
+                    title = l[1]
+                    logger.info("Experiment Title: " + title)
                        
     
     def signal_handler(self, signal, frame):
