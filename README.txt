@@ -28,4 +28,4 @@ How to run
 ======================================
 1. After downloading the repository, rename the folder to "raven_2"
 2. Change the ROS_PACKAGE_PATH environment variable to the location of raven_2 folder
-3. Unzip the "new_test_3.csv" datafile in the ./teleop_data folder
+3. Run "tar zxvf ./teleop_data/new_test_data.tgz" to unzip the datafiles used by the packet generator
