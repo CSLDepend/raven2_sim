@@ -26,6 +26,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ======================================
 How to run
 ======================================
+Setting up the repository:
 1. After downloading the repository, rename the folder to "raven_2"
 2. Change the ROS_PACKAGE_PATH environment variable to the location of raven_2 folder
-3. Run "tar zxvf ./teleop_data/new_test_data.tgz" to unzip the datafiles used by the packet generator
+4. Run "tar zxvf ./teleop_data/new_test_data.tgz" to unzip the datafiles used by the packet generator
+
+Running RAVEN simulator
+1. Goto raven_2 folder:  "roscd raven_2"
+2. Simple simulator:     "python run.py sim 1 none"
+   Dynamic simulator:    "python run.py dyn_sim 1 none"
+   Robot /w packet-gen:  "python run.py rob 1 none"
+   Robot /w surgeon-gui: "python run.py rob 0 none" 
