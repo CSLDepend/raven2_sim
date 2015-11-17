@@ -79,8 +79,6 @@ class Raven():
         self.defines_bkup_file = raven_home + "/include/raven/defines_back.h"
         self.defines_chk_file = raven_home + "/include/raven/defines_last_run"
         self.master_file = './selected_injection.txt'
-        self.inj_param_file = './mfi2_params.csv'
-        self.inj_param_reader = ''
         self.inj_line = ''
         self.defines_changed = 0
         self.mfi_changed = 0
@@ -389,7 +387,7 @@ class Raven():
         writer4 = csv.writer(csvfile4,delimiter=',') 
         # Injection parameters
         # For rt_process_preempt:
-        csvfile5 = open('./mfi2_once_params.csv','r')
+        csvfile5 = open('./mfi2_params.csv','r')
         inj_param_reader = csv.reader(csvfile5)
         for line in inj_param_reader:
             #print line
@@ -526,8 +524,7 @@ class Raven():
                         self._run_analyzer()
                         if self.curr_inj == self.end_inj_num:
                             break
-        self.inj_param_file.close()
-                        
+                       
     
     def signal_handler(self, signal, frame):
         """ Signal handler to catch Ctrl+C to shutdown everything"""

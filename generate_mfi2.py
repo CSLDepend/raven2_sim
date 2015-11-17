@@ -303,7 +303,7 @@ def generate_rt_process_once_faults():
             code.append(_generate_ow_code(pre_trig, trigger, 
                     t1, t2, var, val))'''
     # Injection parameters
-    outfile = open('./mfi2_once_params.csv', 'w')
+    outfile = open('./mfi2_params.csv', 'w')
     i = 0;
     for var in variable:
         for t1 in range(10, 3000,1000):
