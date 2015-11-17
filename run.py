@@ -81,17 +81,21 @@ class Raven():
         self.master_file = './selected_injection.txt'
         self.inj_param_file = './mfi2_params.csv'
         self.inj_param_reader = ''
-        inj = injection.split(':')
-        self.injection = inj[0]
-        self.curr_inj = -1
         self.inj_line = ''
         self.defines_changed = 0
         self.mfi_changed = 0
         self.return_code = 0 #0 is normal, 1 is error
+        self.curr_inj = -1
+
+        inj = injection.split(':')
+        self.injection = inj[0]
+        self.starting_inj_num = 0
+        self.end_inj_num = -1 
         if len(inj) > 1:
-            self.starting_inj_num = int(inj[1])
-        else:
-            self.starting_inj_num = 0
+            param = inj[1].split('-')
+            self.starting_inj_num = int(param[0])
+            if len(param) > 1:
+                self.end_inj_num = int(param[1])
 
     def __change_defines_h(self):
         """ Modifies <raven_home>/include/raven/defines.h """
@@ -511,6 +515,8 @@ class Raven():
                         self._compile_raven()
                         self._run_experiment()
                         self._run_analyzer()
+                        if self.curr_inj == self.end_inj_num:
+                            break
         self.inj_param_file.close()
                         
     
