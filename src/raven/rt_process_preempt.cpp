@@ -360,7 +360,7 @@ static void *rt_process(void* )
 		  logging = 0;
 #endif
           //printf("ERROR: soft_estopped = %d\n",soft_estopped);
-          device0.runlevel = 0;		  
+          device0.runlevel = 0;
 		  /*r2_kill = 1;
 		  if (ros::ok()) ros::shutdown();
 		  return 0;*/
@@ -377,7 +377,7 @@ static void *rt_process(void* )
       //Fill USB Packet and send it out
       putUSBPackets(&device0); //disable usb for par port test
 #else
-#ifdef dyn_simulator 
+#ifdef dyn_simulator
       runlevel = currParams.runlevel;
       packet_num = currParams.last_sequence;
 	    //Send the DACs, mvel, and mpos to the simulator
