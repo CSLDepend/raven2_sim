@@ -369,6 +369,10 @@ class Raven():
         indices = [0,1,2,4,5,6,7]
         posi = ['X','Y','Z']
         if (self.curr_inj == 0):
+            try:
+                os.system('cp '+self.raven_home+'/error_log.csv '+self.raven_home+'/last_error_log.csv')
+            except:
+                pass
             csvfile4 = open(self.raven_home+'/error_log.csv','w')
             writer4 = csv.writer(csvfile4,delimiter=',') 
             # For rt_process_preempt:

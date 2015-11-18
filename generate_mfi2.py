@@ -174,7 +174,7 @@ def generate_stuck_fault_list():
 def generate_xyz_dist_faults():
     pre_trig = ''
     trigger = 'u.sequence'
-    dist = ('2','20','100', '200', '500', '1000', '2000')
+    dist = ('200', '500')#('2','20','100', '200', '500', '1000', '2000')
     code = []
     param = []
     variable = ['u.delx[0]', 'u.dely[0]','u.delz[0]']
