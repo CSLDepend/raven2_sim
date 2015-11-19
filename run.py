@@ -564,6 +564,7 @@ class Raven():
                 s = s + float(t1-t0)
                 print s
             print "Average experiment run time = " + str(float(s/n)) + " seconds\n"
+            time.sleep(0.001)
 
 # Main code starts here
 
