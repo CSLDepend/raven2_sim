@@ -235,18 +235,18 @@ plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t).savefig(raven_home+'/figure
 # Log the results
 indices = [0,1,2,4,5,6,7]
 posi = ['X','Y','Z']
-if mode == 0:
+if mode == '0':
 	output_file = raven_home+'/fault_free_log.csv'
-if mode == 1:
+if mode == '1':
 	output_file = raven_home+'/error_log.csv'
 	
 # Write the headers for new file
 if not(os.path.isfile(output_file)):
 	csvfile4 = open(output_file,'w')
 	writer4 = csv.writer(csvfile4,delimiter=',') 
-	if mode == 0:
+	if mode == '0':
 		output_line = 'Num_Packets'+','
-	if mode == 1:
+	if mode == '1':
 	    output_line = 'Variable, Start, Duration, Value, Num_Packets, Errors, '
 	for i in range(0,len(mpos)):
 		output_line = output_line + 'err_mpos' + str(indices[i]) + ','
@@ -257,7 +257,7 @@ if not(os.path.isfile(output_file)):
 			output_line = output_line + 'err_pos' + str(posi[i])
 		else:
 			output_line = output_line + 'err_pos' + str(posi[i]) + ','
-	if mode == 1:
+	if mode == '1':
 		output_line = output_line + ', Jump?'
 	writer4.writerow(output_line.split(',')) 
 	csvfile4.close()
@@ -267,7 +267,7 @@ csvfile4 = open(output_file,'a')
 writer4 = csv.writer(csvfile4,delimiter=',') 
 
 # For faulty run, write Injection parameters
-if mode == 1:
+if mode == '1':
 	csvfile5 = open('./mfi2_params.csv','r')
 	inj_param_reader = csv.reader(csvfile5)
 	for line in inj_param_reader:
@@ -282,7 +282,7 @@ if mode == 1:
 output_line = str(len(mpos[0])) + ','
 
 # For faulty run, write error messages and see if a jump happened
-if mode == 1:
+if mode == '1':
 	# Error messages
 	gold_msgs = [s for s in gold_err if s]
 	err_msgs = [s for s in err if s]
@@ -312,7 +312,7 @@ for i in range(0,len(pos)):
 		output_line = output_line + str(pos_error[i])+','
 
 # For faulty run, see if a jump happened
-if mode == 1:
+if mode == '1':
 	output_line = output_line + ', '+ ''
 
 writer4.writerow(output_line.split(','))    

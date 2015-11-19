@@ -454,11 +454,9 @@ class Raven():
             self._run_mfi_experiment()
         elif self.injection == 'mfi2':
             self._run_mfi2_experiment()
-            os.system('python '+raven_home+'/parse_plot.py 1')
         else:
             self._compile_raven()
             self._run_experiment()
-            os.system('python '+raven_home+'/parse_plot.py 0')
 
 # Main code starts here
 
