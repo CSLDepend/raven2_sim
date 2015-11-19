@@ -18,6 +18,7 @@
 #build files, cfg files, generated msg files
 build/**
 msg_gen/**
+exp_result/**
 
 .project
 .cproject
