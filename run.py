@@ -34,7 +34,6 @@ import logging
 import csv
 import matplotlib.pyplot as plt
 import math
-from parse_plot import * 
 import time
 
 def rsp_func():
@@ -348,103 +347,7 @@ class Raven():
                 data = ''
         self.__quit()
   
-
-    def _run_analyzer(self):       
-        # Open Log files
-        #csvfile1 = open(raven_home+'/robot_run.csv')
-        #reader1 = csv.reader(x.replace('\0', '') for x in csvfile1)
-        csvfile2 = open(raven_home+'/golden_run/latest_run.csv')
-        reader2 = csv.reader(x.replace('\0', '') for x in csvfile2)
-        # Parse the robot run
-        #orig_mpos, orig_mvel, orig_dac, orig_jpos, orig_pos, orig_err, orig_packets, orig_t = parse_latest_run(reader1)
-        # Parse the golden simulator run
-        gold_mpos, gold_mvel, gold_dac, gold_jpos, gold_pos, gold_err, gold_packets, gold_t = parse_latest_run(reader2)
-
-        # Parse the latest run of simulator
-        csvfile3 = open(raven_home+'/latest_run.csv')
-        reader3 = csv.reader(x.replace('\0', '') for x in csvfile3)
-        mpos, mvel, dac, jpos, pos, err, packets, t = parse_latest_run(reader3)
-        # Close files
-        #csvfile1.close()
-        csvfile2.close()
-        csvfile3.close()
-      
-        # Log the injection results
-        indices = [0,1,2,4,5,6,7]
-        posi = ['X','Y','Z']
-        if (self.curr_inj == 0):
-            try:
-                os.system('cp '+self.raven_home+'/error_log.csv '+self.raven_home+'/last_error_log.csv')
-            except:
-                pass
-            csvfile4 = open(self.raven_home+'/error_log.csv','w')
-            writer4 = csv.writer(csvfile4,delimiter=',') 
-            # For rt_process_preempt:
-            output_line = 'Variable, Start, Duration, Value, Num_Packets ,Errors, '
-            for i in range(0,len(mpos)):
-                output_line = output_line + 'err_mpos' + str(indices[i]) + ','
-                output_line = output_line + 'err_mvel' + str(indices[i]) + ','
-                output_line = output_line + 'err_jpos' + str(indices[i]) + ','
-            for i in range(0,len(pos)):
-                if (i == len(pos)-1):
-		            output_line = output_line + 'err_pos' + str(posi[i])
-                else:
-                    output_line = output_line + 'err_pos' + str(posi[i]) + ','
-            writer4.writerow(output_line.split(',')) 
-            csvfile4.close()
         
-        csvfile4 = open(self.raven_home+'/error_log.csv','a')
-        writer4 = csv.writer(csvfile4,delimiter=',') 
-        # Injection parameters
-        # For rt_process_preempt:
-        csvfile5 = open('./mfi2_params.csv','r')
-        inj_param_reader = csv.reader(csvfile5)
-        for line in inj_param_reader:
-            #print line
-            if (int(line[0]) == self.curr_inj):
-                param_line = line[1:]
-                break 
-        csvfile5.close()
-        '''var_line = self.inj_line.split('{')[1].split('}')[0]
-        var = var_line.split('=')[0]
-        val = var_line.split('=')[1].split(';')[0]
-        start = self.inj_line.split('>=')[1].split('&&')[0]
-        end = self.inj_line.split('<')[1].split(')')[0]
-        duration = str(abs(int(start) - int(end)))
-        param_line = [var,start, duration, val]'''
-        print param_line
-
-        # Len of Trajectory
-        output_line = str(len(mpos[0]))+','
-        # Error messages
-        gold_msgs = [s for s in gold_err if s]
-        err_msgs = [s for s in err if s]
-        # If there are any errors or different errors, print them all
-        if err_msgs or not(err_msgs == gold_msgs):  
-            for e in set(err_msgs):
-                output_line = output_line + '#Packet ' + str(packets[err.index(e)]) +': ' + e
-        output_line = output_line +  ','
-        
-        # Trajectory errors 
-        mpos_error = [];
-        mvel_error = [];
-        jpos_error = [];
-        pos_error = [];
-        traj_len = min(len(mpos[0]),len(gold_mpos[0]))        
-        for i in range(0,len(mpos)):		    
-		    mpos_error.append(float(sum(abs(np.array(mpos[i][1:traj_len])-np.array(gold_mpos[i][1:traj_len]))))/traj_len)
-		    mvel_error.append(float(sum(abs(np.array(mvel[i][1:traj_len])-np.array(gold_mvel[i][1:traj_len]))))/traj_len)
-		    jpos_error.append(float(sum(abs(np.array(jpos[i][1:traj_len])-np.array(gold_jpos[i][1:traj_len]))))/traj_len)
-		    output_line = output_line + str(mpos_error[i]) + ', '+ str(mvel_error[i]) +', '+ str(jpos_error[i])+',' 
-        for i in range(0,len(pos)):    
-            pos_error.append(float(sum(abs(np.array(pos[i][1:traj_len])-np.array(gold_pos[i][1:traj_len]))))/traj_len)
-            if (i == len(pos)-1):
-                output_line = output_line + str(pos_error[i])
-            else:
-                output_line = output_line + str(pos_error[i])+','
-        writer4.writerow(param_line + output_line.split(','))    
-        csvfile4.close()
-          
     def _run_mfi_experiment(self):
         """ Run mfi experiment according to the master_file """
         cur_inj = -1
@@ -528,7 +431,6 @@ class Raven():
                         logger.info(line)
                         self._compile_raven()
                         self._run_experiment()
-                        self._run_analyzer()
                         if self.curr_inj == self.end_inj_num:
                             break
                 elif l[0].startswith('location'):
@@ -552,18 +454,11 @@ class Raven():
             self._run_mfi_experiment()
         elif self.injection == 'mfi2':
             self._run_mfi2_experiment()
+            os.system('python '+raven_home+'/parse_plot.py 1')
         else:
-            s = 0
-            n = 200
-            for i in range(0,n):
-                t0 = time.time()
-                self._compile_raven()
-                self._run_experiment()
-                os.system('python '+raven_home+'/plot2.py log')
-                t1 = time.time()
-                s = s + float(t1-t0)
-                print float(t1-t0)
-            print "Average experiment run time = " + str(float(s/n)) + " seconds\n"
+            self._compile_raven()
+            self._run_experiment()
+            os.system('python '+raven_home+'/parse_plot.py 0')
 
 # Main code starts here
 

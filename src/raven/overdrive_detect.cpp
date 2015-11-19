@@ -62,7 +62,6 @@ int overdriveDetect(struct device *device0)
             // Kill current if greater than MAX_INST_DAC.  Probably indicates a problem.
             if (abs(_joint->current_cmd) > MAX_INST_DAC)
             {
-                log_msg("Instant i command too high. Joint type: %d DAC:%d \t tau:%0.3f\n", _joint->type, _joint->current_cmd, _joint->tau_d);
 #ifdef save_logs
 				log_file("Error: Instant i command too high. Joint type: %d DAC:%d \t tau:%0.3f\n", _joint->type, _joint->current_cmd, _joint->tau_d);
 #endif

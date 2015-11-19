@@ -557,8 +557,8 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
 #ifdef detector
 	for (int i = 0; i < 3; i++) 
 	{
-		msg_ravenstate.sim_mpos[i] = sim_mpos[i];
-		msg_ravenstate.sim_mvel[i] = sim_mvel[i];
+		msg_ravenstate.sim_mpos[i] = sim_mpos[i] RAD2DEG;
+		msg_ravenstate.sim_mvel[i] = sim_mvel[i] RAD2DEG;
 	}
 #endif
     // Publish the raven data to ROS
