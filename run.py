@@ -35,6 +35,7 @@ import csv
 import matplotlib.pyplot as plt
 import math
 from parse_plot import * 
+from time import time
 
 def rsp_func():
     """ Get response from user to check if raven_home directory is correct"""
@@ -107,10 +108,10 @@ class Raven():
 
         for line in bkup_fp:
             if line.startswith('//#define simulator'):
-                if self.mode == 'sim' or self.mode == 'dyn_sim':
+                if (self.mode == 'sim' or self.mode == 'dyn_sim') and not(self.mode == 'detect'):
                     line = line.lstrip('//')
             elif line.startswith('//#define dyn_simulator'):
-                if self.mode == 'dyn_sim':
+                if self.mode == 'dyn_sim' or self.mode == 'detect':
                     line = line.lstrip('//')
             elif line.startswith('//#define packetgen'):
                 if self.packet_gen == '1':
@@ -118,6 +119,9 @@ class Raven():
             elif line.startswith('//#define mfi'):
                 if self.injection == 'mfi' or self.injection == 'mfi2': 
                     line = line.lstrip('//')
+            elif line.startswith('//#define detector'):
+                if self.injection == 'detect': 
+                    line = line.lstrip('//')          
             src_fp.write(line)
         src_fp.close()
         bkup_fp.close()
@@ -322,7 +326,7 @@ class Raven():
         time.sleep(0.2);
 
         # Call Dynamic Simulator
-        if self.mode == "dyn_sim":
+        if self.mode == "dyn_sim" or self.mode == "detect":
                 self.dynSim_proc = subprocess.Popen(dynSimTask, env=env, shell=True, preexec_fn=os.setsid)
                 #os.system("cd ./Li_DYN && make -j && ./two_arm_dyn")
                 print "Started the dynamic simulator.."
@@ -550,9 +554,14 @@ class Raven():
             self._run_mfi2_experiment()
         else:
             self._compile_raven()
-            self._run_experiment()
-            os.system('python '+raven_home+'/plot2.py')
-
+            s = 0
+            for i in range(0,100):
+                t0 = time()
+                self._run_experiment()
+                os.system('python '+raven_home+'/plot2.py log')
+                t1 = time()
+                s = s + (t1-t0)
+            print "Average run time = " + str(s/200) + " seconds\n"
 
 # Main code starts here
 
@@ -568,7 +577,7 @@ raven_home = splits[0]
 golden_home = raven_home+'/golden_run'
 print '\nRaven Home Found to be: '+ raven_home
 #rsp_func()
-usage = "Usage: python run.py <sim|dyn_sim|rob> <1:packet_gen|0:gui> <none|mfi:start#|mfi2:start#>"
+usage = "Usage: python run.py <sim|dyn_sim|rob|detect}> <1:packet_gen|0:gui> <none|mfi:start#|mfi2:start#>"
 
 # Parse the arguments
 try:
@@ -584,6 +593,8 @@ elif mode == "dyn_sim":
     print "Run Dynamic Simulation"
 elif mode == "rob": 
     print "Run Real Robot"
+elif mode == "detect": 
+    print "Run Real Robot with Dynamic Model Detector"
 else:
     print usage
     sys.exit(2)

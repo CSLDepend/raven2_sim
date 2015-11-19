@@ -119,6 +119,24 @@ int updateDeviceState(struct param_pass *currParams, struct param_pass *rcvdPara
 			} 	    
 		}
 #endif
+#ifdef detector
+		if (currParams->last_sequence == 1)
+		{
+			log_msg("I am initizaling jpos, jvel, mpos, and mvel\n");
+		    for (int i = 0; i < NUM_MECH; i++)
+			{
+				for (int j = 0; j < 8; j++)
+				{
+				    device0->mech[i].joint[j].jpos_d = rcvdParams->jpos_d[i*8+j];
+					device0->mech[i].joint[j].jvel_d = rcvdParams->jvel_d[i*8+j];
+					device0->mech[i].joint[j].mpos = rcvdParams->mpos_d[i*8+j];			
+					device0->mech[i].joint[j].mvel = rcvdParams->mvel_d[i*8+j];	
+					device0->mech[i].joint[j].mpos_d = rcvdParams->mpos_d[i*8+j];			
+					device0->mech[i].joint[j].mvel_d = rcvdParams->mvel_d[i*8+j];			
+				}			
+			} 	    
+		}
+#endif
         for (int i = 0; i < NUM_MECH; i++)
         {
             device0->mech[i].pos_d.x = rcvdParams->xd[i].x;

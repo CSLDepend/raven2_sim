@@ -76,6 +76,12 @@ struct u_struct {
 	double mpos[16];
 	double mvel[16];
 #endif
+#ifdef detector
+	double jpos[16];
+	double jvel[16];
+	double mpos[16];
+	double mvel[16];
+#endif
 #else
         double Qx[2];
         double Qy[2];

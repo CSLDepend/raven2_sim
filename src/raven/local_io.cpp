@@ -74,6 +74,10 @@ extern struct offsets offsets_r;
 #ifdef save_logs
 extern char err_str[1024];
 #endif
+#ifdef detector
+extern double sim_mpos[3];
+extern double sim_mvel[3];
+#endif
 /**
  * \brief Initialize data arrays to zero and create mutex
  *
@@ -235,7 +239,6 @@ void teleopIntoDS1(struct u_struct *us_t)
 	if (data1.rd[i].grasp>graspmax) data1.rd[i].grasp=graspmax;
 	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
  
-#ifdef simulator 
     // Get initial joint positions from input, assign them to the desired jpos
 	if (us_t->sequence == 1)	
     {    
@@ -246,9 +249,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 			data1.mpos_d[j] = (us_t->mpos[j])*M_PI/180;
 			data1.mvel_d[j] = (us_t->mvel[j])*M_PI/180; 		   
 		}                 
-	    /*log_msg("Local IO joint positions: (%f,%f,%f,%f,%f,%f,%f\n%f,%f,%f,%f,%f,%f,%f\n)", data1.jpos_d[0]*r2d, data1.jpos_d[1]*r2d, data1.jpos_d[2]*d2r,data1.jpos_d[4]*r2d, data1.jpos_d[5]*r2d, data1.jpos_d[6]*r2d,data1.jpos_d[7]*r2d, data1.jpos_d[8]*r2d, data1.jpos_d[9]*r2d,data1.jpos_d[10]*d2r, data1.jpos_d[12]*r2d, data1.jpos_d[13]*r2d,data1.jpos_d[14]*r2d, data1.jpos_d[15]*r2d);*/
 	}
-#endif
 #endif
     }
 
@@ -552,6 +553,13 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
 		if ((err_str[i] != '\n') && (err_str[i] != '\0'))
 	    	msg_ravenstate.err_msg[i] = err_str[i]; 
     err_str[0] = '\0';
+#endif
+#ifdef detector
+	for (int i = 0; i < 3; i++) 
+	{
+		msg_ravenstate.sim_mpos[i] = sim_mpos[i];
+		msg_ravenstate.sim_mvel[i] = sim_mvel[i];
+	}
 #endif
     // Publish the raven data to ROS
     pub_ravenstate.publish(msg_ravenstate);

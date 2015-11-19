@@ -117,7 +117,10 @@ int first_run = 0;
 int runlevel = 0;
 int packet_num = 111;
 #endif
-
+#ifdef detector
+double sim_mpos[3];
+double sim_mvel[3];
+#endif
 
 pthread_t rt_thread;
 pthread_t net_thread;
@@ -376,7 +379,8 @@ static void *rt_process(void* )
 #ifndef simulator
       //Fill USB Packet and send it out
       putUSBPackets(&device0); //disable usb for par port test
-#else
+#endif
+
 #ifdef dyn_simulator
       runlevel = currParams.runlevel;
       packet_num = currParams.last_sequence;
@@ -408,6 +412,24 @@ static void *rt_process(void* )
 					  device0.mech[i].joint[Z_INS].current_cmd);
 				    write(wrfd, sim_buf, sizeof(sim_buf));
 				//printf("Packet %d: Sent:\n%s\n",currParams.last_sequence,sim_buf);
+#ifdef detector
+				// Read estimates from FIFO
+				read(rdfd, sim_buf, sizeof(sim_buf));
+				// Write the results to the screen
+				std::istringstream ss(sim_buf);
+				ss >> sim_mpos[0] >> sim_mvel[0] >> sim_mpos[1] >> sim_mvel[1] >> sim_mpos[2] >> sim_mvel[2];
+		        //printf("\nRecieved: %s\n",sim_buf);
+#endif
+#ifndef no_logging
+        printf("Estimated (mpos,mvel):(%f, %f),(%f, %f),(%f, %f)\n",
+				device0->mech[i].joint[SHOULDER].mpos,
+				device0->mech[i].joint[SHOULDER].mvel,
+				device0->mech[i].joint[ELBOW].mpos,
+				device0->mech[i].joint[ELBOW].mvel,
+				device0->mech[i].joint[Z_INS].mpos,
+				device0->mech[i].joint[Z_INS].mvel);
+#endif
+
 #ifndef no_logging
 				    printf("\nPacket %d:\nSent DACs: %d,%d,%d, estop = %d\n",
 	 					currParams.last_sequence,
@@ -439,7 +461,6 @@ static void *rt_process(void* )
   	   if (ros::ok()) ros::shutdown();
   		 return 0;
     }*/
-#endif
 #endif
       //Publish current raven state
       publish_ravenstate_ros(&device0,&currParams);   // from local_io

@@ -148,7 +148,7 @@ def plot_mpos(gold_mpos, orig_mpos, mpos, gold_mvel, orig_mvel, mvel, gold_t, or
 		axarr1[j, 1].plot(gold_mvel[j], 'g')
 		axarr1[j, 1].plot(mvel[j], 'r')
 		axarr1[j, 0].set_ylabel('Motor '+str(indices[j]))
-	plt.show()
+	#plt.show()
 	return f1
   
 def plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t):
@@ -160,7 +160,7 @@ def plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t):
 		axarr2[j].plot(orig_dac[j], 'k')
 		axarr2[j].plot(dac[j], 'r')
 		axarr2[j].set_ylabel('Joint '+str(indices[j]))
-	plt.show()
+	#plt.show()
 	return f2
 
 def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t):
@@ -172,7 +172,7 @@ def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t):
 		axarr3[j].plot(orig_jpos[j], 'k')
 		axarr3[j].plot(jpos[j], 'r')
 		axarr3[j].set_ylabel('Joint '+str(indices[j]))
-	plt.show()
+	#plt.show()
 	return f3
 
 def plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t):
@@ -185,5 +185,5 @@ def plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t):
 		axarr4[j].plot(orig_pos[j], 'k')
 		axarr4[j].plot(pos[j], 'r')
 		axarr4[j].set_ylabel(pos_labels[j])
-	plt.show()
+	#plt.show()
 	return f4

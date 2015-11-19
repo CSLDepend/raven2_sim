@@ -39,7 +39,7 @@ robot_state = 0;
 
 script, mode = argv
 simulator = 0
-if mode == "sim" or mode == "dyn_sim":
+if mode == "sim" or mode == "dyn_sim" or mode == 'detect':
     simulator = 1
     print "Packet Generator for Simulation"
 elif mode == "rob": 
