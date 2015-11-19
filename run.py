@@ -553,18 +553,17 @@ class Raven():
         elif self.injection == 'mfi2':
             self._run_mfi2_experiment()
         else:
-            self._compile_raven()
             s = 0
             n = 100
             for i in range(0,n):
                 t0 = time.time()
+                self._compile_raven()
                 self._run_experiment()
                 os.system('python '+raven_home+'/plot2.py log')
                 t1 = time.time()
                 s = s + float(t1-t0)
-                print s
+                print float(t1-t0)
             print "Average experiment run time = " + str(float(s/n)) + " seconds\n"
-            time.sleep(0.001)
 
 # Main code starts here
 
