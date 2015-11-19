@@ -23,10 +23,10 @@ def plot_hist(all_data):
 def parse_error_log():
     """ Analyze the xyz positions from the CSV files"""
 
-    log_file = 'error_log.csv'
+    log_file = 'fault_free.csv'
     header = []
     all_data = {}
-    with open(log_file, 'rb') as csvfile:
+    with open(log_file, 'rU') as csvfile:
         reader = csv.reader(csvfile, delimiter=",")
         for i, line in enumerate(reader):
             if i == 0:

@@ -80,7 +80,7 @@ if mode == "log":
 		csvfile4 = open(raven_home+'/fault_free_log.csv','w')
 		writer4 = csv.writer(csvfile4,delimiter=',') 
 		# For rt_process_preempt:
-		output_line = 'Num_Packets'
+		output_line = 'Num_Packets'+','
 		for i in range(0,len(mpos)):
 			output_line = output_line + 'err_mpos' + str(indices[i]) + ','
 			output_line = output_line + 'err_mvel' + str(indices[i]) + ','

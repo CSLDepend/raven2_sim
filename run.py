@@ -554,7 +554,7 @@ class Raven():
             self._run_mfi2_experiment()
         else:
             s = 0
-            n = 100
+            n = 200
             for i in range(0,n):
                 t0 = time.time()
                 self._compile_raven()
