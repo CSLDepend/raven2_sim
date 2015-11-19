@@ -555,7 +555,7 @@ class Raven():
         else:
             self._compile_raven()
             s = 0
-            n = 1
+            n = 100
             for i in range(0,n):
                 t0 = time.time()
                 self._run_experiment()
