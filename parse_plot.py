@@ -83,17 +83,17 @@ def parse_latest_run(reader):
 				packet_nums.append(packet_no)
 				time.append(float(line[0])-t0)
 				for j in range(0,7):			
-					est_dmpos[j].append(float(line[dmpos_index+indices[j]])*math.pi/180)
-					est_mpos[j].append(float(line[mpos_index+indices[j]])*math.pi/180)
-					est_mvel[j].append(float(line[mvel_index+indices[j]])*math.pi/180)
+					est_dmpos[j].append(float(line[dmpos_index+indices[j]]))#*math.pi/180)
+					est_mpos[j].append(float(line[mpos_index+indices[j]]))#*math.pi/180)
+					est_mvel[j].append(float(line[mvel_index+indices[j]]))#*math.pi/180)
 				for j in range(0,7):
 					est_dac[j].append(float(line[dac_index+indices[j]]))
 				for j in range(0,7):
-					est_djpos[j].append(float(line[djpos_index+indices[j]])*math.pi/180)
-					est_jpos[j].append(float(line[jpos_index+indices[j]])*math.pi/180)
+					est_djpos[j].append(float(line[djpos_index+indices[j]]))#*math.pi/180)
+					est_jpos[j].append(float(line[jpos_index+indices[j]]))#*math.pi/180)
 				for j in range(0,3):
-					est_dpos[j].append(float(line[dpos_index+indices[j]])*math.pi/180)
-					est_pos[j].append(float(line[pos_index+indices[j]])*math.pi/180)
+					est_dpos[j].append(float(line[dpos_index+indices[j]])/1000)#*math.pi/180)
+					est_pos[j].append(float(line[pos_index+indices[j]])/1000)#*math.pi/180)
 				try:			
 					err_msg.append(str(line[err_index]))
 				except:
@@ -180,7 +180,7 @@ def plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t):
 	indices = [0,1,2,4,5,6,7]
 	f4, axarr4 = plt.subplots(3, 1, sharex=True)
 	axarr4[0].set_title("End-Effector Positions (Gold Arm)")
-	pos_labels = ['X','Y','Z']
+	pos_labels = ['X Pos(mm)','Y Pos(mm)','Z Pos(mm)']
 	for j in range(0,3):
 		axarr4[j].plot(gold_pos[j], 'g')
 		axarr4[j].plot(orig_pos[j], 'k')
@@ -198,7 +198,7 @@ raven_home = splits[0]
 
 # Parse the arguments
 try:
-    script, mode  = argv
+    script, mode, inj_num  = argv
 except:
     print "Error: missing parameters"
     print 'python plot2.py 0|1'
@@ -219,7 +219,7 @@ gold_mpos, gold_mvel, gold_dac, gold_jpos, gold_pos, gold_err, gold_packets, gol
 # Parse the latest run of simulator
 csvfile3 = open(raven_home+'/latest_run.csv')
 reader3 = csv.reader(x.replace('\0', '') for x in csvfile3)
-mpos, mvel, dac, jpos, pos, err, packet_nums, t = parse_latest_run(reader3)
+mpos, mvel, dac, jpos, pos, err, packets, t = parse_latest_run(reader3)
 
 # Close files
 csvfile1.close()
@@ -272,7 +272,7 @@ if mode == '1':
 	inj_param_reader = csv.reader(csvfile5)
 	for line in inj_param_reader:
 		#print line
-		if (int(line[0]) == self.curr_inj):
+		if (int(line[0]) == int(inj_num)):
 			param_line = line[1:]
 			break 
 	csvfile5.close()
@@ -313,7 +313,33 @@ for i in range(0,len(pos)):
 
 # For faulty run, see if a jump happened
 if mode == '1':
-	output_line = output_line + ', '+ ''
+	output_line = output_line + ', '
+	csvfile6 = open('./fault_free_range.csv','rU')
+	range_reader = csv.reader(x.replace('\0', '') for x in csvfile6)
+	lows = []
+	highs = []
+	for line in range_reader:
+		if line[0].find("-CI") > 0:
+			lows = line[1:]
+		if line[0].find("+CI") > 0:
+			highs = line[1:]
+		if line[0].find("Num") > 0:
+			break
+	csvfile6.close()
+	i = 0
+	for i in range(0,len(mpos_error)):		
+		if (mpos_error[i] < float(lows[i*3])) or (mpos_error[i] > float(highs[i*3])):
+			output_line = output_line + 'MPOS '+ str(indices[i]) + ';'
+		if (mvel_error[i] < float(lows[i*3+1])) or (mvel_error[i] > float(highs[i*3+1])): 
+			output_line = output_line + 'MVEL ' + str(indices[i]) + ';'
+		if (jpos_error[i] < float(lows[i*3+2])) or (jpos_error[i] > float(highs[i*3+2])): 
+			output_line = output_line + 'JPOS ' + str(indices[i]) + ';'
+	for i in range(0,3):
+		if (pos_error[i] < float(lows[i-3*len(mpos_error)])) or (pos_error[i] > float(highs[i-3*len(mpos_error)])):
+			output_line = output_line + 'POS '+ str(posi[i]) + ';' 
 
-writer4.writerow(output_line.split(','))    
+if mode == '0':
+	writer4.writerow(output_line.split(','))    
+if mode == '1':
+	writer4.writerow(param_line+output_line.split(','))    
 csvfile4.close()

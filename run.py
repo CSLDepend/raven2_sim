@@ -454,6 +454,7 @@ class Raven():
                         logger.info(line)
                         self._compile_raven()
                         self._run_experiment()
+                        os.system("python parse_plot.py 1 "+str(self.curr_inj))
                         if self.curr_inj == self.end_inj_num:
                             break
                 elif l[0].startswith('location'):
@@ -481,6 +482,7 @@ class Raven():
         else:
             self._compile_raven()
             self._run_experiment()
+            os.system("python parse_plot.py 0 -1")
 
 # Main code starts here
 
