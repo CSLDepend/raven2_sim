@@ -5,10 +5,10 @@ import math
 import shelve
 from statistics import mean, stdev
 from operator import add, sub, mul
+from franges import frange
 import matplotlib.pyplot as plt
 
-
-shelve_file = 'data.shelve'
+shelve_file = 'faultfree.shelve'
 # Main Code Starts Here
 def parse_latest_run(reader):
 
@@ -90,22 +90,10 @@ def parse_latest_run(reader):
     print len(est_mpos[0])
     return est_mpos, est_mvel, est_dac, est_jpos, est_pos, err_msg, packet_nums, time 
 
-def plot_pos(gold_pos, orig_pos, pos):
-    f4, axarr4 = plt.subplots(3, 1, sharex=True)
-    axarr4[0].set_title("End-Effector Positions (Gold Arm)")
-    pos_labels = ['X','Y','Z']
-    for j in range(0,3):
-        axarr4[j].plot(gold_pos[j], 'g')
-        axarr4[j].plot(orig_pos[j], 'k')
-        axarr4[j].plot(pos[j], 'r')
-        axarr4[j].set_ylabel(pos_labels[j])
-    plt.show()
-    return f4
-
-def plot_pos_stdev(pos_stdev, pos_mean):
+def plot_pos(pos_stdev, pos_mean):
     f4, axarr4 = plt.subplots(3, 2, sharex=True)
     axarr4[0][0].set_title("End-Effector Positions (STDEV)")
-    axarr4[0][1].set_title("End-Effector Positions (MEAN +- STDEV)")
+    axarr4[0][1].set_title("End-Effector Positions (MEAN +- 2.58*STDEV)")
     pos_labels = ['X','Y','Z']
     #plot stdev
     for j in range(0,3):
@@ -118,7 +106,23 @@ def plot_pos_stdev(pos_stdev, pos_mean):
     plt.show()
     return f4
 
-def _compute(all_files):
+def plot_mpos(pos_stdev, pos_mean):
+    f4, axarr4 = plt.subplots(3, 2, sharex=True)
+    axarr4[0][0].set_title("Motor Positions (STDEV)")
+    axarr4[0][1].set_title("Motor Positions (MEAN +- 2.58STDEV)")
+    pos_labels = ['MPOS0','MPOS1','MPOS2']
+    #plot stdev
+    for j in range(0,3):
+        axarr4[j][0].plot(pos_stdev[j], 'g')
+        axarr4[j][0].set_ylabel(pos_labels[j])
+    #plot Mean +- stdev
+    for j in range(0,3):
+        axarr4[j][1].plot(map(add,pos_mean[j], map(lambda x:x*2.58,pos_stdev[j])), 'g')
+        axarr4[j][1].plot(map(sub,pos_mean[j], map(lambda x:x*2.58,pos_stdev[j])), 'r')
+    plt.show()
+    return f4
+
+def _compute_mean_stdev(all_files):
     size = 3000
     all_x = []
     all_y = []
@@ -181,6 +185,89 @@ def _compute(all_files):
     myshelve['all_mpos_stdev'] = all_mpos_stdev
     myshelve.close()
 
+def compute_by_packet(all_files):
+    # Open each file and analyze
+    if os.path.isfile(shelve_file):
+        myshelve = shelve.open(shelve_file)
+        all_pos_mean = myshelve['all_pos_mean']
+        all_pos_stdev = myshelve['all_pos_stdev']
+        all_mpos_mean = myshelve['all_mpos_mean']
+        all_mpos_stdev = myshelve['all_mpos_stdev']
+    else:
+        #_compute_mean(all_files)
+        _compute_mean_stdev(all_files)
+        myshelve = shelve.open(shelve_file)
+        all_pos_mean = myshelve['all_pos_mean']
+        all_pos_stdev = myshelve['all_pos_stdev']
+        all_mpos_mean = myshelve['all_mpos_mean']
+        all_mpos_stdev = myshelve['all_mpos_stdev']
+
+    # Plot
+    plot_pos(all_pos_stdev, all_pos_mean)
+    plot_mpos(all_mpos_stdev, all_mpos_mean)
+
+def _get_delta(l):
+    return map(sub,l[1:],l[:-1])
+
+def _get_stats(l):
+    return min(l), max(l), mean(l), stdev(l)
+
+def compute_delta_t(all_files):
+    """Compute the change of variables between time t and t+1"""
+
+    mpos_delta = [[],[],[]]
+    mvel_delta = [[],[],[]]
+    jpos_delta = [[],[],[]]
+    pos_delta = [[],[],[]]
+
+    for f in all_files:
+        with open(f) as infile:
+            reader = csv.reader(x.replace('\0', '') for x in infile)
+            mpos, mvel, dac, jpos, pos, err, packet_nums, t = parse_latest_run(reader)
+            for i in range(0,3):
+                """Compute for the first 3 degree of freedom"""
+                mpos_delta[i].extend(_get_delta(mpos[i]))
+                mvel_delta[i].extend(_get_delta(mvel[i]))
+                jpos_delta[i].extend(_get_delta(jpos[i]))
+                pos_delta[i].extend(_get_delta(pos[i]))
+    with open('stats', 'w') as outfile:
+        outfile.write('min, max, mean, stdev\n')
+        for i in range(0,3):
+            lmin, lmax, lmean, lstdev = _get_stats(mpos_delta[i])
+            outfile.write('mpos%d, %f, %f, %f, %f\n' % 
+                    (i, lmin, lmax, lmean, lstdev))
+            lmin, lmax, lmean, lstdev = _get_stats(mvel_delta[i])
+            outfile.write('mpos%d, %f, %f, %f, %f\n' % 
+                    (i, lmin, lmax, lmean, lstdev))
+            lmin, lmax, lmean, lstdev = _get_stats(jpos_delta[i])
+            outfile.write('mpos%d, %f, %f, %f, %f\n' % 
+                    (i, lmin, lmax, lmean, lstdev))
+            lmin, lmax, lmean, lstdev = _get_stats(pos_delta[i])
+            outfile.write('mpos%d, %f, %f, %f, %f\n' % 
+                    (i, lmin, lmax, lmean, lstdev))
+
+            """
+            fig = plt.figure()
+            ax = fig.add_subplot(411, title='MPOS')
+            bx = fig.add_subplot(412, title='MVEL')
+            cx = fig.add_subplot(413, title='JPOS')
+            dx = fig.add_subplot(414, title='POS')
+            bins = list(frange(-10, 10, 0.1))
+            n, bins, patches = ax.hist(mpos_delta[i], bins, normed=1, histtype='bar', rwidth=1)
+            n, bins, patches = bx.hist(mvel_delta[i], bins, normed=1, histtype='bar', rwidth=1)
+            n, bins, patches = cx.hist(jpos_delta[i], bins, normed=1, histtype='bar', rwidth=1)
+            n, bins, patches = dx.hist(pos_delta[i], bins, normed=1, histtype='bar', rwidth=1)
+            axis = range(0,len(mpos_delta[i]))
+            ax.scatter(axis,mpos_delta[i])
+            bx.scatter(axis,mvel_delta[i])
+            cx.scatter(axis,jpos_delta[i])
+            dx.scatter(axis,pos_delta[i])
+            plt.show()
+            """
+
+
+
+# Main starts here
 if __name__ == '__main__':
 
     usage = 'Usage: python ' + sys.argv[0] + ' <dir>'
@@ -196,25 +283,4 @@ if __name__ == '__main__':
             if f.endswith('csv') and not f.startswith('mfi2'):
                 all_files.append(os.path.join(root,f))
 
-    # Open each file and analyze
-
-    if os.path.isfile(shelve_file):
-        myshelve = shelve.open(shelve_file)
-        all_pos_mean = myshelve['all_pos_mean']
-        all_pos_stdev = myshelve['all_pos_stdev']
-        all_mpos_mean = myshelve['all_mpos_mean']
-        all_mpos_stdev = myshelve['all_mpos_stdev']
-    else:
-        #_compute_mean(all_files)
-        _compute(all_files)
-        myshelve = shelve.open(shelve_file)
-        all_pos_mean = myshelve['all_pos_mean']
-        all_pos_stdev = myshelve['all_pos_stdev']
-        all_mpos_mean = myshelve['all_mpos_mean']
-        all_mpos_stdev = myshelve['all_mpos_stdev']
-
-    plot_pos_stdev(all_pos_stdev, all_pos_mean)
-    plot_pos_stdev(all_mpos_stdev, all_mpos_mean)
-    
-
-
+    compute_delta_t(all_files)    
