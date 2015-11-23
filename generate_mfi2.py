@@ -174,13 +174,13 @@ def generate_stuck_fault_list():
 def generate_xyz_dist_faults():
     pre_trig = ''
     trigger = 'u.sequence'
-    dist = ('1000')#('2','20','100', '200', '500', '1000', '2000')
+    dist = ('500', '1000', '2000', '4000','8000')
     code = []
     param = []
     variable = ['u.delx[0]', 'u.dely[0]','u.delz[0]']
     for d in dist:
-        for t1 in range(10,11):#(10, 3000,1000):
-            for dt in range(12,13):#(1,15):
+        for t1 in range(1000,3000,1000):#(10,3000,1000):
+            for dt in range(1,100,10):#(1,15):
                 t2 = t1 + dt
                 delta = str(float(d)/sqrt(3))
                 code.append(_generate_add_code(pre_trig, trigger,
@@ -317,9 +317,9 @@ def generate_rt_process_once_faults():
                     t1, t2, var, val))'''
     # Injection parameters
     for var in variable:
-        for t1 in range(10, 3000,1000):
-            for dt in range(1,15):
-                for val in [-120000, -1000, 100, 1000, 120000]:#range(-12000, 15000, 1000):
+        for t1 in range(1000,2000,1000):
+            for dt in range(16,22):
+                for val in [200000,400000, 800000, 1000000]:#range(-12000, 15000, 1000):
                     t2 = t1 + dt
                     code.append(_generate_add_once_code(pre_trig, trigger,t1, t2, vtype, var, [val]))
                     param.append(','.join([str(var),str(t1),str(dt),str(val)]))
@@ -398,11 +398,11 @@ def generate_test():
 
 #generate_network_layer_skip()
 #generate_network_layer_delay()
-#generate_xyz_dist_faults()
+generate_xyz_dist_faults()
 #generate_u_R_l_faults()
 #generate_rt_process_faults()
 #generate_rt_process_once_faults()
 #generate_toggle_surgeon_mode()
-generate_empty_test()
+#generate_empty_test()
 #generate_r_faults()
 #generate_test()

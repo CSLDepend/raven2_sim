@@ -160,8 +160,8 @@ def sendPackets():
 					print_line = print_line + (str(float(line[jpos_index+i])*(math.pi/180))+',')
 				print '(mpos,mvel,dac) = ' + print_line+'\n'			
 				for i in range(0,3):
-					print_line = print_line + (str(float(line[dpos_index+i])*(math.pi/180))+',')
-					print_line = print_line + (str(float(line[pos_index+i])*(math.pi/180))+',')
+					print_line = print_line + (str(float(line[dpos_index+i]))+',')
+					print_line = print_line + (str(float(line[pos_index+i]))+',')
 			
 		        
 				# Construct the packet to send

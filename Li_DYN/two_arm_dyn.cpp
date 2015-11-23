@@ -33,19 +33,47 @@ void sys_dyn_gold(const state_type &x, state_type &dxdt, double t)
 	double tm_2 = x[7];
 	double tm_3 = x[8];
 
-	dxdt[0] = x[3];
-	dxdt[1] = x[4];
+
+    dxdt[0] = x[3];
+    dxdt[1] = x[4];
 	dxdt[2] = x[5];
 
-	dxdt[6] = x[9];
-	dxdt[7] = x[10];
-	dxdt[8] = x[11];
+
+    if (x[9]>790)
+        dxdt[6] = 790;
+    else
+    {
+		if (x[9]<-790)
+        	dxdt[6] = -790;
+        else
+        	dxdt[6] = x[9];
+    }
+
+    if (x[10]>790)
+        dxdt[7] = 790;
+    else
+    {
+    	if (x[10]<-790)
+    	    dxdt[7] = -790;
+        else
+        	dxdt[7] = x[10];
+    }
+
+    if (x[11]>790)
+        dxdt[8] = 790;
+    else
+    {
+    	if (x[11]<-790)
+    	    dxdt[8] = -790;
+        else
+        	dxdt[8] = x[11];
+    }
 
 	double s1 = sin(t1);
 	double s2 = sin(t2);
 	double c1 = cos(t1);
 	double c2 = cos(t2);
-	
+
 	double r1_1 = 0.01692977392*pow(c2,4)*pow(t3,2) - 0.0005122649939*pow(c2,4)*t3 + 0.001497158703*pow(c2,4) - 0.09872759015*pow(c2,3)*pow(t3,2) - 0.0008191700436*pow(c2,3)*t3 - 0.01423283509*pow(c2,3) + 0.03385954784*pow(c2,2)*pow(s2,2)*pow(t3,2) - 0.001024529988*pow(c2,2)*pow(s2,2)*t3 + 0.002994317406*pow(c2,2)*pow(s2,2) + 0.00001885909284*pow(c2,2)*s2*t3 - 0.000339919713*pow(c2,2)*s2 + 0.1439348378*pow(c2,2)*pow(t3,2) + 0.006743747525*pow(c2,2)*t3 + 0.07826487932*pow(c2,2) - 0.09872759015*c2*pow(s2,2)*pow(t3,2) - 0.0008191700436*c2*pow(s2,2)*t3 - 0.01423283509*c2*pow(s2,2) + 0.00009008625051*c2*s2*t3 + 0.00035266128*c2*s2 + 0.01897574261*c2 + 0.01692977392*pow(s2,4)*pow(t3,2) - 0.0005122649939*pow(s2,4)*t3 + 0.001497158703*pow(s2,4) + 0.00001885909284*pow(s2,3)*t3 - 0.000339919713*pow(s2,3) + 0.3797361697*pow(s2,2)*pow(t3,2) - 0.0003911834176*pow(s2,2)*t3 + 0.1315274116*pow(s2,2) + 0.0003692169262*s2 + 0.02026589191;
 	double r1_2 = 0.06541162346*pow(c2,2)*pow(t3,2) - 0.00197923995*pow(c2,2)*t3 + 0.005784577028*pow(c2,2) - 0.1907270582*c2*pow(t3,2) - 0.001582515003*c2*t3 + 0.009162593725*c2 + 0.06541162346*pow(s2,2)*pow(t3,2) - 0.00197923995*pow(s2,2)*t3 + 0.005784577028*pow(s2,2) + 0.00003643296967*s2*t3 + 0.00005659786982*s2 + 0.01052412488;
 	double r1_3 = -0.00001249502675*pow(c2,2) + 0.00003643296967*c2 - 0.00001249502675*pow(s2,2) - 0.007353578204*s2;
@@ -199,8 +227,8 @@ void sys_dyn_gold(const state_type &x, state_type &dxdt, double t)
 
 
 	dxdt[9] = 1/Im*(-input1-tau_m1-tau_rn1);
-	dxdt[10] = 1/Im*(-input2+tau_m2-tau_rn2);
-	dxdt[11] = 1/Im*(-input3+tau_m3-tau_rn3);
+	dxdt[10] = 1/Im*(-input2-tau_m2-tau_rn2);
+	dxdt[11] = 1/Im*(-input3-tau_m3-tau_rn3);
 
 	//cout<<"1: "<<input1<<", "<<tau_m1<<", "<<tau_rn1<<endl;
 	//cout<<"2: "<<input2<<", "<<tau_m2<<", "<<tau_rn2<<endl;
