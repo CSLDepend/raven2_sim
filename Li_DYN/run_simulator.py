@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 import math
 import numpy as np
 
-csvfile1 = open('/home/raven/homa_wksp/Tests/new_test_3.csv')
+csvfile1 = open('/home/raven/homa_wksp/raven_2/teleop_data/new_test_3.csv')
 reader = csv.reader(csvfile1)
 
-os.system("cd /home/raven/homa_wksp/Li_DYN/")
+os.system("cd /home/raven/homa_wksp/raven_2/Li_DYN/")
+os.system("pwd")
 in_file = open('./dac_mvel_mpos.txt','w')
-out_file = open('./output.csv','r')
 
 runlevel = 0
 line_no = 0
@@ -55,19 +55,22 @@ for line in reader:
 	i = i + 1;
 in_file.close()
 
-os.system("make")
+'''os.system("make")
+os.system("pwd")
 writer = 'xterm -hold -e ./writer'
 two_arm_dyn = 'xterm -hold -e ./two_arm_dyn'
 #os.system('xterm -hold -e ./writer & xterm -hold -e ./two_arm_dyn')
 env = os.environ.copy()
-p1 = subprocess.Popen(writer, env=env, shell=True, preexec_fn=os.setsid)
+p1 = subprocess.Popen(writer, shell=True, preexec_fn=os.setsid)
 time.sleep(0.1);
-p2 = subprocess.Popen(two_arm_dyn, env=env, shell=True, preexec_fn=os.setsid)
+p2 = subprocess.Popen(two_arm_dyn, shell=True, preexec_fn=os.setsid)
+print "ran"
 time.sleep(5);
 os.system("killall xterm")
 os.system("killall writer")
-os.system("killall two_arm_dyn")
+os.system("killall two_arm_dyn")'''
 
+out_file = open('./output.csv','r')
 # Get the estimated results
 est_mpos = [[],[],[]]
 est_mvel = [[],[],[]]

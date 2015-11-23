@@ -48,6 +48,10 @@ def parse_latest_run(reader):
 	dpos_index = headers.index('field.pos_d0');
 	pos_index = headers.index('field.pos0');
 	try:
+		sim_index = headers.index('field.sim_mpos0');
+	except:
+		sim_index = -1
+	try:
 		err_index = headers.index('field.err_msg');
 	except:
 		err_index = -1
@@ -73,6 +77,8 @@ def parse_latest_run(reader):
 	err_msg = []
 	packet_nums = []
 	time = []
+	sim_mpos = [[],[],[]]
+	sim_mvel = [[],[],[]]
 
 	i = 0
 	past_line = ''
@@ -95,6 +101,12 @@ def parse_latest_run(reader):
 					est_dpos[j].append(float(line[dpos_index+indices[j]])/1000)#*math.pi/180)
 					est_pos[j].append(float(line[pos_index+indices[j]])/1000)#*math.pi/180)
 				try:			
+					for j in range(0,3):
+						sim_mpos[j].append(float(line[sim_index+indices[j]]))
+						sim_mvel[j].append(float(line[sim_index+3+indices[j]]))
+				except:
+					pass
+				try:			
 					err_msg.append(str(line[err_index]))
 				except:
 					pass
@@ -105,7 +117,7 @@ def parse_latest_run(reader):
 		i = i + 1;
 	print len(est_mvel[0])
 	print len(est_mpos[0])
-	return est_mpos, est_mvel, est_dac, est_jpos, est_pos, err_msg, packet_nums, time 	
+	return est_mpos, est_mvel, est_dac, est_jpos, est_pos, sim_mpos, sim_mvel, err_msg, packet_nums, time 	
 
 #Obselete
 def parse_input_data(in_file):
@@ -136,7 +148,7 @@ def parse_input_data(in_file):
 	
 	return mpos,mvel,dac,jpos,pos
 
-def plot_mpos(gold_mpos, orig_mpos, mpos, gold_mvel, orig_mvel, mvel, gold_t, orig_t, t):
+def plot_mpos(gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t):
 	indices = [0,1,2,4,5,6,7]	
 	f1, axarr1 = plt.subplots(7, 2, sharex=True)
 	axarr1[0,0].set_title("Motor Positions (Gold Arm)")
@@ -145,9 +157,13 @@ def plot_mpos(gold_mpos, orig_mpos, mpos, gold_mvel, orig_mvel, mvel, gold_t, or
 		axarr1[j, 0].plot(orig_mpos[j], 'k')
 		axarr1[j, 0].plot(gold_mpos[j], 'g')
 		axarr1[j, 0].plot(mpos[j], 'r')
+		if j < 3:
+			axarr1[j, 0].plot(sim_mpos[j], 'b')
 		axarr1[j, 1].plot(orig_mvel[j], 'k')
 		axarr1[j, 1].plot(gold_mvel[j], 'g')
 		axarr1[j, 1].plot(mvel[j], 'r')
+		if j < 3:	
+			axarr1[j, 1].plot(sim_mvel[j], 'b')
 		axarr1[j, 0].set_ylabel('Motor '+str(indices[j]))
 	#plt.show()
 	return f1
@@ -211,23 +227,24 @@ csvfile2 = open(raven_home+'/golden_run/latest_run.csv')
 reader2 = csv.reader(x.replace('\0', '') for x in csvfile2)
 
 # Parse the robot run
-orig_mpos, orig_mvel, orig_dac, orig_jpos, orig_pos, orig_err, orig_packets, orig_t = parse_latest_run(reader1)
+orig_mpos, orig_mvel, orig_dac, orig_jpos, orig_pos, orig_sim_mpos, orig_sim_mvel,orig_err, orig_packets, orig_t = parse_latest_run(reader1)
 # Parse the golden simulator run
-gold_mpos, gold_mvel, gold_dac, gold_jpos, gold_pos, gold_err, gold_packets, gold_t = parse_latest_run(reader2)
+gold_mpos, gold_mvel, gold_dac, gold_jpos, gold_pos, gold_sim_mpos, gold_sim_mvel, gold_err, gold_packets, gold_t = parse_latest_run(reader2)
 #orig_mpos, orig_mvel, orig_dac, orig_jpos, orig_pos = parse_input_data(in_file)
 
 # Parse the latest run of simulator
 csvfile3 = open(raven_home+'/latest_run.csv')
 reader3 = csv.reader(x.replace('\0', '') for x in csvfile3)
-mpos, mvel, dac, jpos, pos, err, packets, t = parse_latest_run(reader3)
+mpos, mvel, dac, jpos, pos, sim_mpos, sim_mvel, err, packets, t = parse_latest_run(reader3)
 
 # Close files
 csvfile1.close()
 csvfile2.close()
 csvfile3.close()
 
-
-plot_mpos(gold_mpos, orig_mpos, mpos, gold_mvel, orig_mvel, mvel, gold_t, orig_t, t).savefig(raven_home+'/figures/mpos_mvel.png')
+cmd = 'mkdir -p ' + raven_home+'/figures'
+os.system(cmd)
+plot_mpos(gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t).savefig(raven_home+'/figures/mpos_mvel.png')
 plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t).savefig(raven_home+'/figures/dac.png')
 plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t).savefig(raven_home+'/figures/jpos.png')
 plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t).savefig(raven_home+'/figures/pos.png')
