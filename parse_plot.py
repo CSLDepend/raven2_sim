@@ -152,7 +152,7 @@ def parse_input_data(in_file):
 	
 	return mpos,mvel,dac,jpos,pos
 
-def plot_mpos(gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t):
+def plot_mpos(m, gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t):
 	indices = [0,1,2,4,5,6,7]	
 	f1, axarr1 = plt.subplots(7, 2, sharex=True)
 	axarr1[0,0].set_title("Motor Positions (Gold Arm)")
@@ -161,18 +161,18 @@ def plot_mpos(gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, 
 		axarr1[j, 0].plot(orig_mpos[j], 'k')
 		axarr1[j, 0].plot(gold_mpos[j], 'g')
 		axarr1[j, 0].plot(mpos[j], 'r')
-		if j < 3:
+		if m == 0 and j < 3:
 			axarr1[j, 0].plot(sim_mpos[j], 'b')
 		axarr1[j, 1].plot(orig_mvel[j], 'k')
 		axarr1[j, 1].plot(gold_mvel[j], 'g')
 		axarr1[j, 1].plot(mvel[j], 'r')
-		if j < 3:	
+		if m == 0 and j < 3:	
 			axarr1[j, 1].plot(sim_mvel[j], 'b')
 		# Set the column label
 		axarr1[j, 0].set_ylabel('Motor '+str(indices[j]))
 		# Set the Y ticks
-		axarr1[j, 0].yaxis.set_ticks(np.arange(min(mpos[j]), max(mpos[j]), int((max(mpos[j])-min(mpos[j]))/3.0)))
-		axarr1[j, 1].yaxis.set_ticks(np.arange(min(mvel[j]), max(mvel[j]), int((max(mvel[j])-min(mvel[j]))/3.0)))
+		axarr1[j, 0].yaxis.set_ticks(np.arange(int(min(gold_mpos[j])), max(gold_mpos[j]), int((max(gold_mpos[j])-min(gold_mpos[j]))/3.0)))
+		axarr1[j, 1].yaxis.set_ticks(np.arange(int(min(gold_mvel[j])), max(gold_mvel[j]), int((max(gold_mvel[j])-min(gold_mvel[j]))/3.0)))
 	#plt.show()
 	return f1
   
@@ -186,7 +186,7 @@ def plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t):
 		axarr2[j].plot(dac[j], 'r')
 		axarr2[j].set_ylabel('Joint '+str(indices[j]))
 		# Set the Y ticks
-		axarr2[j].yaxis.set_ticks(np.arange(min(dac[j]), max(dac[j]), int((max(dac[j])-min(dac[j]))/3.0)))
+		axarr2[j].yaxis.set_ticks(np.arange(min(gold_dac[j]), max(gold_dac[j]), int((max(gold_dac[j])-min(gold_dac[j]))/3.0)))
 	#plt.show()
 	return f2
 
@@ -200,7 +200,7 @@ def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t):
 		axarr3[j].plot(jpos[j], 'r')
 		axarr3[j].set_ylabel('Joint '+str(indices[j]))
 		# Set the Y ticks
-		axarr3[j].yaxis.set_ticks(np.arange(int(min(jpos[j])), int(max(jpos[j])), int((max(jpos[j])-min(jpos[j]))/3.0)))
+		axarr3[j].yaxis.set_ticks(np.arange(int(min(gold_jpos[j])), max(gold_jpos[j]), int((max(gold_jpos[j])-min(gold_jpos[j]))/3.0)))
 	#plt.show()
 	return f3
 
@@ -229,7 +229,7 @@ try:
     script, mode, inj_num  = argv
 except:
     print "Error: missing parameters"
-    print 'python plot2.py 0|1'
+    print 'python plot2.py 0|1 inj_num'
     sys.exit(2)
 
 # Open Log files
@@ -256,10 +256,10 @@ csvfile3.close()
 
 cmd = 'mkdir -p ' + raven_home+'/figures'
 os.system(cmd)
-plot_mpos(gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t).savefig(raven_home+'/figures/mpos_mvel.png')
 plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t).savefig(raven_home+'/figures/dac.png')
 plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t).savefig(raven_home+'/figures/jpos.png')
 plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t).savefig(raven_home+'/figures/pos.png')
+plot_mpos(mode,gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t).savefig(raven_home+'/figures/mpos_mvel.png')
 
 # Log the results
 indices = [0,1,2,4,5,6,7]
@@ -343,7 +343,7 @@ for i in range(0,len(pos)):
 # For faulty run, see if a jump happened
 if mode == '1':
 	output_line = output_line + ', '
-	csvfile6 = open('./fault_free_range.csv','rU')
+	csvfile6 = open('./stats.csv','rU')
 	range_reader = csv.reader(x.replace('\0', '') for x in csvfile6)
 	lows = []
 	highs = []

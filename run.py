@@ -504,7 +504,6 @@ class Raven():
 
 # Main code starts here
 
-
 # Init Logger
 logger = logging.getLogger(__name__)
 initLogger(logger, 'mfi.log')

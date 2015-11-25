@@ -238,7 +238,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 	data1.rd[i].grasp = us_t->grasp[armidx];
 	if (data1.rd[i].grasp>graspmax) data1.rd[i].grasp=graspmax;
 	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
- 
+#ifdef simulator
     // Get initial joint positions from input, assign them to the desired jpos
 	if (us_t->sequence == 1)	
     {    
@@ -250,6 +250,20 @@ void teleopIntoDS1(struct u_struct *us_t)
 			data1.mvel_d[j] = (us_t->mvel[j])*M_PI/180; 		   
 		}                 
 	}
+#endif
+#ifdef detector
+    // Get initial joint positions from input, assign them to the desired jpos
+	if (us_t->sequence == 1)	
+    {    
+        for (int j=0;j<16;j++)  
+		{		
+			data1.jpos_d[j] = (us_t->jpos[j])*M_PI/180;
+			data1.jvel_d[j] = (us_t->jvel[j])*M_PI/180; 
+			data1.mpos_d[j] = (us_t->mpos[j])*M_PI/180;
+			data1.mvel_d[j] = (us_t->mvel[j])*M_PI/180; 		   
+		}                 
+	}
+#endif
 #endif
     }
 
