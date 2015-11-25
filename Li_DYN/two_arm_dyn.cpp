@@ -167,10 +167,11 @@ void sys_dyn_gold(const state_type &x, state_type &dxdt, double t)
 	 double F_cl3 = 0.53*1;
 	 double F_vl3 = 0.0053*1;*/
 
-	 double ke1 = 720e3;
+/*
+ 	 double ke1 = 720e3;
 	 double be1 = 4000*1;
-	 double tau_cm1 = 8.11e-2*1.0;
-	 double tau_vm1 = 1.9e-4*1.0;
+	 double tau_cm1 = 8.11e-2*0.75;
+	 double tau_vm1 = 1.9e-4*1;
 	 double r_mc1 = 5.675e-3;
 	 double r_l1 = 63.095e-3;
 	 double F_cl1 = 0.505*1.0;
@@ -178,21 +179,77 @@ void sys_dyn_gold(const state_type &x, state_type &dxdt, double t)
 
 	 double ke2 = 1*88e3;
 	 double be2 = 1*1380;
-	 double tau_cm2 = 4.11e-2*1.0;
-	 double tau_vm2 = 1.8e-4*1;//16
+	 double tau_cm2 = 4.11e-2*2.0;
+	 double tau_vm2 = 1.8e-4*15.0;//16
 	 double r_mc2 = 5.675e-3;
 	 double r_l2 = 56.298e-3;
 	 double F_cl2 = 0.49*1;
-	 double F_vl2 = 0.0049*1;
+	 double F_vl2 = 0.0049*0.5;
 
-	 double ke3 = 1*9.25e3;
+	 double ke3 = 1.0*9.25e3;
 	 double be3 = 1.0*400;
-	 double tau_cm3 = 5.11e-2;
-	 double tau_vm3 = 7.1e-4*1;
-	 double r_mc3 = 5.675e-3;
-	 double r_l3 = 1;
-	 double F_cl3 = 0.53*1;
-	 double F_vl3 = 0.0053*1;
+	 double tau_cm3 = 5.11e-2*0.8;
+	 double tau_vm3 = 7.1e-4*5;
+	 double r_mc3 = 5.675e-3*1.0;
+	 double r_l3 = 1.0;
+	 double F_cl3 = 0.53*0.2;
+	 double F_vl3 = 0.0053*0.1;*/ //NOV 24 	tuned parameters
+
+
+	 double ke1 = 720e3;
+	 double be1 = 4000*1;
+	 double tau_cm1 = 8.11e-2*0.45;
+	 double tau_vm1 = 1.9e-4*14.0;
+	 double r_mc1 = 5.675e-3;
+	 double r_l1 = 63.095e-3;
+	 double F_cl1 = 0.505*1.0;
+	 double F_vl1 = 0.00505*1.0;
+
+	 double ke2 = 1*88e3;
+	 double be2 = 1*1380;
+	 double tau_cm2 = 4.11e-2*1.75;
+	 double tau_vm2 = 1.8e-4*14.5;//16
+	 double r_mc2 = 5.675e-3;
+	 double r_l2 = 56.298e-3;
+	 double F_cl2 = 0.49*1;
+	 double F_vl2 = 0.0049*0.5;
+
+	 double ke3 = 1.0*9.25e3;
+	 double be3 = 1.0*400;
+	 double tau_cm3 = 5.11e-2*1.0;
+	 double tau_vm3 = 7.1e-4*5.3;
+	 double r_mc3 = 5.675e-3*1.0;
+	 double r_l3 = 1.0;
+	 double F_cl3 = 0.53*1.0;
+	 double F_vl3 = 0.0053*1.0; //Nov 24, afternoon tuned
+
+ 	 /*double ke1 = 720e3;
+	 double be1 = 4000*1;
+	 double tau_cm1 = 8.11e-2*0.40;
+	 double tau_vm1 = 1.9e-4*17;
+	 double r_mc1 = 5.675e-3;
+	 double r_l1 = 63.095e-3;
+	 double F_cl1 = 0.505*1.0;
+	 double F_vl1 = 0.00505*1.0;
+
+	 double ke2 = 1*88e3;
+	 double be2 = 1*1380;
+	 double tau_cm2 = 4.11e-2*1.78;
+	 double tau_vm2 = 1.8e-4*14.5;//16
+	 double r_mc2 = 5.675e-3;
+	 double r_l2 = 56.298e-3;
+	 double F_cl2 = 0.49*1;
+	 double F_vl2 = 0.0049*0.5;
+
+	 double ke3 = 1.0*9.25e3;
+	 double be3 = 1.0*400;
+	 double tau_cm3 = 5.11e-2*1.0;
+	 double tau_vm3 = 7.1e-4*5.3;
+	 double r_mc3 = 5.675e-3*1.0;
+	 double r_l3 = 1.0;
+	 double F_cl3 = 0.53*1.0;
+	 double F_vl3 = 0.0053*1.0;*/ //nov 24, not good enough
+
 
 
 	double tau_m1 = tau_cm1*sign_func(x[9])+tau_vm1*x[9];
@@ -221,9 +278,9 @@ void sys_dyn_gold(const state_type &x, state_type &dxdt, double t)
   //  double input2 = (2.737629663234212e-04*DACs[1]+1.0*0.0697023000)*0.85;
     //double input3 = (2.737629663234212e-04*DACs[2]-1.0*0.039108200000000)*1;
 
-	double input1 = (2.737629663234212e-04*(DACs[0])+0.0*0.041613800000000)*1.0;
-    double input2 = (2.737629663234212e-04*(DACs[1])-0.0*0.0697023000)*1.0;
-    double input3 = (2.737629663234212e-04*(DACs[2])+0.0*0.039108200000000)*1.0;
+	double input1 = (2.737629663234212e-04*(DACs[0])-1.16*0.041613800000000)*1.0;
+    double input2 = (2.737629663234212e-04*(DACs[1])-0.9*0.0697023000)*1.0;
+    double input3 = (2.737629663234212e-04*(DACs[2])+0.4*0.039108200000000)*1.0;
 
 
 	dxdt[9] = 1/Im*(-input1-tau_m1-tau_rn1);

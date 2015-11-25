@@ -95,8 +95,12 @@ def parse_latest_run(reader):
 				for j in range(0,7):
 					est_dac[j].append(float(line[dac_index+indices[j]]))
 				for j in range(0,7):
-					est_djpos[j].append(float(line[djpos_index+indices[j]]))#*math.pi/180)
-					est_jpos[j].append(float(line[jpos_index+indices[j]]))#*math.pi/180)
+					if j == 2:
+						est_djpos[j].append(float(line[djpos_index+indices[j]])*(math.pi/180)*1000)
+						est_jpos[j].append(float(line[jpos_index+indices[j]])*(math.pi/180)*1000)
+					else:
+						est_djpos[j].append(float(line[djpos_index+indices[j]]))#*math.pi/180)
+						est_jpos[j].append(float(line[jpos_index+indices[j]]))#*math.pi/180)
 				for j in range(0,3):
 					est_dpos[j].append(float(line[dpos_index+indices[j]])/1000)#*math.pi/180)
 					est_pos[j].append(float(line[pos_index+indices[j]])/1000)#*math.pi/180)
@@ -164,7 +168,11 @@ def plot_mpos(gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, 
 		axarr1[j, 1].plot(mvel[j], 'r')
 		if j < 3:	
 			axarr1[j, 1].plot(sim_mvel[j], 'b')
+		# Set the column label
 		axarr1[j, 0].set_ylabel('Motor '+str(indices[j]))
+		# Set the Y ticks
+		axarr1[j, 0].yaxis.set_ticks(np.arange(min(mpos[j]), max(mpos[j]), int((max(mpos[j])-min(mpos[j]))/3.0)))
+		axarr1[j, 1].yaxis.set_ticks(np.arange(min(mvel[j]), max(mvel[j]), int((max(mvel[j])-min(mvel[j]))/3.0)))
 	#plt.show()
 	return f1
   
@@ -177,6 +185,8 @@ def plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t):
 		axarr2[j].plot(orig_dac[j], 'k')
 		axarr2[j].plot(dac[j], 'r')
 		axarr2[j].set_ylabel('Joint '+str(indices[j]))
+		# Set the Y ticks
+		axarr2[j].yaxis.set_ticks(np.arange(min(dac[j]), max(dac[j]), int((max(dac[j])-min(dac[j]))/3.0)))
 	#plt.show()
 	return f2
 
@@ -189,6 +199,8 @@ def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t):
 		axarr3[j].plot(orig_jpos[j], 'k')
 		axarr3[j].plot(jpos[j], 'r')
 		axarr3[j].set_ylabel('Joint '+str(indices[j]))
+		# Set the Y ticks
+		axarr3[j].yaxis.set_ticks(np.arange(int(min(jpos[j])), int(max(jpos[j])), int((max(jpos[j])-min(jpos[j]))/3.0)))
 	#plt.show()
 	return f3
 
