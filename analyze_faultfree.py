@@ -237,13 +237,13 @@ def compute_delta_t(all_files):
             outfile.write('mpos%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
             lmin, lmax, lmean, lstdev = _get_stats(mvel_delta[i])
-            outfile.write('mpos%d, %f, %f, %f, %f\n' % 
+            outfile.write('mvel%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
             lmin, lmax, lmean, lstdev = _get_stats(jpos_delta[i])
-            outfile.write('mpos%d, %f, %f, %f, %f\n' % 
+            outfile.write('jpos%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
             lmin, lmax, lmean, lstdev = _get_stats(pos_delta[i])
-            outfile.write('mpos%d, %f, %f, %f, %f\n' % 
+            outfile.write('pos%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
 
             """
