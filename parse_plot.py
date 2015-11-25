@@ -161,23 +161,23 @@ def plot_mpos(m, gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mve
 		axarr1[j, 0].plot(orig_mpos[j], 'k')
 		axarr1[j, 0].plot(gold_mpos[j], 'g')
 		axarr1[j, 0].plot(mpos[j], 'r')
-		if m == 0 and j < 3:
+		if j < 3 and not(all(v == 0 for v in sim_mpos[j])):	
 			axarr1[j, 0].plot(sim_mpos[j], 'b')
 		axarr1[j, 1].plot(orig_mvel[j], 'k')
 		axarr1[j, 1].plot(gold_mvel[j], 'g')
 		axarr1[j, 1].plot(mvel[j], 'r')
-		if m == 0 and j < 3:	
+		if j < 3 and not(all(v == 0 for v in sim_mvel[j])):	
 			axarr1[j, 1].plot(sim_mvel[j], 'b')
 		# Set the column label
 		axarr1[j, 0].set_ylabel('Motor '+str(indices[j]))
 		# Set the Y ticks
-		max_pos = round(float(max(orig_mpos[j])),1)
-		min_pos = round(float(min(orig_mpos[j])),1)
+		max_pos = max([round(float(max(mpos[j])),1),round(float(max(orig_mpos[j])),1)])
+		min_pos = min([round(float(min(mpos[j])),1),round(float(min(orig_mpos[j])),1)])
 		steps = round(((max_pos - min_pos)/3),1)
 		axarr1[j, 0].yaxis.set_ticks(np.arange(min_pos , max_pos, steps))
-		
-		max_vel = round(float(max(orig_mvel[j])),1)
-		min_vel = round(float(min(orig_mvel[j])),1)
+		# Set the Y ticks
+		max_vel = max([round(float(max(mvel[j])),1),round(float(max(orig_mvel[j])),1)])
+		min_vel = min([round(float(min(mvel[j])),1),round(float(min(orig_mvel[j])),1)])
 		steps = round(((max_vel - min_vel)/3),1)
 		axarr1[j, 1].yaxis.set_ticks(np.arange(min_vel , max_vel, steps))
 	#plt.show()
@@ -193,7 +193,10 @@ def plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t):
 		axarr2[j].plot(dac[j], 'r')
 		axarr2[j].set_ylabel('Joint '+str(indices[j]))
 		# Set the Y ticks
-		axarr2[j].yaxis.set_ticks(np.arange(min(orig_dac[j]), max(orig_dac[j]), int((max(orig_dac[j])-min(orig_dac[j]))/3)))
+		max_dac = max([round(float(max(dac[j])),1),round(float(max(orig_dac[j])),1)])
+		min_dac = max([round(float(min(dac[j])),1),round(float(min(orig_dac[j])),1)])
+		steps = round(((max_dac - min_dac)/3),1)
+		axarr2[j].yaxis.set_ticks(np.arange(min_dac, max_dac, steps))
 	#plt.show()
 	return f2
 
@@ -207,8 +210,8 @@ def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t):
 		axarr3[j].plot(jpos[j], 'r')
 		axarr3[j].set_ylabel('Joint '+str(indices[j]))
 		# Set the Y ticks
-		max_pos = round(float(max(orig_jpos[j])),1)
-		min_pos = round(float(min(orig_jpos[j])),1)
+		max_pos = max([round(float(max(jpos[j])),1),round(float(max(orig_jpos[j])),1)])
+		min_pos = max([round(float(min(jpos[j])),1),round(float(min(orig_jpos[j])),1)])
 		steps = round(((max_pos - min_pos)/3),1)
 		axarr3[j].yaxis.set_ticks(np.arange(min_pos , max_pos, steps))
 	#plt.show()

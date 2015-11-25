@@ -318,8 +318,8 @@ def generate_rt_process_once_faults():
     # Injection parameters
     for var in variable:
         for t1 in range(1000,2000,1000):
-            for dt in range(16,22):
-                for val in [200000,400000, 800000, 1000000]:#range(-12000, 15000, 1000):
+            for dt in range(1,20):
+                for val in [100, 1000, 2000, 3000, 5000, 10000, 20000,800000]:#range(-12000, 15000, 1000):
                     t2 = t1 + dt
                     code.append(_generate_add_once_code(pre_trig, trigger,t1, t2, vtype, var, [val]))
                     param.append(','.join([str(var),str(t1),str(dt),str(val)]))
@@ -398,10 +398,10 @@ def generate_test():
 
 #generate_network_layer_skip()
 #generate_network_layer_delay()
-#generate_xyz_dist_faults()
+generate_xyz_dist_faults()
 #generate_u_R_l_faults()
 #generate_rt_process_faults()
-generate_rt_process_once_faults()
+#generate_rt_process_once_faults()
 #generate_toggle_surgeon_mode()
 #generate_empty_test()
 #generate_r_faults()

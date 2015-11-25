@@ -51,6 +51,11 @@
 extern struct DOF_type DOF_types[];
 extern unsigned long int gTime;
 
+#ifdef dyn_simulator
+#include <stdio.h>
+extern int runlevel;
+extern int packet_num;
+#endif
 /**
  * \brief calculates PD control (or PI) for
  */
@@ -100,6 +105,10 @@ void mpos_PD_control(struct DOF *joint, int reset_I)
     //Finally place torque
     joint->tau_d = pTerm + vTerm +iTerm + friction_feedforward;
 
+/*#ifdef dyn_simulator
+	if ((joint->type == 0) && (packet_num >= 1000) && (packet_num <= 1020))
+		printf("\nPacket %d = err = %f,errVel = %f, pTerm = %f, vTerm = %f, tau_d = %f\n",packet_num,err,errVel,pTerm,vTerm, joint->tau_d);
+#endif*/
     /*if (joint->type < 2)
 	{
 		log_msg("Joint %d iTerm = %f, pTerm = %f, vTerm = %f, tau_d = %f\n",joint->type, iTerm,pTerm,vTerm, joint->tau_d); 

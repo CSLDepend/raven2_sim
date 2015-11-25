@@ -362,11 +362,11 @@ static void *rt_process(void* )
           log_file("ERROR: soft_estopped = %d\n",soft_estopped);
 		  logging = 0;
 #endif
-          //printf("ERROR: soft_estopped = %d\n",soft_estopped);
+          printf("ERROR: soft_estopped = %d\n",soft_estopped);
           device0.runlevel = 0;
-		  /*r2_kill = 1;
-		  if (ros::ok()) ros::shutdown();
-		  return 0;*/
+		  //r2_kill = 1;
+		  //if (ros::ok()) ros::shutdown();
+		  //return 0;
 #endif
        }
 
@@ -376,20 +376,28 @@ static void *rt_process(void* )
       //Update Atmel Output Pins
       updateAtmelOutputs(&device0, currParams.runlevel);
 
-#ifndef simulator
-      //Fill USB Packet and send it out
-      putUSBPackets(&device0); //disable usb for par port test
-#endif
-
 #ifdef dyn_simulator
-      runlevel = currParams.runlevel;
-      packet_num = currParams.last_sequence;
+        runlevel = currParams.runlevel;
+        packet_num = currParams.last_sequence;
 	    //Send the DACs, mvel, and mpos to the simulator
 	    for (int i = 0; i < NUM_MECH; i++)
 	    {
 			    if ((i == 0) && ((runlevel == 3)) && (packet_num != 111))
 			    {
 #ifdef mfi
+/*				if ((packet_num >= 1000) && (packet_num <= 1020))
+				printf("\nPacket %d = mpos/mvel/DACs \n%f,%f,%f,\n%f,%f,%f,\n%d,%d,%d\n",
+				   packet_num,
+          (float)device0.mech[0].joint[SHOULDER].mpos*180/3.14,
+				  (float)device0.mech[0].joint[ELBOW].mpos*180/3.14,
+				  (float)device0.mech[0].joint[Z_INS].mpos*180/3.14,
+				  (float)device0.mech[0].joint[SHOULDER].mvel*180/3.14,
+				  (float)device0.mech[0].joint[ELBOW].mvel*180/3.14,
+				  (float)device0.mech[0].joint[Z_INS].mvel*180/3.14,
+				  (int)device0.mech[0].joint[SHOULDER].current_cmd,
+				  (s_16)device0.mech[0].joint[ELBOW].current_cmd,
+				  (s_16)device0.mech[0].joint[Z_INS].current_cmd);
+*/
 //HOOK
 //Start at packet S and continue for L packets:
 //if ((u.sequence >= 10) && (u.sequence < 20)) => S random, between 10 and 15000, L between 1 to 50
@@ -398,6 +406,25 @@ static void *rt_process(void* )
 //device0.mech[i].joint[Z_INS].current_cmd => random int
 //Range of values for this trajectory: -800 to 800
 //Physical limits:
+/*
+				if ((packet_num >= 1000) && (packet_num <= 1020))
+				printf("\nInjected = mpos/mvel/DACs \n%f,%f,%f,\n%f,%f,%f,\n%d,%d,%d\n",
+          (float)device0.mech[0].joint[SHOULDER].mpos*180/3.14,
+				  (float)device0.mech[0].joint[ELBOW].mpos*180/3.14,
+				  (float)device0.mech[0].joint[Z_INS].mpos*180/3.14,
+				  (float)device0.mech[0].joint[SHOULDER].mvel*180/3.14,
+				  (float)device0.mech[0].joint[ELBOW].mvel*180/3.14,
+				  (float)device0.mech[0].joint[Z_INS].mvel*180/3.14,
+				  (int)device0.mech[0].joint[SHOULDER].current_cmd,
+				  (s_16)device0.mech[0].joint[ELBOW].current_cmd,
+				  (s_16)device0.mech[0].joint[Z_INS].current_cmd);
+				if (packet_num == 1016)
+				{
+					r2_kill = 1;
+					if (ros::ok()) ros::shutdown();
+					return 0;				
+				} 
+*/
 #endif
 				    // Send simulator input to FIFO
 				    sprintf(sim_buf, "%d %d %f %f %f %f %f %f %d %d %d", i, currParams.last_sequence,
@@ -461,6 +488,41 @@ static void *rt_process(void* )
   	   if (ros::ok()) ros::shutdown();
   		 return 0;
     }*/
+#endif
+
+#ifndef dyn_simulator
+#ifdef mfi
+        int runlevel = currParams.runlevel;
+        int packet_num = currParams.last_sequence;
+        int i = 0;
+        if (((runlevel == 3)) && (packet_num != 111))
+		{
+				printf("\nPacket %d = mpos/mvel/DACs \n%f,%f,%f,\n%f,%f,%f,\n%d,%d,%d\n",
+				   packet_num,
+          (float)device0.mech[0].joint[SHOULDER].mpos,
+				  (float)device0.mech[0].joint[ELBOW].mpos,
+				  (float)device0.mech[0].joint[Z_INS].mpos,
+				  (float)device0.mech[0].joint[SHOULDER].mvel,
+				  (float)device0.mech[0].joint[ELBOW].mvel,
+				  (float)device0.mech[0].joint[Z_INS].mvel,
+				  (int)device0.mech[0].joint[SHOULDER].current_cmd,
+				  (s_16)device0.mech[0].joint[ELBOW].current_cmd,
+				  (s_16)device0.mech[0].joint[Z_INS].current_cmd);
+//HOOK
+//Start at packet S and continue for L packets:
+//if ((u.sequence >= 10) && (u.sequence < 20)) => S random, between 10 and 15000, L between 1 to 50
+//device0.mech[i].joint[SHOULDER].current_cmd => random int
+//device0.mech[i].joint[ELBOW].current_cmd => random int
+//device0.mech[i].joint[Z_INS].current_cmd => random int
+//Range of values for this trajectory: -800 to 800
+//Physical limits:
+		}
+#endif
+#endif
+
+#ifndef simulator
+      //Fill USB Packet and send it out
+      putUSBPackets(&device0); //disable usb for par port test
 #endif
       //Publish current raven state
       publish_ravenstate_ros(&device0,&currParams);   // from local_io
