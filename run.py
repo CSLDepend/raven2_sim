@@ -427,7 +427,7 @@ class Raven():
     def __setup_result_folder(self):
         """Create a folder to store the mfi2_experiment results."""
         time = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-        self.result_folder = self.raven_home + '/exp_result/' + title.rstrip() + '_' + time+'_'+self.mode
+        self.result_folder = self.raven_home + '/exp_result/' + self.title.rstrip() + '_' + time+'_'+self.mode
         cmd = 'mkdir -p ' + self.result_folder
         os.system(cmd)
 
