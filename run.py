@@ -499,11 +499,10 @@ class Raven():
         else:
             self._compile_raven()
             self._run_experiment()
-            self.__run_parse_plot(0,-1)
+            #self.__run_parse_plot(0,-1)
             os.system("python parse_plot.py 0 -1")
 
 # Main code starts here
-
 
 # Init Logger
 logger = logging.getLogger(__name__)
