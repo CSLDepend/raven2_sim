@@ -497,7 +497,7 @@ class Raven():
         elif self.injection == 'mfi2':
             self._run_mfi2_experiment()
         else:
-            self._compile_raven()
+            self._compile_raven()  #comment out any time you change mode from rob to sim
             self._run_experiment()
             #self.__run_parse_plot(0,-1)
             os.system("python parse_plot.py 0 -1")
