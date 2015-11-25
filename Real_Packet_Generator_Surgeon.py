@@ -97,7 +97,7 @@ def readSignals():
 
 def sendPackets():
     global seq
-    csvfile = open('./teleop_data/new_test_3.csv','r'); 
+    csvfile = open('./teleop_data/new_test_2.csv','r'); 
     outfile = open('./robot_run.csv','w');
     reader = csv.reader(csvfile)
     writer = csv.writer(outfile,delimiter=',')
