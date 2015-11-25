@@ -215,16 +215,15 @@ class Raven():
         """ Terminate all process started by _run_experiment() """
         # Restore changes to source code
 
-        if 'mfi2_empty_test' in self.title:
-            # Save latest_run.csv to result_folder for faultfree run
-            if self.injection == 'mfi2' and self.exp_status == 'done':
-                cmd = 'cp latest_run.csv ' + self.result_folder + '/' + \
-                        str(self.curr_inj).zfill(4) + '.csv'
-                os.system(cmd)
-                cmd = 'cp mfi2.txt ' + self.result_folder
-                os.system(cmd)
-                cmd = 'cp mfi2_params.csv ' + self.result_folder
-                os.system(cmd)
+        # Save latest_run.csv to result_folder for faultfree run
+        if self.injection == 'mfi2' and self.exp_status == 'done':
+            cmd = 'cp latest_run.csv ' + self.result_folder + '/' + \
+                    str(self.curr_inj).zfill(4) + '.csv'
+            os.system(cmd)
+            cmd = 'cp mfi2.txt ' + self.result_folder
+            os.system(cmd)
+            cmd = 'cp mfi2_params.csv ' + self.result_folder
+            os.system(cmd)
 
 
         if self.defines_changed:
