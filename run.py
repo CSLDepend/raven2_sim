@@ -445,7 +445,7 @@ class Raven():
                     value = line[4]
                     break
         os.system("python parse_plot.py " + str(mode) + " " + str(inj_num))
-        cmd = 'mv figures/ ' + self.result_folder + '/inj' + '_'.join([str(inj_num), duration, value])
+        cmd = 'cp -r figures/ ' + self.result_folder + '/inj' + '_'.join([str(inj_num), duration, value])
         os.system(cmd)
 
     def _need_compile(self, param):

@@ -171,8 +171,15 @@ def plot_mpos(m, gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mve
 		# Set the column label
 		axarr1[j, 0].set_ylabel('Motor '+str(indices[j]))
 		# Set the Y ticks
-		axarr1[j, 0].yaxis.set_ticks(np.arange(int(min(gold_mpos[j])), max(gold_mpos[j]), int((max(gold_mpos[j])-min(gold_mpos[j]))/3.0)))
-		axarr1[j, 1].yaxis.set_ticks(np.arange(int(min(gold_mvel[j])), max(gold_mvel[j]), int((max(gold_mvel[j])-min(gold_mvel[j]))/3.0)))
+		max_pos = round(float(max(orig_mpos[j])),1)
+		min_pos = round(float(min(orig_mpos[j])),1)
+		steps = round(((max_pos - min_pos)/3),1)
+		axarr1[j, 0].yaxis.set_ticks(np.arange(min_pos , max_pos, steps))
+		
+		max_vel = round(float(max(orig_mvel[j])),1)
+		min_vel = round(float(min(orig_mvel[j])),1)
+		steps = round(((max_vel - min_vel)/3),1)
+		axarr1[j, 1].yaxis.set_ticks(np.arange(min_vel , max_vel, steps))
 	#plt.show()
 	return f1
   
@@ -186,7 +193,7 @@ def plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t):
 		axarr2[j].plot(dac[j], 'r')
 		axarr2[j].set_ylabel('Joint '+str(indices[j]))
 		# Set the Y ticks
-		axarr2[j].yaxis.set_ticks(np.arange(min(gold_dac[j]), max(gold_dac[j]), int((max(gold_dac[j])-min(gold_dac[j]))/3.0)))
+		axarr2[j].yaxis.set_ticks(np.arange(min(orig_dac[j]), max(orig_dac[j]), int((max(orig_dac[j])-min(orig_dac[j]))/3)))
 	#plt.show()
 	return f2
 
@@ -200,7 +207,10 @@ def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t):
 		axarr3[j].plot(jpos[j], 'r')
 		axarr3[j].set_ylabel('Joint '+str(indices[j]))
 		# Set the Y ticks
-		axarr3[j].yaxis.set_ticks(np.arange(int(min(gold_jpos[j])), max(gold_jpos[j]), int((max(gold_jpos[j])-min(gold_jpos[j]))/3.0)))
+		max_pos = round(float(max(orig_jpos[j])),1)
+		min_pos = round(float(min(orig_jpos[j])),1)
+		steps = round(((max_pos - min_pos)/3),1)
+		axarr3[j].yaxis.set_ticks(np.arange(min_pos , max_pos, steps))
 	#plt.show()
 	return f3
 
@@ -339,33 +349,43 @@ for i in range(0,len(pos)):
 		output_line = output_line + str(pos_error[i])
 	else:
 		output_line = output_line + str(pos_error[i])+','
+# Step Errors
+for i in range(0,len(mpos)):		
+	mpos_error.append((np.array(mpos[i][1:])-np.array(mpos[i][:-1])))
+	mvel_error.append((np.array(mvel[i][1:])-np.array(mvel[i][:-1])))
+	jpos_error.append((np.array(jpos[i][1:])-np.array(jpos[i][:-1])))
+for i in range(0,len(pos)):    
+	pos_error.append((np.array(pos[i][1:])-np.array(pos[i][:-1])))
 
+		
 # For faulty run, see if a jump happened
 if mode == '1':
 	output_line = output_line + ', '
-	csvfile6 = open('./stats.csv','rU')
-	range_reader = csv.reader(x.replace('\0', '') for x in csvfile6)
-	lows = []
-	highs = []
+	csvfile6 = open('./stats','rU')
+	range_reader = csv.reader(csvfile6)
+	mpos_lim = []
+	mvel_lim = []
+	jpos_lim = []
+	pos_lim = []
 	for line in range_reader:
-		if line[0].find("-CI") > 0:
-			lows = line[1:]
-		if line[0].find("+CI") > 0:
-			highs = line[1:]
-		if line[0].find("Num") > 0:
-			break
+		if 'mpos' in line[0]:
+			mpos_lim.append(line[1:])
+		elif 'mvel' in line[0]:
+			mvel_lim.append(line[1:])
+		elif 'jpos' in line[0]:
+			jpos_lim.append(line[1:])
+		elif 'pos' in line[0]:
+			pos_lim.append(line[1:])
 	csvfile6.close()
-	i = 0
-	for i in range(0,len(mpos_error)):		
-		if (mpos_error[i] < float(lows[i*3])) or (mpos_error[i] > float(highs[i*3])):
-			output_line = output_line + 'MPOS '+ str(indices[i]) + ';'
-		if (mvel_error[i] < float(lows[i*3+1])) or (mvel_error[i] > float(highs[i*3+1])): 
-			output_line = output_line + 'MVEL ' + str(indices[i]) + ';'
-		if (jpos_error[i] < float(lows[i*3+2])) or (jpos_error[i] > float(highs[i*3+2])): 
-			output_line = output_line + 'JPOS ' + str(indices[i]) + ';'
-	for i in range(0,3):
-		if (pos_error[i] < float(lows[i-3*len(mpos_error)])) or (pos_error[i] > float(highs[i-3*len(mpos_error)])):
-			output_line = output_line + 'POS '+ str(posi[i]) + ';' 
+	for i in range(0,3):		
+		if (mpos_error[i] < float(mpos_lim[i][0])) or (mpos_error[i] > float(mpos_lim[i][1])):
+			output_line = output_line + 'MPOS '+ str(indices[i]) + ' = ' + str(mpos_error[i]) + ';'
+		if (mvel_error[i] < float(mvel_lim[i][0])) or (mvel_error[i] > float(mvel_lim[i][1])): 
+			output_line = output_line + 'MVEL ' + str(indices[i]) + ' = ' + str(mvel_error[i]) +  ';'
+		if (jpos_error[i] < float(jpos_lim[i][0])) or (jpos_error[i] > float(jpos_lim[i][1])): 
+			output_line = output_line + 'JPOS ' + str(indices[i]) + ' = ' + str(jpos_error[i]) + ';'
+		if (pos_error[i] < float(pos_lim[i][0])) or (pos_error[i] > float(pos_lim[i][1])):
+			output_line = output_line + 'POS '+ str(posi[i]) + ' = ' + str(pos_error[i]) + ';' 
 
 if mode == '0':
 	writer4.writerow(output_line.split(','))    
