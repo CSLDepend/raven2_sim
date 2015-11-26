@@ -4,7 +4,7 @@ import csv
 import math
 import shelve
 from statistics import mean, stdev
-from operator import add, sub, mul
+from operator import add, sub, mul, abs
 from franges import frange
 import matplotlib.pyplot as plt
 
@@ -209,43 +209,72 @@ def compute_by_packet(all_files):
 def _get_delta(l):
     return map(sub,l[1:],l[:-1])
 
+def _get_distance(l,m):
+    traj_len = min(len(l),len(m))
+    return map(abs,(map(sub,l[1:traj_len],m[1:traj_len])))
+    
 def _get_stats(l):
     return min(l), max(l), mean(l), stdev(l)
 
-def compute_delta_t(all_files):
-    """Compute the change of variables between time t and t+1"""
-
+def compute_delta_t(golden_file, all_files):
     mpos_delta = [[],[],[]]
     mvel_delta = [[],[],[]]
     jpos_delta = [[],[],[]]
     pos_delta = [[],[],[]]
 
+    mpos_distance = [[],[],[]]
+    mvel_distance = [[],[],[]]
+    jpos_distance = [[],[],[]]
+    pos_distance = [[],[],[]]
+    
+    with open(golden_file) as gfile:
+        reader = csv.reader(x.replace('\0', '') for x in gfile)
+        gmpos, gmvel, gdac, gjpos, gpos, gerr, gpacket_nums, gt = parse_latest_run(reader)    
+   
     for f in all_files:
         with open(f) as infile:
             reader = csv.reader(x.replace('\0', '') for x in infile)
-            mpos, mvel, dac, jpos, pos, err, packet_nums, t = parse_latest_run(reader)
+            mpos, mvel, dac, jpos, pos, err, packet_nums, t = parse_latest_run(reader)            
             for i in range(0,3):
-                """Compute for the first 3 degree of freedom"""
+                """Compute the change of variables between time t and t+1"""
                 mpos_delta[i].extend(_get_delta(mpos[i]))
                 mvel_delta[i].extend(_get_delta(mvel[i]))
                 jpos_delta[i].extend(_get_delta(jpos[i]))
                 pos_delta[i].extend(_get_delta(pos[i]))
+                """Compute distance to golden robot run"""              
+                mpos_distance[i].extend(_get_distance(mpos[i],gmpos[i]))
+                mvel_distance[i].extend(_get_distance(mvel[i],gmvel[i]))
+                jpos_distance[i].extend(_get_distance(jpos[i],gjpos[i]))
+                pos_distance[i].extend(_get_distance(pos[i],gpos[i]))                
+    
     with open('stats', 'w') as outfile:
         outfile.write('min, max, mean, stdev\n')
         for i in range(0,3):
             lmin, lmax, lmean, lstdev = _get_stats(mpos_delta[i])
-            outfile.write('mpos%d, %f, %f, %f, %f\n' % 
+            outfile.write('mpos_delta%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
             lmin, lmax, lmean, lstdev = _get_stats(mvel_delta[i])
-            outfile.write('mvel%d, %f, %f, %f, %f\n' % 
+            outfile.write('mvel_delta%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
             lmin, lmax, lmean, lstdev = _get_stats(jpos_delta[i])
-            outfile.write('jpos%d, %f, %f, %f, %f\n' % 
+            outfile.write('jpos_delta%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
             lmin, lmax, lmean, lstdev = _get_stats(pos_delta[i])
-            outfile.write('pos%d, %f, %f, %f, %f\n' % 
+            outfile.write('pos_delta%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
 
+            lmin, lmax, lmean, lstdev = _get_stats(mpos_distance[i])
+            outfile.write('mpos_distance%d, %f, %f, %f, %f\n' % 
+                    (i, lmin, lmax, lmean, lstdev))
+            lmin, lmax, lmean, lstdev = _get_stats(mvel_distance[i])
+            outfile.write('mvel_distance%d, %f, %f, %f, %f\n' % 
+                    (i, lmin, lmax, lmean, lstdev))
+            lmin, lmax, lmean, lstdev = _get_stats(jpos_distance[i])
+            outfile.write('jpos_distance%d, %f, %f, %f, %f\n' % 
+                    (i, lmin, lmax, lmean, lstdev))
+            lmin, lmax, lmean, lstdev = _get_stats(pos_distance[i])
+            outfile.write('pos_distance%d, %f, %f, %f, %f\n' % 
+                    (i, lmin, lmax, lmean, lstdev))
             """
             fig = plt.figure()
             ax = fig.add_subplot(411, title='MPOS')
@@ -278,9 +307,12 @@ if __name__ == '__main__':
 
     # Get all csv files in current directory and subdirectories
     all_files = []
+    golden_file = ''
     for root, dirs, files in os.walk(sys.argv[1]):
         for f in files:
-            if f.endswith('csv') and not f.startswith('mfi2'):
+            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('latest_run'):
                 all_files.append(os.path.join(root,f))
-
-    compute_delta_t(all_files)    
+            if f.startswith('latest_run'):
+               golden_file = os.path.join(root,f)
+          
+    compute_delta_t(golden_file,all_files)    
