@@ -398,7 +398,7 @@ def generate_test():
 
 #generate_network_layer_skip()
 #generate_network_layer_delay()
-generate_xyz_dist_faults()
+#generate_xyz_dist_faults()
 #generate_u_R_l_faults()
 #generate_rt_process_faults()
 #generate_rt_process_once_faults()
