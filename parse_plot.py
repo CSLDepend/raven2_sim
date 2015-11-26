@@ -155,6 +155,7 @@ def parse_input_data(in_file):
 def plot_mpos(m, gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t):
 	indices = [0,1,2,4,5,6,7]	
 	f1, axarr1 = plt.subplots(7, 2, sharex=True)
+	plt.tight_layout()
 	axarr1[0,0].set_title("Motor Positions (Gold Arm)")
 	axarr1[0,1].set_title("Motor Velocities (Gold Arm)")
 	for j in range(0,7):
@@ -168,18 +169,18 @@ def plot_mpos(m, gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mve
 		axarr1[j, 1].plot(mvel[j], 'r')
 		if j < 3 and not(all(v == 0 for v in sim_mvel[j])):	
 			axarr1[j, 1].plot(sim_mvel[j], 'b')
-		# Set the column label
+		# Set the row labels
 		axarr1[j, 0].set_ylabel('Motor '+str(indices[j]))
 		# Set the Y ticks
-		max_pos = max([round(float(max(mpos[j])),1),round(float(max(orig_mpos[j])),1)])
-		min_pos = min([round(float(min(mpos[j])),1),round(float(min(orig_mpos[j])),1)])
-		steps = round(((max_pos - min_pos)/3),1)
-		axarr1[j, 0].yaxis.set_ticks(np.arange(min_pos , max_pos, steps))
+		axarr1[j, 0].locator_params(axis = 'y', nbins = 3)
+		axarr1[j, 0].tick_params(axis = 'both', labelsize=10)
 		# Set the Y ticks
-		max_vel = max([round(float(max(mvel[j])),1),round(float(max(orig_mvel[j])),1)])
-		min_vel = min([round(float(min(mvel[j])),1),round(float(min(orig_mvel[j])),1)])
-		steps = round(((max_vel - min_vel)/3),1)
-		axarr1[j, 1].yaxis.set_ticks(np.arange(min_vel , max_vel, steps))
+		axarr1[j, 1].locator_params(axis = 'y', nbins = 3)
+		axarr1[j, 1].tick_params(axis = 'both', labelsize=10)		
+	# Set the column labels
+	axarr1[j, 0].set_xlabel('Packet No. (ms)')
+	axarr1[j, 1].set_xlabel('Packet No. (ms)')
+	plt.tight_layout()	
 	#plt.show()
 	return f1
   
@@ -193,16 +194,17 @@ def plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t):
 		axarr2[j].plot(dac[j], 'r')
 		axarr2[j].set_ylabel('Joint '+str(indices[j]))
 		# Set the Y ticks
-		max_dac = max([round(float(max(dac[j])),1),round(float(max(orig_dac[j])),1)])
-		min_dac = max([round(float(min(dac[j])),1),round(float(min(orig_dac[j])),1)])
-		steps = round(((max_dac - min_dac)/3),1)
-		axarr2[j].yaxis.set_ticks(np.arange(min_dac, max_dac, steps))
+		axarr2[j].locator_params(axis = 'y', nbins = 3)
+		axarr2[j].tick_params(axis = 'both', labelsize=10)
+	axarr2[j].set_xlabel('Packet No. (ms)')
+	plt.tight_layout()
 	#plt.show()
 	return f2
 
 def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t):
 	indices = [0,1,2,4,5,6,7]
 	f3, axarr3 = plt.subplots(7, 1, sharex=True)
+	plt.tight_layout()
 	axarr3[0].set_title("Joint Positions (Gold Arm)")
 	for j in range(0,7):
 		axarr3[j].plot(gold_jpos[j], 'g')
@@ -210,10 +212,10 @@ def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t):
 		axarr3[j].plot(jpos[j], 'r')
 		axarr3[j].set_ylabel('Joint '+str(indices[j]))
 		# Set the Y ticks
-		max_pos = max([round(float(max(jpos[j])),1),round(float(max(orig_jpos[j])),1)])
-		min_pos = max([round(float(min(jpos[j])),1),round(float(min(orig_jpos[j])),1)])
-		steps = round(((max_pos - min_pos)/3),1)
-		axarr3[j].yaxis.set_ticks(np.arange(min_pos , max_pos, steps))
+		axarr3[j].locator_params(axis = 'y', nbins = 3)
+		axarr3[j].tick_params(axis = 'both', labelsize=10)
+	axarr3[j].set_xlabel('Packet No. (ms)')		
+	plt.tight_layout()	
 	#plt.show()
 	return f3
 
@@ -227,6 +229,9 @@ def plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t):
 		axarr4[j].plot(orig_pos[j], 'k')
 		axarr4[j].plot(pos[j], 'r')
 		axarr4[j].set_ylabel(pos_labels[j])
+		axarr4[j].tick_params(axis = 'both', labelsize=10)
+	axarr4[j].set_xlabel('Packet No. (ms)')
+	plt.tight_layout()	
 	#plt.show()
 	return f4
 
