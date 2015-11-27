@@ -37,7 +37,7 @@ UDP_PORT2 = 36001
 # Not_Ready: state = 0, Operating: state = 1, Stopped: state = 2  
 robot_state = 0;
 
-script, mode = argv
+script, mode, traj = argv
 simulator = 0
 if mode == "sim" or mode == "dyn_sim" or mode == 'detect':
     simulator = 1
@@ -97,7 +97,7 @@ def readSignals():
 
 def sendPackets():
     global seq
-    csvfile = open('./teleop_data/new_test_2.csv','r'); 
+    csvfile = open('./teleop_data/new_test_'+str(traj.split('traj')[1])+'.csv','r');    
     outfile = open('./robot_run.csv','w');
     reader = csv.reader(csvfile)
     writer = csv.writer(outfile,delimiter=',')
