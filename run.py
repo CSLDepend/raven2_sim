@@ -69,10 +69,11 @@ def initLogger(logger, log_file):
 
 class Raven():
     """ Implements the Raven class to run different Raven experiments"""
-    def __init__(self, raven_home, mode, packet_gen, injection):
+    def __init__(self, raven_home, mode, packet_gen, injection, trajectory):
         """ Init variables """
         self.mode = mode
         self.packet_gen = packet_gen
+        self.traj = trajectory
         self.raven_home = raven_home
         self.shelve_file = raven_home + "/run.shelve"
         self.surgeon_simulator = 1
@@ -317,7 +318,7 @@ class Raven():
         dynSimTask = 'xterm -hold -e "cd ./Li_DYN && make -j && ./two_arm_dyn"'
         rostopicTask = 'rostopic echo -p ravenstate >'+self.raven_home+'/latest_run.csv'
         if (self.surgeon_simulator == 1):
-            packetTask = 'xterm -hold -e python '+self.raven_home+'/Real_Packet_Generator_Surgeon.py '+ self.mode
+            packetTask = 'xterm -hold -e python '+self.raven_home+'/Real_Packet_Generator_Surgeon.py '+ self.mode + ' '+ self.traj 
             #print(packetTask)
         else:
             packetTask = 'xterm -e python '+self.raven_home+'/Packet_Generator.py'
@@ -431,7 +432,7 @@ class Raven():
         cmd = 'mkdir -p ' + self.result_folder
         os.system(cmd)
 
-    def __run_parse_plot(self, mode, inj_num):
+    def __run_parse_plot(self, mode, inj_num,traj):
         """Call parse_plot.py and copy figures folder to exp_result folder."""
         print "copy figures" #dchen8
         duration = 0
@@ -443,7 +444,7 @@ class Raven():
                     duration = line[3]
                     value = line[4]
                     break
-        os.system("python parse_plot.py " + str(mode) + " " + str(inj_num))
+        os.system("python parse_plot.py " + str(mode) + " " + str(inj_num) + " "+str(traj))
         cmd = 'cp -r figures/ ' + self.result_folder + '/inj' + '_'.join([str(inj_num), duration, value])
         os.system(cmd)
 
@@ -487,7 +488,7 @@ class Raven():
                             print "skip compiling!!!"
                             time.sleep(5)
                         self._run_experiment()
-                        self.__run_parse_plot(1, self.curr_inj)
+                        self.__run_parse_plot(1, self.curr_inj,self.traj)
                         if self.curr_inj == self.end_inj_num:
                             break
                 elif l[0].startswith('location'):
@@ -521,7 +522,7 @@ class Raven():
             self._compile_raven()  #comment out any time you change mode from rob to sim
             self._run_experiment()
             #self.__run_parse_plot(0,-1)
-            os.system("python parse_plot.py 0 -1")
+            os.system("python parse_plot.py 0 -1 "+self.traj)
 
 # Main code starts here
 
@@ -536,11 +537,11 @@ raven_home = splits[0]
 golden_home = raven_home+'/golden_run'
 print '\nRaven Home Found to be: '+ raven_home
 #rsp_func()
-usage = "Usage: python run.py <sim|dyn_sim|rob|detect}> <1:packet_gen|0:gui> <none|mfi:start#|mfi2:start#>"
+usage = "Usage: python run.py <sim|dyn_sim|rob|detect}> <1:packet_gen|0:gui> <none|mfi:start#|mfi2:start#> <traj2|traj3>"
 
 # Parse the arguments
 try:
-    script, mode, packet_gen, injection = argv
+    script, mode, packet_gen, injection, trajectory = argv
 except:
     print "Error: missing parameters"
     print usage
@@ -559,7 +560,7 @@ else:
     sys.exit(2)
 
 # Init Raven
-raven = Raven(raven_home, mode, packet_gen, injection)
+raven = Raven(raven_home, mode, packet_gen, injection, trajectory)
 signal.signal(signal.SIGINT, raven.signal_handler)
 
 # Run Raven

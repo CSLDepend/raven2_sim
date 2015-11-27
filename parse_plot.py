@@ -152,7 +152,7 @@ def parse_input_data(in_file):
 	
 	return mpos,mvel,dac,jpos,pos
 
-def plot_mpos(m, gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t):
+def plot_mpos(m, gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t, mpos_detect, mvel_detect):
 	indices = [0,1,2,4,5,6,7]	
 	f1, axarr1 = plt.subplots(7, 2, sharex=True)
 	plt.tight_layout()
@@ -164,11 +164,19 @@ def plot_mpos(m, gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mve
 		axarr1[j, 0].plot(mpos[j], 'r')
 		if j < 3 and not(all(v == 0 for v in sim_mpos[j])):	
 			axarr1[j, 0].plot(sim_mpos[j], 'b')
+		if j < 3 and mpos_detect: # and not(all(v == 0 for v in mpos_detect[j])):	
+			mpos_vline = min(mpos_detect)# min([i for i, e in enumerate(mpos_detect[j]) if e != 0])
+			axarr1[j, 0].axvline(x = mpos_vline, color = 'k', ls = 'dashed')
+			#axarr1[j, 0].axvline(x = max(mpos_vlines[j]), color = 'k', ls = 'dashed')
 		axarr1[j, 1].plot(orig_mvel[j], 'k')
 		axarr1[j, 1].plot(gold_mvel[j], 'g')
 		axarr1[j, 1].plot(mvel[j], 'r')
 		if j < 3 and not(all(v == 0 for v in sim_mvel[j])):	
 			axarr1[j, 1].plot(sim_mvel[j], 'b')
+		if j < 3 and mvel_detect: #and not(all(v == 0 for v in mvel_detect[j])):	
+			mvel_vline = min(mvel_detect)#min([i for i, e in enumerate(mvel_detect[j]) if e != 0]) 
+			axarr1[j, 1].axvline(x = mvel_vline, color = 'k', ls = 'dashed')
+			#axarr1[j, 1].axvline(x = max(mvel_vlines[j]), color = 'k', ls = 'dashed')			
 		# Set the row labels
 		axarr1[j, 0].set_ylabel('Motor '+str(indices[j]))
 		# Set the Y ticks
@@ -201,7 +209,7 @@ def plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t):
 	#plt.show()
 	return f2
 
-def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t):
+def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t, jpos_detect):
 	indices = [0,1,2,4,5,6,7]
 	f3, axarr3 = plt.subplots(7, 1, sharex=True)
 	plt.tight_layout()
@@ -210,6 +218,10 @@ def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t):
 		axarr3[j].plot(gold_jpos[j], 'g')
 		axarr3[j].plot(orig_jpos[j], 'k')
 		axarr3[j].plot(jpos[j], 'r')
+		if j < 3 and jpos_detect: #and not(all(v == 0 for v in jpos_detect[j])):	
+			jpos_vline = min(jpos_detect)#min([i for i, e in enumerate(jpos_detect[j]) if e != 0]) 
+			axarr3[j].axvline(x = jpos_vline, color = 'k', ls = 'dashed')
+			#axarr3[j].axvline(x = max(jpos_vlines[j]), color = 'k', ls = 'dashed')		
 		axarr3[j].set_ylabel('Joint '+str(indices[j]))
 		# Set the Y ticks
 		axarr3[j].locator_params(axis = 'y', nbins = 3)
@@ -219,7 +231,7 @@ def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t):
 	#plt.show()
 	return f3
 
-def plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t):
+def plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t,pos_detect):
 	indices = [0,1,2,4,5,6,7]
 	f4, axarr4 = plt.subplots(3, 1, sharex=True)
 	axarr4[0].set_title("End-Effector Positions (Gold Arm)")
@@ -228,6 +240,9 @@ def plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t):
 		axarr4[j].plot(gold_pos[j], 'g')
 		axarr4[j].plot(orig_pos[j], 'k')
 		axarr4[j].plot(pos[j], 'r')
+		if not(all(v == 0 for v in pos_detect[j])):	
+			pos_vline = min([i for i, e in enumerate(pos_detect[j]) if e != 0]) 
+			axarr4[j].axvline(x = pos_vline, color = 'k', ls = 'dashed')
 		axarr4[j].set_ylabel(pos_labels[j])
 		axarr4[j].tick_params(axis = 'both', labelsize=10)
 	axarr4[j].set_xlabel('Packet No. (ms)')
@@ -244,16 +259,16 @@ raven_home = splits[0]
 
 # Parse the arguments
 try:
-    script, mode, inj_num  = argv
+    script, pmode, inj_num, traj  = argv
 except:
     print "Error: missing parameters"
-    print 'python plot2.py 0|1 inj_num'
+    print 'python plot2.py 0|1 inj_num traj_name'
     sys.exit(2)
 
 # Open Log files
 csvfile1 = open(raven_home+'/robot_run.csv')
 reader1 = csv.reader(x.replace('\0', '') for x in csvfile1)
-csvfile2 = open(raven_home+'/golden_run/latest_run.csv')
+csvfile2 = open(raven_home+'/golden_run/'+traj+'.csv')
 reader2 = csv.reader(x.replace('\0', '') for x in csvfile2)
 
 # Parse the robot run
@@ -272,28 +287,21 @@ csvfile1.close()
 csvfile2.close()
 csvfile3.close()
 
-cmd = 'mkdir -p ' + raven_home+'/figures'
-os.system(cmd)
-plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t).savefig(raven_home+'/figures/dac.png')
-plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t).savefig(raven_home+'/figures/jpos.png')
-plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t).savefig(raven_home+'/figures/pos.png')
-plot_mpos(mode,gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t).savefig(raven_home+'/figures/mpos_mvel.png')
-
 # Log the results
 indices = [0,1,2,4,5,6,7]
 posi = ['X','Y','Z']
-if mode == '0':
+if str(pmode) == '0':
 	output_file = raven_home+'/fault_free_log.csv'
-if mode == '1':
+if str(pmode) == '1':
 	output_file = raven_home+'/error_log.csv'
 	
 # Write the headers for new file
 if not(os.path.isfile(output_file)):
 	csvfile4 = open(output_file,'w')
 	writer4 = csv.writer(csvfile4,delimiter=',') 
-	if mode == '0':
+	if str(pmode) == '0':
 		output_line = 'Num_Packets'+','
-	if mode == '1':
+	if str(pmode) == '1':
 	    output_line = 'Variable, Start, Duration, Value, Num_Packets, Errors, '
 	for i in range(0,len(mpos)):
 		output_line = output_line + 'err_mpos' + str(indices[i]) + ','
@@ -304,8 +312,9 @@ if not(os.path.isfile(output_file)):
 			output_line = output_line + 'err_pos' + str(posi[i])
 		else:
 			output_line = output_line + 'err_pos' + str(posi[i]) + ','
-	if mode == '1':
-		output_line = output_line + ', Jump?'
+	output_line = output_line + ', Jump?'
+	if str(pmode) == '1':
+		output_line = output_line + ', Detections, Latency, False_Detections'
 	writer4.writerow(output_line.split(',')) 
 	csvfile4.close()
 
@@ -314,22 +323,27 @@ csvfile4 = open(output_file,'a')
 writer4 = csv.writer(csvfile4,delimiter=',') 
 
 # For faulty run, write Injection parameters
-if mode == '1':
+if str(pmode) == '1':
+	start = 0
+	duration = 0
 	csvfile5 = open('./mfi2_params.csv','r')
 	inj_param_reader = csv.reader(csvfile5)
 	for line in inj_param_reader:
 		#print line
 		if (int(line[0]) == int(inj_num)):
 			param_line = line[1:]
+			print param_line
+			istart = int(line[2])
+			iduration = int(line[3])
 			break 
 	csvfile5.close()
-	print param_line
+	
 
 # Write Len of Trajectory
 output_line = str(len(mpos[0])) + ','
 
 # For faulty run, write error messages and see if a jump happened
-if mode == '1':
+if str(pmode) == '1':
 	# Error messages
 	gold_msgs = [s for s in gold_err if s]
 	err_msgs = [s for s in err if s]
@@ -340,63 +354,207 @@ if mode == '1':
 	output_line = output_line +  ','
 
 
-# Trajectory errors 
-mpos_error = [];
-mvel_error = [];
-jpos_error = [];
-pos_error = [];
-traj_len = min(len(mpos[0]),len(gold_mpos[0]))
-for i in range(0,len(mpos)):		
-	mpos_error.append(float(sum(abs(np.array(mpos[i][1:traj_len])-np.array(gold_mpos[i][1:traj_len]))))/traj_len)
-	mvel_error.append(float(sum(abs(np.array(mvel[i][1:traj_len])-np.array(gold_mvel[i][1:traj_len]))))/traj_len)
-	jpos_error.append(float(sum(abs(np.array(jpos[i][1:traj_len])-np.array(gold_jpos[i][1:traj_len]))))/traj_len)
-	output_line = output_line + str(mpos_error[i]) + ', '+ str(mvel_error[i]) +', '+ str(jpos_error[i])+',' 
-for i in range(0,len(pos)):    
-	pos_error.append(float(sum(abs(np.array(pos[i][1:traj_len])-np.array(gold_pos[i][1:traj_len]))))/traj_len)
-	if (i == len(pos)-1):
-		output_line = output_line + str(pos_error[i])
-	else:
-		output_line = output_line + str(pos_error[i])+','
+# Get the bounds to see if a jump happened
+csvfile6 = open('./stats','rU')
+range_reader = csv.reader(csvfile6)
+mpos_lim = []
+mvel_lim = []
+jpos_lim = []
+pos_lim = []
+mpos_dist = []
+mvel_dist = []
+jpos_dist = []
+pos_dist = []	
+for line in range_reader:
+	if 'mpos_delta' in line[0]:
+		mpos_lim.append(line[1:])
+	elif 'mvel_delta' in line[0]:
+		mvel_lim.append(line[1:])
+	elif 'jpos_delta' in line[0]:
+		jpos_lim.append(line[1:])
+	elif 'pos_delta' in line[0]:
+		pos_lim.append(line[1:])
+	elif 'mpos_dist' in line[0]:
+		mpos_dist.append(line[1:])
+	elif 'mvel_dist' in line[0]:
+		mvel_dist.append(line[1:])
+	elif 'jpos_dist' in line[0]:
+		jpos_dist.append(line[1:])
+	elif 'pos_dist' in line[0]:
+		pos_dist.append(line[1:])			
+csvfile6.close()
+# Scaling the limits for jpos 2
+for i in range(0,len(jpos_dist[2])):
+	jpos_dist[2][i] = float(jpos_dist[2][i])*(math.pi/180)*1000		
+for i in range(0,len(jpos_lim[2])):
+	jpos_lim[2][i] = float(jpos_lim[2][i])*(math.pi/180)*1000
+# Scaling the limits for X,Y,Z
+for i in range(0,len(pos_dist)):
+	for j in range(0,len(pos_dist[i])):
+		pos_dist[i][j] = float(pos_dist[i][j])/1000	
+	for j in range(0,len(pos_lim[i])):
+		pos_lim[i][j] = float(pos_lim[i][j])/1000		
+	
 # Step Errors
-for i in range(0,len(mpos)):		
-	mpos_error.append((np.array(mpos[i][1:])-np.array(mpos[i][:-1])))
-	mvel_error.append((np.array(mvel[i][1:])-np.array(mvel[i][:-1])))
-	jpos_error.append((np.array(jpos[i][1:])-np.array(jpos[i][:-1])))
-for i in range(0,len(pos)):    
-	pos_error.append((np.array(pos[i][1:])-np.array(pos[i][:-1])))
+mpos_error = [[],[],[]];
+mvel_error = [[],[],[]];
+jpos_error = [[],[],[]];
+pos_error = [[],[],[]];
+for i in range(0,len(mpos_error)):		
+	mpos_error[i]=(list(np.array(mpos[i][1:])-np.array(mpos[i][:-1])))
+	mvel_error[i]=(list(np.array(mvel[i][1:] )-np.array(mvel[i][:-1])))
+	jpos_error[i]=(list(np.array(jpos[i][1:])-np.array(jpos[i][:-1])))
+for i in range(0,len(pos_error)):    
+	pos_error[i]=(list(np.array(pos[i][1:])-np.array(pos[i][:-1])))	
 
-		
-# For faulty run, see if a jump happened
-if mode == '1':
-	output_line = output_line + ', '
-	csvfile6 = open('./stats','rU')
-	range_reader = csv.reader(csvfile6)
-	mpos_lim = []
-	mvel_lim = []
-	jpos_lim = []
-	pos_lim = []
-	for line in range_reader:
-		if 'mpos' in line[0]:
-			mpos_lim.append(line[1:])
-		elif 'mvel' in line[0]:
-			mvel_lim.append(line[1:])
-		elif 'jpos' in line[0]:
-			jpos_lim.append(line[1:])
-		elif 'pos' in line[0]:
-			pos_lim.append(line[1:])
-	csvfile6.close()
-	for i in range(0,3):		
-		if (mpos_error[i] < float(mpos_lim[i][0])) or (mpos_error[i] > float(mpos_lim[i][1])):
-			output_line = output_line + 'MPOS '+ str(indices[i]) + ' = ' + str(mpos_error[i]) + ';'
-		if (mvel_error[i] < float(mvel_lim[i][0])) or (mvel_error[i] > float(mvel_lim[i][1])): 
-			output_line = output_line + 'MVEL ' + str(indices[i]) + ' = ' + str(mvel_error[i]) +  ';'
-		if (jpos_error[i] < float(jpos_lim[i][0])) or (jpos_error[i] > float(jpos_lim[i][1])): 
-			output_line = output_line + 'JPOS ' + str(indices[i]) + ' = ' + str(jpos_error[i]) + ';'
-		if (pos_error[i] < float(pos_lim[i][0])) or (pos_error[i] > float(pos_lim[i][1])):
-			output_line = output_line + 'POS '+ str(posi[i]) + ' = ' + str(pos_error[i]) + ';' 
+# Find jumps in delta
+mpos_detect = [[],[],[]]
+mvel_detect = [[],[],[]]
+jpos_detect = [[],[],[]]
+pos_detect = [[],[],[]]
+for i in range(0,3):		
+	for j in range(0,len(mpos_error[i])):
+		if (abs(mpos_error[i][j]) > 7*float(mpos_lim[i][1])):
+			output_line = output_line + str(j) + '-'
+			#print 'mpos'+str(indices[i])
+			#print j
+			mpos_detect[i].append(1)
+		else:
+			mpos_detect[i].append(0)
+	output_line = output_line + ','
+	for j in range(0,len(mvel_error[i])):
+		if (abs(mvel_error[i][j]) > 5*float(mvel_lim[i][1])): 
+			output_line = output_line + str(j) +  '-'
+			#print 'mvel'+str(indices[i])
+			#print j
+			mvel_detect[i].append(1)
+		else:
+			mvel_detect[i].append(0)
+	output_line = output_line + ','
+	for j in range(0,len(jpos_error[i])):				
+		if (abs(jpos_error[i][j]) > 10*float(jpos_lim[i][1])): 
+			output_line = output_line + str(j) + '-'
+			#print 'jpos'+str(indices[i])+','+str(jpos_error[i][j])+','+str(jpos_lim[i][0])+'|'+str(jpos_lim[i][1])
+			#print j 
+			jpos_detect[i].append(1)
+		else:
+			jpos_detect[i].append(0)
+	output_line = output_line + ','
 
-if mode == '0':
+for i in range(3,7):
+	output_line = output_line + ',,,'				
+
+for i in range(0,3):
+	for j in range(0,len(pos_error[i])):
+		if (abs(pos_error[i][j]) > 2*float(pos_lim[i][1])):
+			output_line = output_line + str(j) + '-' 
+			#print 'pos'+str(indices[i])
+			#print j
+			pos_detect[i].append(1)
+		else:
+			pos_detect[i].append(0)
+	output_line = output_line + ','
+
+# Trajectory errors 
+mpos_error = [[],[],[]];
+mvel_error = [[],[],[]];
+jpos_error = [[],[],[]];
+pos_error = [[],[],[]];
+for i in range(0,3):	
+	traj_len = min(len(mpos[i]),len(gold_mpos[i]))
+	mpos_error[i]= list(np.array(mpos[i][1:traj_len])-np.array(gold_mpos[i][1:traj_len]))
+	mvel_error[i]= list(np.array(mvel[i][1:traj_len])-np.array(gold_mvel[i][1:traj_len]))
+	jpos_error[i]= list(np.array(jpos[i][1:traj_len])-np.array(gold_jpos[i][1:traj_len]))
+for i in range(0,3):    
+	pos_error[i] = list(np.array(pos[i][1:traj_len])-np.array(gold_pos[i][1:traj_len]))
+# Find jumps in distance
+for i in range(0,3):		
+	for j in range(0,len(mpos_error[i])):
+		if (mpos_error[i][j] > 5*float(mpos_dist[i][1])):
+			output_line = output_line + 'P'+ str(j) + ' = ' + str(mpos_error[i][j]) + ';'
+
+		if (mvel_error[i][j] > 5*float(mvel_dist[i][1])): 
+			output_line = output_line + 'P'+ str(j) + ' = ' + str(mvel_error[i][j]) + ';'
+	
+		if (jpos_error[i][j] > 10*float(jpos_dist[i][1])): 
+			output_line = output_line + 'P'+ str(j) + ' = ' + str(jpos_error[i][j]) + ';'
+			
+		if (pos_error[i][j] > 5*float(pos_dist[i][1])):
+			output_line = output_line + 'P'+ str(j) + ' = ' + str(mpos_error[i][j]) + ';'
+output_line = output_line + ','			
+
+# Detector
+true_mpos = []
+true_mvel = []
+true_jpos = []
+false_mpos = []
+false_mvel = []
+false_jpos = []
+if str(pmode) == '1':
+	mpos_all_d = list(np.array(mpos_detect[0])|np.array(mpos_detect[1])|np.array(mpos_detect[2]))
+	mvel_all_d = list(np.array(mvel_detect[0])|np.array(mvel_detect[1])|np.array(mvel_detect[2]))
+	jpos_all_d = list(np.array(jpos_detect[0])|np.array(jpos_detect[1])|np.array(jpos_detect[2]))
+	i = 0
+	while i < len(mpos_all_d):
+		if mpos_all_d[i]:
+			if (istart <= i) and (i <= istart + iduration):
+				true_mpos.append(i)	
+				i = istart+iduration+1
+			else:
+				false_mpos.append(i)
+				while mpos_all_d[i]:		
+					i = i + 1
+		else:
+			i = i + 1
+	i = 0	
+	while i < len(mvel_all_d):
+		if mvel_all_d[i]:
+			if (istart <= i) and (i <= istart + iduration):
+				true_mvel.append(i)	
+				i = istart+iduration+1
+			else:
+				false_mvel.append(i)
+				while mvel_all_d[i]:	
+					i = i + 1	
+		else:
+			i = i + 1
+	i = 0
+	while i < len(jpos_all_d):
+		if jpos_all_d[i]:
+			if (istart <= i) and (i <= istart + iduration):
+				true_jpos.append(i)	
+				i = istart+iduration+1
+			else:
+				false_jpos.append(i)
+				while jpos_all_d[i]:	
+					i = i + 1			
+		else:
+			i = i + 1	
+	print true_mpos
+	print true_mvel
+	print true_jpos
+	# Write Detections
+	output_line = output_line + 'MVEL:'+ str(true_mvel) + '-MPOS:'+ str(true_mpos) + '-JPOS:'+ str(true_jpos)+','
+	# Write Latency
+	detect_list = true_mpos+true_mvel+true_jpos
+	if detect_list:
+		output_line = output_line + str(int(min(detect_list))-istart)+','
+	else:
+		output_line = output_line + 'N/A'+','
+	# Write Miss Detections
+	output_line = output_line + 'MVEL:'+ str(len(false_mvel)) + '-MPOS:'+ str(len(false_mpos)) + '-JPOS:'+ str(len(false_jpos))
+
+# Write to CSV file	
+if str(pmode) == '0':
 	writer4.writerow(output_line.split(','))    
-if mode == '1':
+if str(pmode) == '1':
 	writer4.writerow(param_line+output_line.split(','))    
 csvfile4.close()
+
+# Plot the graphs
+cmd = 'mkdir -p ' + raven_home+'/figures'
+os.system(cmd)
+plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t).savefig(raven_home+'/figures/dac.png')
+plot_mpos(pmode,gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t,true_mpos, true_mvel).savefig(raven_home+'/figures/mpos_mvel.png')
+plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t,true_jpos).savefig(raven_home+'/figures/jpos.png')
+plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t,pos_detect).savefig(raven_home+'/figures/pos.png')
