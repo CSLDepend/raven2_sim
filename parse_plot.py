@@ -446,7 +446,7 @@ for i in range(3,7):
 
 for i in range(0,3):
 	for j in range(0,len(pos_error[i])):
-		if (abs(pos_error[i][j]) > 2*float(pos_lim[i][1])):
+		if (abs(pos_error[i][j]) > 5*float(pos_lim[i][1])):
 			output_line = output_line + str(j) + '-' 
 			#print 'pos'+str(indices[i])
 			#print j
@@ -497,9 +497,9 @@ if str(pmode) == '1':
 	i = 0
 	while i < len(mpos_all_d):
 		if mpos_all_d[i]:
-			if (istart <= i) and (i <= istart + iduration):
+			if (istart <= i) and (i <= istart + iduration + 1):
 				true_mpos.append(i)	
-				i = istart+iduration+1
+				i = istart+iduration+2
 			else:
 				false_mpos.append(i)
 				while mpos_all_d[i]:		
@@ -509,9 +509,9 @@ if str(pmode) == '1':
 	i = 0	
 	while i < len(mvel_all_d):
 		if mvel_all_d[i]:
-			if (istart <= i) and (i <= istart + iduration):
+			if (istart <= i) and (i <= istart + iduration + 1):
 				true_mvel.append(i)	
-				i = istart+iduration+1
+				i = istart+iduration+2
 			else:
 				false_mvel.append(i)
 				while mvel_all_d[i]:	
@@ -521,9 +521,9 @@ if str(pmode) == '1':
 	i = 0
 	while i < len(jpos_all_d):
 		if jpos_all_d[i]:
-			if (istart <= i) and (i <= istart + iduration):
+			if (istart <= i) and (i <= istart + iduration + 1):
 				true_jpos.append(i)	
-				i = istart+iduration+1
+				i = istart+iduration+2
 			else:
 				false_jpos.append(i)
 				while jpos_all_d[i]:	
@@ -542,7 +542,10 @@ if str(pmode) == '1':
 	else:
 		output_line = output_line + 'N/A'+','
 	# Write Miss Detections
-	output_line = output_line + 'MVEL:'+ str(len(false_mvel)) + '-MPOS:'+ str(len(false_mpos)) + '-JPOS:'+ str(len(false_jpos))
+	print false_mvel
+	print false_mpos
+	print false_jpos
+	output_line = output_line + 'MVEL:'+ str('-'.join(map(str,false_mvel))) + '-MPOS:'+ str('-'.join(map(str,false_mpos))) + '-JPOS:'+ str('-'.join(map(str,false_jpos)))
 
 # Write to CSV file	
 if str(pmode) == '0':
