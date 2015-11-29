@@ -227,7 +227,7 @@ def compute_delta_t(golden_file, all_files):
     jpos_distance = [[],[],[]]
     pos_distance = [[],[],[]]
     
-    traj_num = str(golden_file.split('traj')[1].split('.')[0])
+    #traj_num = str(golden_file.split('traj')[1].split('.')[0])
     with open(golden_file) as gfile:
         reader = csv.reader(x.replace('\0', '') for x in gfile)
         gmpos, gmvel, gdac, gjpos, gpos, gerr, gpacket_nums, gt = parse_latest_run(reader)    
@@ -248,7 +248,7 @@ def compute_delta_t(golden_file, all_files):
                 jpos_distance[i].extend(_get_distance(jpos[i],gjpos[i]))
                 pos_distance[i].extend(_get_distance(pos[i],gpos[i]))                
     
-    with open('stats'+traj_num, 'w') as outfile:
+    with open('stats', 'w') as outfile:
         outfile.write('min, max, mean, stdev\n')
         for i in range(0,3):
             lmin, lmax, lmean, lstdev = _get_stats(mpos_delta[i])
