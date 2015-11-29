@@ -310,9 +310,9 @@ if __name__ == '__main__':
     golden_file = ''
     for root, dirs, files in os.walk(sys.argv[1]):
         for f in files:
-            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('latest_run'):
+            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('traj'):
                 all_files.append(os.path.join(root,f))
-            if f.startswith('latest_run'):
+            if f.startswith('traj'):
                golden_file = os.path.join(root,f)
           
     compute_delta_t(golden_file,all_files)    
