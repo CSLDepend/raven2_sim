@@ -227,6 +227,7 @@ def compute_delta_t(golden_file, all_files):
     jpos_distance = [[],[],[]]
     pos_distance = [[],[],[]]
     
+    #traj_num = str(golden_file.split('traj')[1].split('.')[0])
     with open(golden_file) as gfile:
         reader = csv.reader(x.replace('\0', '') for x in gfile)
         gmpos, gmvel, gdac, gjpos, gpos, gerr, gpacket_nums, gt = parse_latest_run(reader)    
@@ -310,10 +311,9 @@ if __name__ == '__main__':
     golden_file = ''
     for root, dirs, files in os.walk(sys.argv[1]):
         for f in files:
-            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('traj'):
+            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('traj') and os.stat(os.path.join(root,f)).st_size > 0:
                 all_files.append(os.path.join(root,f))
             if f.startswith('traj'):
                golden_file = os.path.join(root,f)
-               print golden_file
           
     compute_delta_t(golden_file,all_files)    
