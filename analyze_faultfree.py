@@ -299,7 +299,7 @@ def compute_delta_t(golden_file, all_files):
 # Main starts here
 if __name__ == '__main__':
 
-    usage = 'Usage: python ' + sys.argv[0] + ' <dir>'
+    usage = 'Usage: python ' + sys.argv[0] + ' <dir>' 
 
     if len(sys.argv) != 2:
         print(usage)
@@ -310,9 +310,10 @@ if __name__ == '__main__':
     golden_file = ''
     for root, dirs, files in os.walk(sys.argv[1]):
         for f in files:
-            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('latest_run'):
+            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('traj'):
                 all_files.append(os.path.join(root,f))
-            if f.startswith('latest_run'):
+            if f.startswith('traj'):
                golden_file = os.path.join(root,f)
+               print golden_file
           
     compute_delta_t(golden_file,all_files)    

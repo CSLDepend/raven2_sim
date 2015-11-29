@@ -225,7 +225,8 @@ class Raven():
             os.system(cmd)
             cmd = 'cp mfi2_params.csv ' + self.result_folder
             os.system(cmd)
-
+            cmd = 'cp ./golden_run/'+self.traj+'.csv ' + self.result_folder
+            os.system(cmd)
 
         if self.defines_changed:
             self.__restore_defines_h()
