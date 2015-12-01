@@ -120,6 +120,7 @@ int packet_num = 111;
 #ifdef detector
 double sim_mpos[3];
 double sim_mvel[3];
+double sim_jpos[3];
 #endif
 
 pthread_t rt_thread;
@@ -423,8 +424,8 @@ static void *rt_process(void* )
 				{
 					r2_kill = 1;
 					if (ros::ok()) ros::shutdown();
-					return 0;				
-				} 
+					return 0;
+				}
 */
 #endif
 				    // Send simulator input to FIFO
@@ -445,7 +446,7 @@ static void *rt_process(void* )
 				read(rdfd, sim_buf, sizeof(sim_buf));
 				// Write the results to the screen
 				std::istringstream ss(sim_buf);
-				ss >> sim_mpos[0] >> sim_mvel[0] >> sim_mpos[1] >> sim_mvel[1] >> sim_mpos[2] >> sim_mvel[2];
+				ss >> sim_mpos[0] >> sim_mvel[0] >> sim_jpos[0] >> sim_mpos[1] >> sim_mvel[1] >> sim_jpos[1] >> sim_mpos[2] >> sim_mvel[2] >> sim_jpos[2];
 		        //printf("\nRecieved: %s\n",sim_buf);
 #endif
 #ifndef no_logging

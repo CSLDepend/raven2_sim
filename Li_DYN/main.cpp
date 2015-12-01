@@ -97,10 +97,10 @@ int main()
 	    //if (arm_type == 1)
 	       	 //printf("------> GREEN ARM MODELS NOT AVAILABLE\n");
 		//else
-	        sprintf(buf, "%f %f %f %f %f %f",
-				   r_state[6],r_state[9],r_state[7],r_state[10],r_state[8],r_state[11]);
+	        sprintf(buf, "%f %f %f %f %f %f %f %f %f",
+				   r_state[6],r_state[9],r_state[0],r_state[7],r_state[10],r_state[1],r_state[8],r_state[11],r_state[2]);
 	    //printf("%f %f %f %f %f %f", r_state[6],r_state[9],r_state[7],r_state[10],r_state[8],r_state[11]);
-		//printf("Sent estimated motor positions/velocities for %s arm:\n%s\n", 		(arm_type==1)?"Green":"Gold", buf);
+		//printf("Sent estimated motor positions/velocities and joint positions for %s arm:\n%s\n", 		(arm_type==1)?"Green":"Gold", buf);
         write(fd2, buf, sizeof(buf));
 	}
     //write_sys(x);

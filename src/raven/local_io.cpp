@@ -77,6 +77,7 @@ extern char err_str[1024];
 #ifdef detector
 extern double sim_mpos[3];
 extern double sim_mvel[3];
+extern double sim_jpos[3];
 #endif
 /**
  * \brief Initialize data arrays to zero and create mutex
@@ -105,13 +106,13 @@ int initLocalioData(void)
         data1.rd[i].grasp = 0;
         Q_ori[i] = Q_ori[i].getIdentity();
 #ifdef simulator
-        for (int j=0;j<16;j++)  
-		{		
+        for (int j=0;j<16;j++)
+		{
 			data1.jpos_d[j] = 0;
-			data1.jvel_d[j] = 0; 
+			data1.jvel_d[j] = 0;
 			data1.mpos_d[j] = 0;
-			data1.mvel_d[j] = 0; 		   
-		}  
+			data1.mvel_d[j] = 0;
+		}
 #endif
     }
     data1.surgeon_mode=0;
@@ -139,7 +140,7 @@ int receiveUserspace(void *u,int size)
 #endif
     if (size==sizeof(struct u_struct))
     {
-        isUpdated = TRUE;        
+        isUpdated = TRUE;
         teleopIntoDS1((struct u_struct*)u);
     }
     return 0;
@@ -175,8 +176,8 @@ void teleopIntoDS1(struct u_struct *us_t)
         armidx    = USBBoards.boards[i]==GREEN_ARM_SERIAL ? 1 : 0;
 		//log_msg("i = %d, armidx = %d\n",i, armidx);
 #else
-        armserial = (i == 1) ? GREEN_ARM_SERIAL:GOLD_ARM_SERIAL; 
-        armidx = (i == 1) ? 1 : 0; 
+        armserial = (i == 1) ? GREEN_ARM_SERIAL:GOLD_ARM_SERIAL;
+        armidx = (i == 1) ? 1 : 0;
 #endif
 
 #ifndef packetgen
@@ -205,7 +206,7 @@ void teleopIntoDS1(struct u_struct *us_t)
         for (int j=0;j<3;j++)
             for (int k=0;k<3;k++)
                 data1.rd[i].R[j][k] = rot_mx_temp[j][k];
-        //log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);  
+        //log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",i, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);
 
     const int graspmax = (M_PI/2 * 1000);
     const int graspmin = (-30.0 * 1000.0 DEG2RAD);
@@ -219,8 +220,8 @@ void teleopIntoDS1(struct u_struct *us_t)
 	data1.xd[i].z = us_t->delz[armidx];
 
 	// commented debug output
-    //log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",armidx, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);  
-  
+    //log_msg("Arm %d : User desired end-effector positions: (%d,%d,%d)",armidx, data1.xd[i].x, data1.xd[i].y, data1.xd[i].z);
+
     // Set rotation command
 	//log_msg("Arm %d: User desired Rotations:",armidx);
 	for (int j=0;j<3;j++)
@@ -240,28 +241,28 @@ void teleopIntoDS1(struct u_struct *us_t)
 	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
 #ifdef simulator
     // Get initial joint positions from input, assign them to the desired jpos
-	if (us_t->sequence == 1)	
-    {    
-        for (int j=0;j<16;j++)  
-		{		
+	if (us_t->sequence == 1)
+    {
+        for (int j=0;j<16;j++)
+		{
 			data1.jpos_d[j] = (us_t->jpos[j])*M_PI/180;
-			data1.jvel_d[j] = (us_t->jvel[j])*M_PI/180; 
+			data1.jvel_d[j] = (us_t->jvel[j])*M_PI/180;
 			data1.mpos_d[j] = (us_t->mpos[j])*M_PI/180;
-			data1.mvel_d[j] = (us_t->mvel[j])*M_PI/180; 		   
-		}                 
+			data1.mvel_d[j] = (us_t->mvel[j])*M_PI/180;
+		}
 	}
 #endif
 #ifdef detector
     // Get initial joint positions from input, assign them to the desired jpos
-	if (us_t->sequence == 1)	
-    {    
-        for (int j=0;j<16;j++)  
-		{		
+	if (us_t->sequence == 1)
+    {
+        for (int j=0;j<16;j++)
+		{
 			data1.jpos_d[j] = (us_t->jpos[j])*M_PI/180;
-			data1.jvel_d[j] = (us_t->jvel[j])*M_PI/180; 
+			data1.jvel_d[j] = (us_t->jvel[j])*M_PI/180;
 			data1.mpos_d[j] = (us_t->mpos[j])*M_PI/180;
-			data1.mvel_d[j] = (us_t->mvel[j])*M_PI/180; 		   
-		}                 
+			data1.mvel_d[j] = (us_t->mvel[j])*M_PI/180;
+		}
 	}
 #endif
 #endif
@@ -273,7 +274,7 @@ void teleopIntoDS1(struct u_struct *us_t)
     // HACK HACK HACK
     // HACK HACK HACK
     data1.last_sequence = us_t->sequence;
-    
+
     // commented debug output
         //log_msg("User desired end-effector positions: (%f,%f,%f)/(%f,%f,%f)",
                //data1.xd[0].x, data1.xd[0].y, data1.xd[0].z,
@@ -339,7 +340,7 @@ struct param_pass * getRcvdParams(struct param_pass* d1)
     isUpdated = 0;
     pthread_mutex_unlock(&data1Mutex);
 #ifdef simulator
-        //log_file("RT_PROCESS) Copied recieved packet to local data structure.\n");         
+        //log_file("RT_PROCESS) Copied recieved packet to local data structure.\n");
 #endif
     return d1;
 }
@@ -383,7 +384,7 @@ void updateMasterRelativeOrigin(struct device *device0)
 #ifndef simulator
         armidx = USBBoards.boards[i]==GREEN_ARM_SERIAL ? 1 : 0;
 #else
-        armidx = (i == 1) ? 1 : 0; 
+        armidx = (i == 1) ? 1 : 0;
 #endif
         tmpmx.setValue(_ori->R[0][0], _ori->R[0][1], _ori->R[0][2],
                         _ori->R[1][0], _ori->R[1][1], _ori->R[1][2],
@@ -565,14 +566,18 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
 #ifdef save_logs
 	for (int i = 0; i < 1024; i++)
 		if ((err_str[i] != '\n') && (err_str[i] != '\0'))
-	    	msg_ravenstate.err_msg[i] = err_str[i]; 
+	    	msg_ravenstate.err_msg[i] = err_str[i];
     err_str[0] = '\0';
 #endif
 #ifdef detector
-	for (int i = 0; i < 3; i++) 
+	for (int i = 0; i < 3; i++)
 	{
 		msg_ravenstate.sim_mpos[i] = sim_mpos[i] RAD2DEG;
 		msg_ravenstate.sim_mvel[i] = sim_mvel[i] RAD2DEG;
+		if (i == 2)
+      		msg_ravenstate.sim_jpos[i] = sim_jpos[i]*1000;
+    	else
+    	    msg_ravenstate.sim_jpos[i] = (sim_jpos[i]+M_PI) RAD2DEG;
 	}
 #endif
     // Publish the raven data to ROS
