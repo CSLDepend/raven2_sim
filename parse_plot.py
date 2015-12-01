@@ -197,8 +197,8 @@ def plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t):
 	f2, axarr2 = plt.subplots(7, 1, sharex=True)
 	axarr2[0].set_title("DAC Values (Gold Arm)")
 	for j in range(0,7):
-		axarr2[j].plot(gold_dac[j], 'g')
 		axarr2[j].plot(orig_dac[j], 'k')
+		axarr2[j].plot(gold_dac[j], 'g')
 		axarr2[j].plot(dac[j], 'r')
 		axarr2[j].set_ylabel('Joint '+str(indices[j]))
 		# Set the Y ticks
@@ -215,8 +215,8 @@ def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t, jpos_detect):
 	plt.tight_layout()
 	axarr3[0].set_title("Joint Positions (Gold Arm)")
 	for j in range(0,7):
-		axarr3[j].plot(gold_jpos[j], 'g')
 		axarr3[j].plot(orig_jpos[j], 'k')
+		axarr3[j].plot(gold_jpos[j], 'g')
 		axarr3[j].plot(jpos[j], 'r')
 		if j < 3 and jpos_detect: #and not(all(v == 0 for v in jpos_detect[j])):	
 			jpos_vline = min(jpos_detect)#min([i for i, e in enumerate(jpos_detect[j]) if e != 0]) 
@@ -237,8 +237,8 @@ def plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t,pos_detect):
 	axarr4[0].set_title("End-Effector Positions (Gold Arm)")
 	pos_labels = ['X Pos(mm)','Y Pos(mm)','Z Pos(mm)']
 	for j in range(0,3):
-		axarr4[j].plot(gold_pos[j], 'g')
 		axarr4[j].plot(orig_pos[j], 'k')
+		axarr4[j].plot(gold_pos[j], 'g')
 		axarr4[j].plot(pos[j], 'r')
 		if not(all(v == 0 for v in pos_detect[j])):	
 			pos_vline = min([i for i, e in enumerate(pos_detect[j]) if e != 0]) 
@@ -312,8 +312,8 @@ if not(os.path.isfile(output_file)):
 			output_line = output_line + 'err_pos' + str(posi[i])
 		else:
 			output_line = output_line + 'err_pos' + str(posi[i]) + ','
-	output_line = output_line + ', Jump?'
 	if str(pmode) == '1':
+		output_line = output_line + ', Jump?'
 		output_line = output_line + ', Detections, Latency, False_Detections'
 	writer4.writerow(output_line.split(',')) 
 	csvfile4.close()
@@ -353,135 +353,148 @@ if str(pmode) == '1':
 			output_line = output_line + '#Packet ' + str(packets[err.index(e)]) +': ' + e
 	output_line = output_line +  ','
 
-
-# Get the bounds to see if a jump happened
-csvfile6 = open('./stats','rU')
-range_reader = csv.reader(csvfile6)
-mpos_lim = []
-mvel_lim = []
-jpos_lim = []
-pos_lim = []
-mpos_dist = []
-mvel_dist = []
-jpos_dist = []
-pos_dist = []	
-for line in range_reader:
-	if 'mpos_delta' in line[0]:
-		mpos_lim.append(line[1:])
-	elif 'mvel_delta' in line[0]:
-		mvel_lim.append(line[1:])
-	elif 'jpos_delta' in line[0]:
-		jpos_lim.append(line[1:])
-	elif 'pos_delta' in line[0]:
-		pos_lim.append(line[1:])
-	elif 'mpos_dist' in line[0]:
-		mpos_dist.append(line[1:])
-	elif 'mvel_dist' in line[0]:
-		mvel_dist.append(line[1:])
-	elif 'jpos_dist' in line[0]:
-		jpos_dist.append(line[1:])
-	elif 'pos_dist' in line[0]:
-		pos_dist.append(line[1:])			
-csvfile6.close()
-# Scaling the limits for jpos 2
-for i in range(0,len(jpos_dist[2])):
-	jpos_dist[2][i] = float(jpos_dist[2][i])*(math.pi/180)*1000		
-for i in range(0,len(jpos_lim[2])):
-	jpos_lim[2][i] = float(jpos_lim[2][i])*(math.pi/180)*1000
-# Scaling the limits for X,Y,Z
-for i in range(0,len(pos_dist)):
-	for j in range(0,len(pos_dist[i])):
-		pos_dist[i][j] = float(pos_dist[i][j])/1000	
-	for j in range(0,len(pos_lim[i])):
-		pos_lim[i][j] = float(pos_lim[i][j])/1000		
-	
-# Step Errors
-mpos_error = [[],[],[]];
-mvel_error = [[],[],[]];
-jpos_error = [[],[],[]];
-pos_error = [[],[],[]];
-for i in range(0,len(mpos_error)):		
-	mpos_error[i]=(list(np.array(mpos[i][1:])-np.array(mpos[i][:-1])))
-	mvel_error[i]=(list(np.array(mvel[i][1:] )-np.array(mvel[i][:-1])))
-	jpos_error[i]=(list(np.array(jpos[i][1:])-np.array(jpos[i][:-1])))
-for i in range(0,len(pos_error)):    
-	pos_error[i]=(list(np.array(pos[i][1:])-np.array(pos[i][:-1])))	
-
-# Find jumps in delta
 mpos_detect = [[],[],[]]
 mvel_detect = [[],[],[]]
 jpos_detect = [[],[],[]]
 pos_detect = [[],[],[]]
-for i in range(0,3):		
-	for j in range(0,len(mpos_error[i])):
-		if (abs(mpos_error[i][j]) > 7*float(mpos_lim[i][1])):
-			output_line = output_line + str(j) + '-'
-			#print 'mpos'+str(indices[i])
-			#print j
-			mpos_detect[i].append(1)
-		else:
-			mpos_detect[i].append(0)
-	output_line = output_line + ','
-	for j in range(0,len(mvel_error[i])):
-		if (abs(mvel_error[i][j]) > 5*float(mvel_lim[i][1])): 
-			output_line = output_line + str(j) +  '-'
-			#print 'mvel'+str(indices[i])
-			#print j
-			mvel_detect[i].append(1)
-		else:
-			mvel_detect[i].append(0)
-	output_line = output_line + ','
-	for j in range(0,len(jpos_error[i])):				
-		if (abs(jpos_error[i][j]) > 10*float(jpos_lim[i][1])): 
-			output_line = output_line + str(j) + '-'
-			#print 'jpos'+str(indices[i])+','+str(jpos_error[i][j])+','+str(jpos_lim[i][0])+'|'+str(jpos_lim[i][1])
-			#print j 
-			jpos_detect[i].append(1)
-		else:
-			jpos_detect[i].append(0)
-	output_line = output_line + ','
+if str(pmode) == '1':
+	# Get the bounds to see if a jump happened
+	csvfile6 = open('./stats','rU')
+	range_reader = csv.reader(csvfile6)
+	mpos_lim = []
+	mvel_lim = []
+	jpos_lim = []
+	pos_lim = []
+	mpos_dist = []
+	mvel_dist = []
+	jpos_dist = []
+	pos_dist = []	
+	for line in range_reader:
+		if 'mpos_delta' in line[0]:
+			mpos_lim.append(line[1:])
+		elif 'mvel_delta' in line[0]:
+			mvel_lim.append(line[1:])
+		elif 'jpos_delta' in line[0]:
+			jpos_lim.append(line[1:])
+		elif 'pos_delta' in line[0]:
+			pos_lim.append(line[1:])
+		elif 'mpos_dist' in line[0]:
+			mpos_dist.append(line[1:])
+		elif 'mvel_dist' in line[0]:
+			mvel_dist.append(line[1:])
+		elif 'jpos_dist' in line[0]:
+			jpos_dist.append(line[1:])
+		elif 'pos_dist' in line[0]:
+			pos_dist.append(line[1:])			
+	csvfile6.close()	
 
-for i in range(3,7):
-	output_line = output_line + ',,,'				
+	# Step Errors
+	mpos_error = [[],[],[]];
+	mvel_error = [[],[],[]];
+	jpos_error = [[],[],[]];
+	pos_error = [[],[],[]];
+	for i in range(0,len(mpos_error)):		
+		mpos_error[i]=(list(np.array(mpos[i][1:])-np.array(mpos[i][:-1])))
+		mvel_error[i]=(list(np.array(mvel[i][1:] )-np.array(mvel[i][:-1])))
+		jpos_error[i]=(list(np.array(jpos[i][1:])-np.array(jpos[i][:-1])))
+	for i in range(0,len(pos_error)):    
+		pos_error[i]=(list(np.array(pos[i][1:])-np.array(pos[i][:-1])))	
 
+	# Find jumps in delta
+	for i in range(0,3):		
+		for j in range(0,len(mpos_error[i])):
+			if (abs(mpos_error[i][j]) > 7*float(mpos_lim[i][1])):
+				output_line = output_line + str(j) + '-'
+				#print 'mpos'+str(indices[i])
+				#print j
+				mpos_detect[i].append(1)
+			else:
+				mpos_detect[i].append(0)
+		output_line = output_line + ','
+		for j in range(0,len(mvel_error[i])):
+			if (abs(mvel_error[i][j]) > 5*float(mvel_lim[i][1])): 
+				output_line = output_line + str(j) +  '-'
+				#print 'mvel'+str(indices[i])
+				#print j
+				mvel_detect[i].append(1)
+			else:
+				mvel_detect[i].append(0)
+		output_line = output_line + ','
+		for j in range(0,len(jpos_error[i])):				
+			if (abs(jpos_error[i][j]) > 10*float(jpos_lim[i][1])): 
+				output_line = output_line + str(j) + '-'
+				#print 'jpos'+str(indices[i])+','+str(jpos_error[i][j])+','+str(jpos_lim[i][0])+'|'+str(jpos_lim[i][1])
+				#print j 
+				jpos_detect[i].append(1)
+			else:
+				jpos_detect[i].append(0)
+		output_line = output_line + ','
+
+	for i in range(3,7):
+		output_line = output_line + ',,,'				
+
+	for i in range(0,3):
+		for j in range(0,len(pos_error[i])):
+			if (abs(pos_error[i][j]) > 5*float(pos_lim[i][1])):
+				output_line = output_line + str(j) + '-' 
+				#print 'pos'+str(indices[i])
+				#print j
+				pos_detect[i].append(1)
+			else:
+				pos_detect[i].append(0)
+		output_line = output_line + ','
+
+	# Trajectory errors 
+	mpos_error = [[],[],[]];
+	mvel_error = [[],[],[]];
+	jpos_error = [[],[],[]];
+	pos_error = [[],[],[]];
+	for i in range(0,3):	
+		traj_len = min(len(mpos[i]),len(gold_mpos[i]))
+		mpos_error[i]= list(np.array(mpos[i][1:traj_len])-np.array(gold_mpos[i][1:traj_len]))
+		mvel_error[i]= list(np.array(mvel[i][1:traj_len])-np.array(gold_mvel[i][1:traj_len]))
+		jpos_error[i]= list(np.array(jpos[i][1:traj_len])-np.array(gold_jpos[i][1:traj_len]))
+	for i in range(0,3):    
+		pos_error[i] = list(np.array(pos[i][1:traj_len])-np.array(gold_pos[i][1:traj_len]))
+	# Find jumps in distance
+	for i in range(0,3):		
+		for j in range(0,len(mpos_error[i])):
+			if (mpos_error[i][j] > 5*float(mpos_dist[i][1])):
+				output_line = output_line + 'P'+ str(j) + ' = ' + str(mpos_error[i][j]) + ';'
+
+			if (mvel_error[i][j] > 5*float(mvel_dist[i][1])): 
+				output_line = output_line + 'P'+ str(j) + ' = ' + str(mvel_error[i][j]) + ';'
+
+			if (jpos_error[i][j] > 10*float(jpos_dist[i][1])): 
+				output_line = output_line + 'P'+ str(j) + ' = ' + str(jpos_error[i][j]) + ';'
+
+			if (pos_error[i][j] > 5*float(pos_dist[i][1])):
+				output_line = output_line + 'P'+ str(j) + ' = ' + str(mpos_error[i][j]) + ';'
+	output_line = output_line + ','			
+
+if str(pmode) == '0':
+	# Trajectory errors 
+	mpos_error = [[],[],[]];
+	mvel_error = [[],[],[]];
+	jpos_error = [[],[],[]];
+	pos_error = [[],[],[]];
+	for i in range(0,3):	
+		traj_len = min(len(mpos[i]),len(gold_mpos[i]))
+		mpos_error[i]= list(abs(np.array(mpos[i][1:traj_len])-np.array(gold_mpos[i][1:traj_len])))
+		mvel_error[i]= list(abs(np.array(mvel[i][1:traj_len])-np.array(gold_mvel[i][1:traj_len])))
+		jpos_error[i]= list(abs(np.array(jpos[i][1:traj_len])-np.array(gold_jpos[i][1:traj_len])))
+	for i in range(0,3):    
+		pos_error[i] = list(abs(np.array(pos[i][1:traj_len])-np.array(gold_pos[i][1:traj_len])))
+
+'''plt.hold('True')
+plt.plot(orig_mpos[0][2000:3000], 'k')
+plt.plot(gold_mpos[0][2000:3000], 'g')
+plt.plot(mpos[0][2000:3000], 'r')
+plt.show()'''
 for i in range(0,3):
-	for j in range(0,len(pos_error[i])):
-		if (abs(pos_error[i][j]) > 5*float(pos_lim[i][1])):
-			output_line = output_line + str(j) + '-' 
-			#print 'pos'+str(indices[i])
-			#print j
-			pos_detect[i].append(1)
-		else:
-			pos_detect[i].append(0)
-	output_line = output_line + ','
-
-# Trajectory errors 
-mpos_error = [[],[],[]];
-mvel_error = [[],[],[]];
-jpos_error = [[],[],[]];
-pos_error = [[],[],[]];
-for i in range(0,3):	
-	traj_len = min(len(mpos[i]),len(gold_mpos[i]))
-	mpos_error[i]= list(np.array(mpos[i][1:traj_len])-np.array(gold_mpos[i][1:traj_len]))
-	mvel_error[i]= list(np.array(mvel[i][1:traj_len])-np.array(gold_mvel[i][1:traj_len]))
-	jpos_error[i]= list(np.array(jpos[i][1:traj_len])-np.array(gold_jpos[i][1:traj_len]))
-for i in range(0,3):    
-	pos_error[i] = list(np.array(pos[i][1:traj_len])-np.array(gold_pos[i][1:traj_len]))
-# Find jumps in distance
-for i in range(0,3):		
-	for j in range(0,len(mpos_error[i])):
-		if (mpos_error[i][j] > 5*float(mpos_dist[i][1])):
-			output_line = output_line + 'P'+ str(j) + ' = ' + str(mpos_error[i][j]) + ';'
-
-		if (mvel_error[i][j] > 5*float(mvel_dist[i][1])): 
-			output_line = output_line + 'P'+ str(j) + ' = ' + str(mvel_error[i][j]) + ';'
-	
-		if (jpos_error[i][j] > 10*float(jpos_dist[i][1])): 
-			output_line = output_line + 'P'+ str(j) + ' = ' + str(jpos_error[i][j]) + ';'
-			
-		if (pos_error[i][j] > 5*float(pos_dist[i][1])):
-			output_line = output_line + 'P'+ str(j) + ' = ' + str(mpos_error[i][j]) + ';'
-output_line = output_line + ','			
+	print max(mpos_error[i])
+	print max(mvel_error[i])
+	print max(jpos_error[i])
 
 # Detector
 true_mpos = []
