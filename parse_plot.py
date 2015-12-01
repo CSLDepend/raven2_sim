@@ -264,6 +264,8 @@ except:
     print "Error: missing parameters"
     print 'python plot2.py 0|1 inj_num traj_name'
     sys.exit(2)
+    
+print 'Mode = '+str(pmode)
 
 # Open Log files
 csvfile1 = open(raven_home+'/robot_run.csv')

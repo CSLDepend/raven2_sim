@@ -328,8 +328,8 @@ def generate_rt_process_once_faults():
     _write_to_file(code, param, 'mfi2_rt_process_once_faults', 
             'rt_process_preempt.cpp://HOOK')
 def generate_empty_test():
-    code = [';']*300
-    param = [','.join(['none','0','0','0'])]*300
+    code = [';']*20
+    param = [','.join(['none','0','0','0'])]*20
     _write_to_file(code, param, 'mfi2_empty_test', 
             'rt_process_preempt.cpp://HOOK')
 
