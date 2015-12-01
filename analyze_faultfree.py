@@ -212,6 +212,10 @@ def _get_delta(l):
 def _get_distance(l,m):
     traj_len = min(len(l),len(m))
     return map(abs,(map(sub,l[1:traj_len],m[1:traj_len])))
+
+def _get_traj_err(l,m):
+    traj_len = min(len(l),len(m))
+    return map(sum,map(abs,(map(sub,l[1:traj_len],m[1:traj_len]))))/traj_len 
     
 def _get_stats(l):
     return min(l), max(l), mean(l), stdev(l)
@@ -226,6 +230,11 @@ def compute_stats():
     global mvel_distance
     global jpos_distance
     global pos_distance
+    
+    global mpos_traj_err
+    global mvel_traj_err
+    global jpos_traj_err
+    global pos_traj_err  
 
     with open('stats', 'w') as outfile:
         outfile.write('min, max, mean, stdev\n')
@@ -243,6 +252,7 @@ def compute_stats():
             outfile.write('pos_delta%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
 
+
             lmin, lmax, lmean, lstdev = _get_stats(mpos_distance[i])
             outfile.write('mpos_distance%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
@@ -255,6 +265,20 @@ def compute_stats():
             lmin, lmax, lmean, lstdev = _get_stats(pos_distance[i])
             outfile.write('pos_distance%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
+
+
+            lmin, lmax, lmean, lstdev = _get_stats(mpos_traj_err[i])
+            outfile.write('mpos_traj_err%d, %f, %f, %f, %f\n' % 
+                    (i, lmin, lmax, lmean, lstdev))
+            lmin, lmax, lmean, lstdev = _get_stats(mvel_traj_err[i])
+            outfile.write('mvel_traj_err%d, %f, %f, %f, %f\n' % 
+                    (i, lmin, lmax, lmean, lstdev))
+            lmin, lmax, lmean, lstdev = _get_stats(jpos_traj_err[i])
+            outfile.write('jpos_traj_err%d, %f, %f, %f, %f\n' % 
+                    (i, lmin, lmax, lmean, lstdev))
+            lmin, lmax, lmean, lstdev = _get_stats(pos_traj_err[i])
+            outfile.write('pos_traj_err%d, %f, %f, %f, %f\n' % 
+                    (i, lmin, lmax, lmean, lstdev))                    
             """
             fig = plt.figure()
             ax = fig.add_subplot(411, title='MPOS')
@@ -284,6 +308,11 @@ def compute_delta_t(golden_file, all_files):
     global mvel_distance
     global jpos_distance
     global pos_distance
+    
+    global mpos_traj_err
+    global mvel_traj_err
+    global jpos_traj_err
+    global pos_traj_err
     
     #traj_num = str(golden_file.split('traj')[1].split('.')[0])
     g_file = {}
@@ -328,20 +357,27 @@ def compute_delta_t(golden_file, all_files):
                 mvel_distance[i].extend(_get_distance(mvel[i],gmvel[i]))
                 jpos_distance[i].extend(_get_distance(jpos[i],gjpos[i]))
                 pos_distance[i].extend(_get_distance(pos[i],gpos[i]))                
-    
+                """Compute distance to golden robot run"""              
+                mpos_traj_err[i].extend(_get_traj_err(mpos[i],gmpos[i]))
+                mvel_traj_err[i].extend(_get_traj_err(mvel[i],gmvel[i]))
+                jpos_traj_err[i].extend(_get_traj_err(jpos[i],gjpos[i]))
+                pos_traj_err[i].extend(_get_traj_err(pos[i],gpos[i]))     
 
 # Define Global Variables
 mpos_delta = [[],[],[]]
 mvel_delta = [[],[],[]]
 jpos_delta = [[],[],[]]
-pos_delta = [[],[],[]]
+pos_delta  = [[],[],[]]
 
 mpos_distance = [[],[],[]]
 mvel_distance = [[],[],[]]
 jpos_distance = [[],[],[]]
-pos_distance = [[],[],[]]
+pos_distance  = [[],[],[]]
 
-
+mpos_traj_err = [[],[],[]]
+mvel_traj_err = [[],[],[]]
+jpos_traj_err = [[],[],[]]
+pos_traj_err  = [[],[],[]]
 
 # Main starts here
 if __name__ == '__main__':
