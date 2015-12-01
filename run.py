@@ -84,6 +84,7 @@ class Raven():
         self.defines_chk_file = raven_home + "/include/raven/defines_last_run"
         self.master_file = './selected_injection.txt'
         self.inj_line = ''
+        self.trj_name = ''
         self.defines_changed = 0
         self.mfi_changed = 0
         self.return_code = 0 #0 is normal, 1 is error
@@ -225,7 +226,8 @@ class Raven():
             os.system(cmd)
             cmd = 'cp mfi2_params.csv ' + self.result_folder
             os.system(cmd)
-
+            cmd = 'cp ./golden_run/'+self.traj+'.csv ' + self.result_folder + '/' + self.traj_name
+            os.system(cmd)
 
         if self.defines_changed:
             self.__restore_defines_h()
@@ -429,6 +431,7 @@ class Raven():
         """Create a folder to store the mfi2_experiment results."""
         time = datetime.datetime.now().strftime("%Y%m%d_%H%M")
         self.result_folder = self.raven_home + '/exp_result/' + self.title.rstrip() + '_' + time+'_'+self.mode
+        self.traj_name = time + '.trj'
         cmd = 'mkdir -p ' + self.result_folder
         os.system(cmd)
 

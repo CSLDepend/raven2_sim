@@ -216,37 +216,17 @@ def _get_distance(l,m):
 def _get_stats(l):
     return min(l), max(l), mean(l), stdev(l)
 
-def compute_delta_t(golden_file, all_files):
-    mpos_delta = [[],[],[]]
-    mvel_delta = [[],[],[]]
-    jpos_delta = [[],[],[]]
-    pos_delta = [[],[],[]]
+def compute_stats():
+    global mpos_delta
+    global mvel_delta
+    global jpos_delta
+    global pos_delta
 
-    mpos_distance = [[],[],[]]
-    mvel_distance = [[],[],[]]
-    jpos_distance = [[],[],[]]
-    pos_distance = [[],[],[]]
-    
-    with open(golden_file) as gfile:
-        reader = csv.reader(x.replace('\0', '') for x in gfile)
-        gmpos, gmvel, gdac, gjpos, gpos, gerr, gpacket_nums, gt = parse_latest_run(reader)    
-   
-    for f in all_files:
-        with open(f) as infile:
-            reader = csv.reader(x.replace('\0', '') for x in infile)
-            mpos, mvel, dac, jpos, pos, err, packet_nums, t = parse_latest_run(reader)            
-            for i in range(0,3):
-                """Compute the change of variables between time t and t+1"""
-                mpos_delta[i].extend(_get_delta(mpos[i]))
-                mvel_delta[i].extend(_get_delta(mvel[i]))
-                jpos_delta[i].extend(_get_delta(jpos[i]))
-                pos_delta[i].extend(_get_delta(pos[i]))
-                """Compute distance to golden robot run"""              
-                mpos_distance[i].extend(_get_distance(mpos[i],gmpos[i]))
-                mvel_distance[i].extend(_get_distance(mvel[i],gmvel[i]))
-                jpos_distance[i].extend(_get_distance(jpos[i],gjpos[i]))
-                pos_distance[i].extend(_get_distance(pos[i],gpos[i]))                
-    
+    global mpos_distance
+    global mvel_distance
+    global jpos_distance
+    global pos_distance
+
     with open('stats', 'w') as outfile:
         outfile.write('min, max, mean, stdev\n')
         for i in range(0,3):
@@ -294,12 +274,79 @@ def compute_delta_t(golden_file, all_files):
             plt.show()
             """
 
+def compute_delta_t(golden_file, all_files):
+    global mpos_delta
+    global mvel_delta
+    global jpos_delta
+    global pos_delta
+
+    global mpos_distance
+    global mvel_distance
+    global jpos_distance
+    global pos_distance
+    
+    #traj_num = str(golden_file.split('traj')[1].split('.')[0])
+    g_file = {}
+    for gf in golden_file:
+        with open(gf, 'r') as gfile:
+            bname = os.path.basename(gf)
+            reader = csv.reader(x.replace('\0', '') for x in gfile)
+            gmpos, gmvel, gdac, gjpos, gpos, gerr, gpacket_nums, gt = parse_latest_run(reader)    
+            key = bname.split('.')[0]
+            g_file[key] = (gmpos, gmvel, gjpos, gpos)
+   
+    for f in all_files:
+        with open(f) as infile:
+            print("Exp File: %s" % f)
+            reader = csv.reader(x.replace('\0', '') for x in infile)
+            mpos, mvel, dac, jpos, pos, err, packet_nums, t = parse_latest_run(reader)            
+            gmpos = []
+            gmvel = []
+            gjpos = []
+            gpos = []
+            for key in g_file:
+                if key in f:
+                    gmpos = g_file[key][0]
+                    gmvel = g_file[key][1]
+                    gjpos = g_file[key][2]
+                    gpos = g_file[key][3]
+                    print("Golden file: %s.trj" % key)
+                    break
+            if not gmpos:
+                print("Cannot find matching golden trj.")
+                sys.exit(0)
+
+
+            for i in range(0,3):
+                """Compute the change of variables between time t and t+1"""
+                mpos_delta[i].extend(_get_delta(mpos[i]))
+                mvel_delta[i].extend(_get_delta(mvel[i]))
+                jpos_delta[i].extend(_get_delta(jpos[i]))
+                pos_delta[i].extend(_get_delta(pos[i]))
+                """Compute distance to golden robot run"""              
+                mpos_distance[i].extend(_get_distance(mpos[i],gmpos[i]))
+                mvel_distance[i].extend(_get_distance(mvel[i],gmvel[i]))
+                jpos_distance[i].extend(_get_distance(jpos[i],gjpos[i]))
+                pos_distance[i].extend(_get_distance(pos[i],gpos[i]))                
+    
+
+# Define Global Variables
+mpos_delta = [[],[],[]]
+mvel_delta = [[],[],[]]
+jpos_delta = [[],[],[]]
+pos_delta = [[],[],[]]
+
+mpos_distance = [[],[],[]]
+mvel_distance = [[],[],[]]
+jpos_distance = [[],[],[]]
+pos_distance = [[],[],[]]
+
 
 
 # Main starts here
 if __name__ == '__main__':
 
-    usage = 'Usage: python ' + sys.argv[0] + ' <dir>'
+    usage = 'Usage: python ' + sys.argv[0] + ' <dir>' 
 
     if len(sys.argv) != 2:
         print(usage)
@@ -307,12 +354,12 @@ if __name__ == '__main__':
 
     # Get all csv files in current directory and subdirectories
     all_files = []
-    golden_file = ''
+    golden_file = []
     for root, dirs, files in os.walk(sys.argv[1]):
         for f in files:
-            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('latest_run'):
+            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('traj') and os.stat(os.path.join(root,f)).st_size > 0:
                 all_files.append(os.path.join(root,f))
-            if f.startswith('latest_run'):
-               golden_file = os.path.join(root,f)
-          
+            if f.endswith('trj'):
+               golden_file.append(os.path.join(root,f))
     compute_delta_t(golden_file,all_files)    
+    compute_stats()
