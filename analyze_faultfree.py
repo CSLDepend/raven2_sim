@@ -66,17 +66,21 @@ def parse_latest_run(reader):
                 packet_nums.append(packet_no)
                 time.append(float(line[0])-t0)
                 for j in range(0,7):			
-                    est_dmpos[j].append(float(line[dmpos_index+indices[j]])*math.pi/180)
-                    est_mpos[j].append(float(line[mpos_index+indices[j]])*math.pi/180)
-                    est_mvel[j].append(float(line[mvel_index+indices[j]])*math.pi/180)
+                    est_dmpos[j].append(float(line[dmpos_index+indices[j]]))
+                    est_mpos[j].append(float(line[mpos_index+indices[j]]))
+                    est_mvel[j].append(float(line[mvel_index+indices[j]]))
                 for j in range(0,7):
                     est_dac[j].append(float(line[dac_index+indices[j]]))
                 for j in range(0,7):
-                    est_djpos[j].append(float(line[djpos_index+indices[j]])*math.pi/180)
-                    est_jpos[j].append(float(line[jpos_index+indices[j]])*math.pi/180)
+                    if j == 2:
+                        est_djpos[j].append(float(line[djpos_index+indices[j]])*(math.pi/180)*1000)
+                        est_jpos[j].append(float(line[jpos_index+indices[j]])*(math.pi/180)*1000)
+                    else:
+                        est_djpos[j].append(float(line[djpos_index+indices[j]]))
+                        est_jpos[j].append(float(line[jpos_index+indices[j]]))
                 for j in range(0,3):
-                    est_dpos[j].append(float(line[dpos_index+indices[j]])*math.pi/180)
-                    est_pos[j].append(float(line[pos_index+indices[j]])*math.pi/180)
+                    est_dpos[j].append(float(line[dpos_index+indices[j]])/1000)
+                    est_pos[j].append(float(line[pos_index+indices[j]])/1000)
                 try:			
                     err_msg.append(str(line[err_index]))
                 except:
@@ -89,7 +93,7 @@ def parse_latest_run(reader):
     print len(est_mvel[0])
     print len(est_mpos[0])
     return est_mpos, est_mvel, est_dac, est_jpos, est_pos, err_msg, packet_nums, time 
-
+  
 def plot_pos(pos_stdev, pos_mean):
     f4, axarr4 = plt.subplots(3, 2, sharex=True)
     axarr4[0][0].set_title("End-Effector Positions (STDEV)")
@@ -215,7 +219,7 @@ def _get_distance(l,m):
 
 def _get_traj_err(l,m):
     traj_len = min(len(l),len(m))
-    return map(sum,map(abs,(map(sub,l[1:traj_len],m[1:traj_len]))))/traj_len 
+    return sum(map(abs,(map(sub,l[1:traj_len],m[1:traj_len]))))/traj_len 
     
 def _get_stats(l):
     return min(l), max(l), mean(l), stdev(l)
@@ -319,6 +323,7 @@ def compute_delta_t(golden_file, all_files):
     for gf in golden_file:
         with open(gf, 'r') as gfile:
             bname = os.path.basename(gf)
+            print bname
             reader = csv.reader(x.replace('\0', '') for x in gfile)
             gmpos, gmvel, gdac, gjpos, gpos, gerr, gpacket_nums, gt = parse_latest_run(reader)    
             key = bname.split('.')[0]
@@ -358,10 +363,10 @@ def compute_delta_t(golden_file, all_files):
                 jpos_distance[i].extend(_get_distance(jpos[i],gjpos[i]))
                 pos_distance[i].extend(_get_distance(pos[i],gpos[i]))                
                 """Compute distance to golden robot run"""              
-                mpos_traj_err[i].extend(_get_traj_err(mpos[i],gmpos[i]))
-                mvel_traj_err[i].extend(_get_traj_err(mvel[i],gmvel[i]))
-                jpos_traj_err[i].extend(_get_traj_err(jpos[i],gjpos[i]))
-                pos_traj_err[i].extend(_get_traj_err(pos[i],gpos[i]))     
+                mpos_traj_err[i].append(_get_traj_err(mpos[i],gmpos[i]))
+                mvel_traj_err[i].append(_get_traj_err(mvel[i],gmvel[i]))
+                jpos_traj_err[i].append(_get_traj_err(jpos[i],gjpos[i]))
+                pos_traj_err[i].append(_get_traj_err(pos[i],gpos[i]))     
 
 # Define Global Variables
 mpos_delta = [[],[],[]]

@@ -103,7 +103,7 @@ class Raven():
             self.starting_inj_num = int(param[0])
             if len(param) > 1:
                 self.end_inj_num = int(param[1])
-
+        
     def __change_defines_h(self):
         """ Modifies <raven_home>/include/raven/defines.h """
         # Change define macros
@@ -363,6 +363,10 @@ class Raven():
             else:
                 data = ''
         self.exp_status = 'done'
+        # Overwrite golden with input
+        cmd = 'cp ./robot_run.csv ./golden_run/'+ str(self.traj)+'.csv'
+        print cmd
+        os.system(cmd)
         self.__quit()
   
         
