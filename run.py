@@ -495,7 +495,12 @@ class Raven():
                             print "skip compiling!!!"
                             time.sleep(7)
                         self._run_experiment()
-                        self.__run_parse_plot(1, self.curr_inj,self.traj)
+                        if self.title == 'mfi2_empty_test':
+                            print '&& herre1'
+                            self.__run_parse_plot(0, self.curr_inj,self.traj)
+                        else:
+                            print '&& herre2'
+                            self.__run_parse_plot(1, self.curr_inj,self.traj)
                         if self.curr_inj == self.end_inj_num:
                             break
                 elif l[0].startswith('location'):
