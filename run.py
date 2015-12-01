@@ -486,7 +486,7 @@ class Raven():
                         else:
                             # Skip compile for faultfree runs
                             print "skip compiling!!!"
-                            time.sleep(5)
+                            time.sleep(7)
                         self._run_experiment()
                         self.__run_parse_plot(1, self.curr_inj,self.traj)
                         if self.curr_inj == self.end_inj_num:

@@ -355,6 +355,7 @@ if str(pmode) == '1':
 
 
 # Get the bounds to see if a jump happened
+#csvfile6 = open('./stats'+str(traj.split('traj')[1]),'rU')
 csvfile6 = open('./stats','rU')
 range_reader = csv.reader(csvfile6)
 mpos_lim = []
