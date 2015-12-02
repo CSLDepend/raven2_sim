@@ -529,7 +529,7 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 		else:
 			output_line = output_line +','	
 	
-
+        """
 	# Update the graphs is they exist
 	curr_folder = run_file.split(str(inj_num))[0]
 	cmd = 'mkdir -p '+ curr_folder + inj_num + '_fig' 
@@ -539,6 +539,7 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	plot_jpos(gold_jpos, jpos, sim_jpos, gold_t, t,true_detect[2]).savefig(curr_folder + inj_num +'_fig/jpos.png')
 	plot_pos(gold_pos, pos, gold_t, t,true_detect[3]).savefig(curr_folder + inj_num +'_fig/pos.png')
 	plt.close("all")
+        """
 	return param_line, output_line, error_line
 
 
