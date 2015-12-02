@@ -249,8 +249,9 @@ def plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t,pos_detect):
 		axarr4[j].plot(orig_pos[j], 'k')
 		axarr4[j].plot(gold_pos[j], 'g')
 		axarr4[j].plot(pos[j], 'r')
-		if not(all(v == 0 for v in pos_detect[j])):	
-			pos_vline = min([i for i, e in enumerate(pos_detect[j]) if e != 0]) 
+		#if not(all(v == 0 for v in pos_detect[j])):	
+		if pos_detect:
+			pos_vline = min(pos_detect)#pos_vline = min([i for i, e in enumerate(pos_detect[j]) if e != 0]) 
 			axarr4[j].axvline(x = pos_vline, color = 'k', ls = 'dashed')
 		axarr4[j].set_ylabel(pos_labels[j])
 		axarr4[j].tick_params(axis = 'both', labelsize=10)
@@ -370,7 +371,7 @@ for i in range(0,len(pos_error)):
 error_line = ''
 for i in range(0,3):		
 	for j in range(0,len(mpos_error[i])):
-		if (abs(mpos_error[i][j]) > 1*float(mpos_lim[i][1])):
+		if (abs(mpos_error[i][j]) > 1*float(mpos_lim[i][2])+2.58*float(mpos_lim[i][3])):
 			error_line = error_line + str(j) + '-'
 			#print 'mpos'+str(indices[i])
 			#print j
@@ -378,7 +379,7 @@ for i in range(0,3):
 		else:
 			mpos_detect[i].append(0)
 	for j in range(0,len(mvel_error[i])):
-		if (abs(mvel_error[i][j]) > 1*float(mvel_lim[i][1])): 
+		if (abs(mvel_error[i][j]) > 1*float(mvel_lim[i][2])+2.58*float(mvel_lim[i][3])): 
 			error_line = error_line + str(j) +  '-'
 			#print 'mvel'+str(indices[i])
 			#print j
@@ -386,7 +387,7 @@ for i in range(0,3):
 		else:
 			mvel_detect[i].append(0)
 	for j in range(0,len(jpos_error[i])):				
-		if (abs(jpos_error[i][j]) > 1*float(jpos_lim[i][1])): 
+		if (abs(jpos_error[i][j]) > 1*float(jpos_lim[i][2])+2.58*float(jpos_lim[i][3])): 
 			error_line = error_line + str(j) + '-'
 			#print 'jpos'+str(indices[i])+','+str(jpos_error[i][j])+','+str(jpos_lim[i][0])+'|'+str(jpos_lim[i][1])
 			#print j 
@@ -396,7 +397,7 @@ for i in range(0,3):
 
 for i in range(0,3):
 	for j in range(0,len(pos_error[i])):
-		if (abs(pos_error[i][j]) > 1*float(pos_lim[i][1])):
+		if (abs(pos_error[i][j]) > 1*float(pos_lim[i][2])+2.58*float(pos_lim[i][3])):
 			error_line = error_line + str(j) + '-' 
 			#print 'pos'+str(indices[i])
 			#print j
@@ -474,7 +475,7 @@ os.system(cmd)
 plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t).savefig(raven_home+'/figures/dac.png')
 plot_mpos(pmode,gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t,true_detect[1], true_detect[0]).savefig(raven_home+'/figures/mpos_mvel.png')
 plot_jpos(gold_jpos, orig_jpos, jpos, sim_jpos, gold_t, orig_t, t,true_detect[2]).savefig(raven_home+'/figures/jpos.png')
-plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t,pos_detect).savefig(raven_home+'/figures/pos.png')
+plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t,true_detect[3]).savefig(raven_home+'/figures/pos.png')
 
 if str(pmode) == '0':
 	# Difference between robot and model
