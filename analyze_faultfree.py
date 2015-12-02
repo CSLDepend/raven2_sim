@@ -230,7 +230,7 @@ def _get_distance(l,m):
     traj_len = min(len(l),len(m))
     result = map(abs,(map(sub,l[1:traj_len],m[1:traj_len])))
     if max(result) > 1000:
-        #plot_list(result)
+        plot_list(result)
         return []
     else:
         return result

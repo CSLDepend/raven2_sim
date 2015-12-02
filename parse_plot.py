@@ -320,7 +320,7 @@ if not(os.path.isfile(output_file)):
 			output_line = output_line + 'err_pos' + str(posi[i]) + ','
 	if str(pmode) == '1':
 		output_line = output_line + ', Jump?'
-		output_line = output_line + ', Detections, Latency, False_Detections'
+		output_line = output_line + ', T1, T2, T3, T4, T5, L1, L2, L3, L4, L5, False_Detections'
 	writer4.writerow(output_line.split(',')) 
 	csvfile4.close()
 
@@ -507,9 +507,11 @@ for i in range(0,3):
 true_mpos = []
 true_mvel = []
 true_jpos = []
+true_pos = []
 false_mpos = []
 false_mvel = []
 false_jpos = []
+false_pos = []
 if str(pmode) == '1':
 	mpos_all_d = list(np.array(mpos_detect[0])|np.array(mpos_detect[1])|np.array(mpos_detect[2]))
 	mvel_all_d = list(np.array(mvel_detect[0])|np.array(mvel_detect[1])|np.array(mvel_detect[2]))
@@ -554,7 +556,9 @@ if str(pmode) == '1':
 	print true_mvel
 	print true_jpos
 	# Write Detections
-	output_line = output_line + 'MVEL:'+ str(true_mvel) + '-MPOS:'+ str(true_mpos) + '-JPOS:'+ str(true_jpos)+','
+	output_line = output_line + str(true_mvel)+','
+	output_line = output_line + str(true_mpos)+','
+	output_line = output_line + str(true_jpos)+','
 	# Write Latency
 	detect_list = true_mpos+true_mvel+true_jpos
 	if detect_list:
