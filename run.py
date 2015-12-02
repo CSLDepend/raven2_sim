@@ -498,7 +498,8 @@ class Raven():
                         if self.title == 'mfi2_empty_test':
                             self.__run_parse_plot(0, self.curr_inj,self.traj)
                         else:
-                            self.__run_parse_plot(1, self.curr_inj,self.traj)                        
+                            self.__run_parse_plot(1, self.curr_inj,self.traj)
+
                         if self.curr_inj == self.end_inj_num:
                             break
                 elif l[0].startswith('location'):
