@@ -41,7 +41,7 @@ extern int inject_mode;
 extern int logging;
 extern char err_str[1024];
 /**\fn int log_file(const char* fmt,...)
-*  \brief 
+*  \brief
 *  \param fmt
 *  \return 0 on success -1 on failure
 */
@@ -59,11 +59,11 @@ int log_file(const char* fmt,...)
 	{
  		std::ofstream logfile;
     static char buff[50];
-		if (inject_mode == 0)  
+		if (inject_mode == 0)
         sprintf(buff,"%s/sim_log.txt", raven_path);
     else
 		    sprintf(buff,"%s/fault_log_%d.txt", raven_path, inject_mode);
-    logfile.open(buff,std::ofstream::out | std::ofstream::app); 
+    logfile.open(buff,std::ofstream::out | std::ofstream::app);
 		// Log in the file
 		logfile << buf << "\n";
 		logfile.close();
@@ -85,7 +85,7 @@ int log_file(const char* fmt,...)
 #endif
 
 /**\fn int log_msg_later(const char* fmt,...)
-*  \brief 
+*  \brief
 *  \param fmt
 *  \return 0 on success -1 on failure
 */
@@ -112,7 +112,7 @@ int log_msg_later(const char* fmt,...)
 }
 
 /**\fn int log_msg(const char* fmt,...)
-*  \brief 
+*  \brief
 *  \param fmt
 *  \return 0 on success -1 on failure
 */
@@ -133,7 +133,7 @@ int log_msg(const char* fmt,...)
 }
 
 /**\fn int err_msg(const char* fmt,...)
-*  \brief 
+*  \brief
 *  \param fmt
 *  \return 0 on success -1 on failure
 */
