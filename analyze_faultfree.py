@@ -94,6 +94,14 @@ def parse_latest_run(reader):
     print len(est_mpos[0])
     return est_mpos, est_mvel, est_dac, est_jpos, est_pos, err_msg, packet_nums, time 
   
+def plot_list(data):
+    f4, axarr4 = plt.subplots(1, 1)
+    #plot stdev
+    axis = range(0,len(data))
+    axarr4.scatter(axis, data)
+    plt.show()
+    return f4
+
 def plot_pos(pos_stdev, pos_mean):
     f4, axarr4 = plt.subplots(3, 2, sharex=True)
     axarr4[0][0].set_title("End-Effector Positions (STDEV)")
@@ -151,7 +159,6 @@ def _compute_mean_stdev(all_files):
         with open(f) as infile:
             reader = csv.reader(x.replace('\0', '') for x in infile)
             mpos, mvel, dac, jpos, pos, err, packet_nums, t = parse_latest_run(reader)
-
             # Store each value to separate array
             all_x.append(pos[0])
             all_y.append(pos[1])
@@ -211,15 +218,30 @@ def compute_by_packet(all_files):
     plot_mpos(all_mpos_stdev, all_mpos_mean)
 
 def _get_delta(l):
-    return map(sub,l[1:],l[:-1])
+    result = map(sub,l[1:],l[:-1])
+    #print max(result)
+    if max(result) > 1000:
+        #plot_list(result)
+        return []
+    else:
+        return result
 
 def _get_distance(l,m):
     traj_len = min(len(l),len(m))
-    return map(abs,(map(sub,l[1:traj_len],m[1:traj_len])))
+    result = map(abs,(map(sub,l[1:traj_len],m[1:traj_len])))
+    if max(result) > 1000:
+        #plot_list(result)
+        return []
+    else:
+        return result
 
 def _get_traj_err(l,m):
     traj_len = min(len(l),len(m))
-    return sum(map(abs,(map(sub,l[1:traj_len],m[1:traj_len]))))/traj_len 
+    result = sum(map(abs,(map(sub,l[1:traj_len],m[1:traj_len]))))/traj_len 
+    if result > 1000:
+        sys.exit(0)
+    else:
+        return result
     
 def _get_stats(l):
     return min(l), max(l), mean(l), stdev(l)
@@ -368,6 +390,7 @@ def compute_delta_t(golden_file, all_files):
                 jpos_traj_err[i].append(_get_traj_err(jpos[i],gjpos[i]))
                 pos_traj_err[i].append(_get_traj_err(pos[i],gpos[i]))     
 
+
 # Define Global Variables
 mpos_delta = [[],[],[]]
 mvel_delta = [[],[],[]]
@@ -398,7 +421,7 @@ if __name__ == '__main__':
     golden_file = []
     for root, dirs, files in os.walk(sys.argv[1]):
         for f in files:
-            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('traj') and os.stat(os.path.join(root,f)).st_size > 0:
+            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('traj') and os.stat(os.path.join(root,f)).st_size > 23000*1024:
                 all_files.append(os.path.join(root,f))
             if f.endswith('trj'):
                golden_file.append(os.path.join(root,f))

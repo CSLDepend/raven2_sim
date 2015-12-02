@@ -399,7 +399,6 @@ static void *rt_process(void* )
 				  (s_16)device0.mech[0].joint[Z_INS].current_cmd);
 */
 //HOOK
-;
 //Start at packet S and continue for L packets:
 //if ((u.sequence >= 10) && (u.sequence < 20)) => S random, between 10 and 15000, L between 1 to 50
 //device0.mech[i].joint[SHOULDER].current_cmd => random int
@@ -423,8 +422,8 @@ static void *rt_process(void* )
 				{
 					r2_kill = 1;
 					if (ros::ok()) ros::shutdown();
-					return 0;				
-				} 
+					return 0;
+				}
 */
 #endif
 				    // Send simulator input to FIFO
@@ -510,7 +509,6 @@ static void *rt_process(void* )
 				  (s_16)device0.mech[0].joint[ELBOW].current_cmd,
 				  (s_16)device0.mech[0].joint[Z_INS].current_cmd);
 //HOOK
-;
 //Start at packet S and continue for L packets:
 //if ((u.sequence >= 10) && (u.sequence < 20)) => S random, between 10 and 15000, L between 1 to 50
 //device0.mech[i].joint[SHOULDER].current_cmd => random int
