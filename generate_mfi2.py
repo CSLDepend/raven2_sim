@@ -174,13 +174,13 @@ def generate_stuck_fault_list():
 def generate_xyz_dist_faults():
     pre_trig = ''
     trigger = 'u.sequence'
-    dist = ('500', '1000', '2000', '4000','8000')
+    dist = ('250', '500', '1000', '2000', '4000','8000')
     code = []
     param = []
     variable = ['u.delx[0]', 'u.dely[0]','u.delz[0]']
     for d in dist:
         for t1 in range(1000,3000,1000):#(10,3000,1000):
-            for dt in range(1,100,10):#(1,15):
+            for dt in range(1,50,1):#(1,15):
                 t2 = t1 + dt
                 delta = str(float(d)/sqrt(3))
                 code.append(_generate_add_code(pre_trig, trigger,
@@ -328,8 +328,8 @@ def generate_rt_process_once_faults():
     _write_to_file(code, param, 'mfi2_rt_process_once_faults', 
             'rt_process_preempt.cpp://HOOK')
 def generate_empty_test():
-    code = [';']*300
-    param = [','.join(['none','0','0','0'])]*300
+    code = [';']*20
+    param = [','.join(['none','0','0','0'])]*20
     _write_to_file(code, param, 'mfi2_empty_test', 
             'rt_process_preempt.cpp://HOOK')
 
@@ -398,11 +398,11 @@ def generate_test():
 
 #generate_network_layer_skip()
 #generate_network_layer_delay()
-#generate_xyz_dist_faults()
+generate_xyz_dist_faults()
 #generate_u_R_l_faults()
 #generate_rt_process_faults()
 #generate_rt_process_once_faults()
 #generate_toggle_surgeon_mode()
-generate_empty_test()
+#generate_empty_test()
 #generate_r_faults()
 #generate_test()

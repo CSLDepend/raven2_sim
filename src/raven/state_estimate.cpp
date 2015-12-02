@@ -88,14 +88,18 @@ void stateEstimate(struct robot_device *device0)
 		{
 			// Read estimates from FIFO
 			read(rdfd, sim_buf, sizeof(sim_buf));
+			double sim_jpos [3];
 			// Write the results to the screen
 			std::istringstream ss(sim_buf);
 			ss >> device0->mech[i].joint[SHOULDER].mpos >>
 				device0->mech[i].joint[SHOULDER].mvel >>
+				sim_jpos[0] >>
 				device0->mech[i].joint[ELBOW].mpos >>
 				device0->mech[i].joint[ELBOW].mvel >>
+				sim_jpos[1] >>
 				device0->mech[i].joint[Z_INS].mpos >>
-				device0->mech[i].joint[Z_INS].mvel;
+				device0->mech[i].joint[Z_INS].mvel >>
+				sim_jpos[2];
             //printf("\nRecieved: %s\n",sim_buf);
 #ifndef no_logging
 			printf("Estimated (mpos,mvel):(%f, %f),(%f, %f),(%f, %f)\n",
