@@ -324,7 +324,6 @@ if not(os.path.isfile(output_file)):
 		else:
 			output_line = output_line + 'err_pos' + str(posi[i]) + ','
 	if str(pmode) == '1':
-		output_line = output_line + ', Jump?'
 		output_line = output_line + ', T1(mvel), T2(mpos), T3(jpos), T4(pos), T5(E-STOP), L1(mvel), L2(mpos), L3(jpos), L4(pos), L5(E-STOP), F1(mvel), F2(mpos), F3(jpos)'
 	writer4.writerow(output_line.split(',')) 
 	csvfile4.close()
@@ -355,7 +354,7 @@ if str(pmode) == '1':
 output_line = str(len(mpos[0])) + ','
 
 # For faulty run, write error messages and see if a jump happened
-iESTOP = 0;
+iESTOP = ''
 if str(pmode) == '1':
 	# Error messages
 	gold_msgs = [s for s in gold_err if s]
@@ -461,7 +460,7 @@ for i in range(0,3):
 	output_line = output_line + ','
 
 # Trajectory errors 
-mpos_error = [[],[],[]];
+'''mpos_error = [[],[],[]];
 mvel_error = [[],[],[]];
 jpos_error = [[],[],[]];
 pos_error = [[],[],[]];
@@ -471,13 +470,13 @@ for i in range(0,3):
 	mvel_error[i]= list(np.array(mvel[i][1:traj_len])-np.array(gold_mvel[i][1:traj_len]))
 	jpos_error[i]= list(np.array(jpos[i][1:traj_len])-np.array(gold_jpos[i][1:traj_len]))
 for i in range(0,3):    
-	pos_error[i] = list(np.array(pos[i][1:traj_len])-np.array(gold_pos[i][1:traj_len]))
+	pos_error[i] = list(np.array(pos[i][1:traj_len])-np.array(gold_pos[i][1:traj_len]))'''
 '''for i in range(0,3):
 	print max(mpos_error[i])
 	print max(mvel_error[i])
 	print max(jpos_error[i])'''
 
-if str(pmode) == '1':
+'''if str(pmode) == '1':
 	# Find jumps in distance
 	for i in range(0,3):		
 		for j in range(0,len(mpos_error[i])):
@@ -492,7 +491,7 @@ if str(pmode) == '1':
 
 			if (pos_error[i][j] > 1*float(pos_dist[i][1])):
 				output_line = output_line + 'P'+ str(j) + ' = ' + str(mpos_error[i][j]) + ';'
-	output_line = output_line + ','			
+	output_line = output_line + ','	'''		
 
 # Detector: mvel, mpos, jpos
 true_detect = [[],[],[],[]]
@@ -563,7 +562,10 @@ if str(pmode) == '1':
 		else:
 			output_line = output_line +','
 	# E-STOP
-	output_line = output_line + str(iESTOP) +','
+	if (iESTOP == ''):
+		output_line = output_line +','
+	else:
+		output_line = output_line + str(iESTOP) +','
 	
 	# Write Latency
 	for i in range(0, 4):
@@ -572,7 +574,10 @@ if str(pmode) == '1':
 		else:
 			output_line = output_line +','	
 	# E-STOP
-	output_line = output_line + str(int(iESTOP)-istart) +','			
+	if (iESTOP == ''):
+		output_line = output_line +','
+	else:
+		output_line = output_line + str(int(iESTOP)-istart) +','			
 		
 	# Write Miss Detections
 	print false_detect
