@@ -224,7 +224,7 @@ class Raven():
             os.system(cmd)
             cmd = 'cp mfi2.txt ' + self.result_folder
             os.system(cmd)
-            cmd = 'cp mfi2_params.csv ' + self.result_folder
+            cmd = 'cp mfi2_params.csv ' + self.result_folder + '/' + self.param_name     
             os.system(cmd)
             cmd = 'cp ./golden_run/'+self.traj+'.csv ' + self.result_folder + '/' + self.traj_name
             os.system(cmd)
@@ -434,8 +434,12 @@ class Raven():
     def __setup_result_folder(self):
         """Create a folder to store the mfi2_experiment results."""
         time = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-        self.result_folder = self.raven_home + '/exp_result/' + self.title.rstrip() + '_' + time+'_'+self.mode
+        if self.title == 'mfi2_empty_test':
+            self.result_folder = self.raven_home + '/exp_result/fault_free/' + self.title.rstrip() + '_' + time+'_'+self.mode
+        else:
+            self.result_folder = self.raven_home + '/exp_result/faulty/' + self.title.rstrip() + '_' + time+'_'+self.mode            
         self.traj_name = time + '.trj'
+        self.param_name = time+ '.param'
         cmd = 'mkdir -p ' + self.result_folder
         os.system(cmd)
 

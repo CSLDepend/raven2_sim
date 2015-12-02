@@ -301,37 +301,6 @@ csvfile3.close()
 # Log the results
 indices = [0,1,2,4,5,6,7]
 posi = ['X','Y','Z']
-if str(pmode) == '0':
-	output_file = raven_home+'/fault_free_log.csv'
-if str(pmode) == '1':
-	output_file = raven_home+'/error_log.csv'
-	
-# Write the headers for new file
-if not(os.path.isfile(output_file)):
-	csvfile4 = open(output_file,'w')
-	writer4 = csv.writer(csvfile4,delimiter=',') 
-	if str(pmode) == '0':
-		output_line = 'Num_Packets'+','
-	if str(pmode) == '1':
-	    output_line = 'Variable, Start, Duration, Value, Num_Packets, Errors, '
-	for i in range(0,3):
-		output_line = output_line + 'err_mpos' + str(indices[i]) + ','
-		output_line = output_line + 'err_mvel' + str(indices[i]) + ','
-		output_line = output_line + 'err_jpos' + str(indices[i]) + ','
-	for i in range(0,3):
-		if (i == len(pos)-1):
-			output_line = output_line + 'err_pos' + str(posi[i])
-		else:
-			output_line = output_line + 'err_pos' + str(posi[i]) + ','
-	if str(pmode) == '1':
-		output_line = output_line + ', T1(mvel), T2(mpos), T3(jpos), T4(pos), T5(E-STOP), L1(mvel), L2(mpos), L3(jpos), L4(pos), L5(E-STOP), F1(mvel), F2(mpos), F3(jpos)'
-	writer4.writerow(output_line.split(',')) 
-	csvfile4.close()
-
-# Write the rows
-csvfile4 = open(output_file,'a')
-writer4 = csv.writer(csvfile4,delimiter=',') 
-
 
 # For faulty run, write Injection parameters First
 if str(pmode) == '1':
@@ -349,24 +318,6 @@ if str(pmode) == '1':
 			break 
 	csvfile5.close()
 	
-
-# Write Len of Trajectory
-output_line = str(len(mpos[0])) + ','
-
-# For faulty run, write error messages and see if a jump happened
-iESTOP = ''
-if str(pmode) == '1':
-	# Error messages
-	gold_msgs = [s for s in gold_err if s]
-	err_msgs = [s for s in err if s]
-	# If there are any errors or different errors, print them all
-	if err_msgs or not(err_msgs == gold_msgs):  
-		for e in set(err_msgs):
-			output_line = output_line + '#Packet ' + str(packets[err.index(e)]) +': ' + e
-			if 'STOP' in e:
-				iESTOP = str(packets[err.index(e)])
-				
-	output_line = output_line +  ','
 
 mpos_detect = [[],[],[]]
 mvel_detect = [[],[],[]]
@@ -416,82 +367,42 @@ for i in range(0,len(pos_error)):
 	pos_error[i]=(list(np.array(pos[i][1:])-np.array(pos[i][:-1])))	
 
 # Find jumps in delta
+error_line = ''
 for i in range(0,3):		
 	for j in range(0,len(mpos_error[i])):
 		if (abs(mpos_error[i][j]) > 1*float(mpos_lim[i][1])):
-			output_line = output_line + str(j) + '-'
+			error_line = error_line + str(j) + '-'
 			#print 'mpos'+str(indices[i])
 			#print j
 			mpos_detect[i].append(1)
 		else:
 			mpos_detect[i].append(0)
-	output_line = output_line + ','
 	for j in range(0,len(mvel_error[i])):
 		if (abs(mvel_error[i][j]) > 1*float(mvel_lim[i][1])): 
-			output_line = output_line + str(j) +  '-'
+			error_line = error_line + str(j) +  '-'
 			#print 'mvel'+str(indices[i])
 			#print j
 			mvel_detect[i].append(1)
 		else:
 			mvel_detect[i].append(0)
-	output_line = output_line + ','
 	for j in range(0,len(jpos_error[i])):				
 		if (abs(jpos_error[i][j]) > 1*float(jpos_lim[i][1])): 
-			output_line = output_line + str(j) + '-'
+			error_line = error_line + str(j) + '-'
 			#print 'jpos'+str(indices[i])+','+str(jpos_error[i][j])+','+str(jpos_lim[i][0])+'|'+str(jpos_lim[i][1])
 			#print j 
 			jpos_detect[i].append(1)
 		else:
 			jpos_detect[i].append(0)
-	output_line = output_line + ','
-
-#for i in range(3,7):
-#	output_line = output_line + ',,,'				
 
 for i in range(0,3):
 	for j in range(0,len(pos_error[i])):
 		if (abs(pos_error[i][j]) > 1*float(pos_lim[i][1])):
-			output_line = output_line + str(j) + '-' 
+			error_line = error_line + str(j) + '-' 
 			#print 'pos'+str(indices[i])
 			#print j
 			pos_detect[i].append(1)
 		else:
 			pos_detect[i].append(0)
-	output_line = output_line + ','
-
-# Trajectory errors 
-'''mpos_error = [[],[],[]];
-mvel_error = [[],[],[]];
-jpos_error = [[],[],[]];
-pos_error = [[],[],[]];
-for i in range(0,3):	
-	traj_len = min(len(mpos[i]),len(gold_mpos[i]))
-	mpos_error[i]= list(np.array(mpos[i][1:traj_len])-np.array(gold_mpos[i][1:traj_len]))
-	mvel_error[i]= list(np.array(mvel[i][1:traj_len])-np.array(gold_mvel[i][1:traj_len]))
-	jpos_error[i]= list(np.array(jpos[i][1:traj_len])-np.array(gold_jpos[i][1:traj_len]))
-for i in range(0,3):    
-	pos_error[i] = list(np.array(pos[i][1:traj_len])-np.array(gold_pos[i][1:traj_len]))'''
-'''for i in range(0,3):
-	print max(mpos_error[i])
-	print max(mvel_error[i])
-	print max(jpos_error[i])'''
-
-'''if str(pmode) == '1':
-	# Find jumps in distance
-	for i in range(0,3):		
-		for j in range(0,len(mpos_error[i])):
-			if (mpos_error[i][j] > 1*float(mpos_dist[i][1])):
-				output_line = output_line + 'P'+ str(j) + ' = ' + str(mpos_error[i][j]) + ';'
-
-			if (mvel_error[i][j] > 1*float(mvel_dist[i][1])): 
-				output_line = output_line + 'P'+ str(j) + ' = ' + str(mvel_error[i][j]) + ';'
-
-			if (jpos_error[i][j] > 1*float(jpos_dist[i][1])): 
-				output_line = output_line + 'P'+ str(j) + ' = ' + str(jpos_error[i][j]) + ';'
-
-			if (pos_error[i][j] > 1*float(pos_dist[i][1])):
-				output_line = output_line + 'P'+ str(j) + ' = ' + str(mpos_error[i][j]) + ';'
-	output_line = output_line + ','	'''		
 
 # Detector: mvel, mpos, jpos
 true_detect = [[],[],[],[]]
@@ -501,6 +412,7 @@ if str(pmode) == '1':
 	mvel_all_d = list(np.array(mvel_detect[0])|np.array(mvel_detect[1])|np.array(mvel_detect[2]))
 	jpos_all_d = list(np.array(jpos_detect[0])|np.array(jpos_detect[1])|np.array(jpos_detect[2]))
 	pos_all_d = list(np.array(pos_detect[0])|np.array(pos_detect[1])|np.array(pos_detect[2]))
+	# MVEL Detect
 	i = 0	
 	while i < len(mvel_all_d):
 		if mvel_all_d[i]:
@@ -513,7 +425,7 @@ if str(pmode) == '1':
 					i = i + 1	
 		else:
 			i = i + 1
-			
+	#MPOS Detect		
 	i = 0
 	while i < len(mpos_all_d):
 		if mpos_all_d[i]:
@@ -526,7 +438,7 @@ if str(pmode) == '1':
 					i = i + 1
 		else:
 			i = i + 1
-	
+	# JPOS Detect
 	i = 0
 	while i < len(jpos_all_d):
 		if jpos_all_d[i]:
@@ -539,7 +451,7 @@ if str(pmode) == '1':
 					i = i + 1			
 		else:
 			i = i + 1	
-			
+	# Pos Detect		
 	i = 0
 	while i < len(pos_all_d):
 		if pos_all_d[i]:
@@ -555,44 +467,6 @@ if str(pmode) == '1':
 			
 	print true_detect
 	print false_detect
-	# Write Detections
-	for i in range(0, 4):
-		if true_detect[i]:
-			output_line = output_line + str(true_detect[i])+','
-		else:
-			output_line = output_line +','
-	# E-STOP
-	if (iESTOP == ''):
-		output_line = output_line +','
-	else:
-		output_line = output_line + str(iESTOP) +','
-	
-	# Write Latency
-	for i in range(0, 4):
-		if true_detect[i]:
-			output_line = output_line + str(int(min(true_detect[i]))-istart)+','
-		else:
-			output_line = output_line +','	
-	# E-STOP
-	if (iESTOP == ''):
-		output_line = output_line +','
-	else:
-		output_line = output_line + str(int(iESTOP)-istart) +','			
-		
-	# Write Miss Detections
-	print false_detect
-	for i in range(0, 3):
-		if false_detect[i]:
-			output_line = output_line + str('-'.join(map(str,false_detect[i])))+','
-		else:
-			output_line = output_line +','	
-
-# Write to CSV file	
-if str(pmode) == '0':
-	writer4.writerow(output_line.split(','))    
-if str(pmode) == '1':
-	writer4.writerow(param_line+output_line.split(','))    
-csvfile4.close()
 
 # Plot the graphs
 cmd = 'mkdir -p ' + raven_home+'/figures'
@@ -601,7 +475,6 @@ plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t).savefig(raven_home+'/figur
 plot_mpos(pmode,gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t,true_detect[1], true_detect[0]).savefig(raven_home+'/figures/mpos_mvel.png')
 plot_jpos(gold_jpos, orig_jpos, jpos, sim_jpos, gold_t, orig_t, t,true_detect[2]).savefig(raven_home+'/figures/jpos.png')
 plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t,pos_detect).savefig(raven_home+'/figures/pos.png')
-
 
 if str(pmode) == '0':
 	# Difference between robot and model
