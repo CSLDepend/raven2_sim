@@ -23,3 +23,4 @@ int32[16] current_cmd
 char[1024] err_msg
 float32[3] sim_mpos
 float32[3] sim_mvel
+float32[3] sim_jpos

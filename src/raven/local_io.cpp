@@ -77,6 +77,7 @@ extern char err_str[1024];
 #ifdef detector
 extern double sim_mpos[3];
 extern double sim_mvel[3];
+extern double sim_jpos[3];
 #endif
 /**
  * \brief Initialize data arrays to zero and create mutex
@@ -573,6 +574,10 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
 	{
 		msg_ravenstate.sim_mpos[i] = sim_mpos[i] RAD2DEG;
 		msg_ravenstate.sim_mvel[i] = sim_mvel[i] RAD2DEG;
+		if (i == 2)
+      		msg_ravenstate.sim_jpos[i] = sim_jpos[i]*1000;
+    	else
+    	    msg_ravenstate.sim_jpos[i] = (sim_jpos[i]+M_PI) RAD2DEG;
 	}
 #endif
     // Publish the raven data to ROS

@@ -79,7 +79,8 @@ def parse_latest_run(reader):
 	time = []
 	sim_mpos = [[],[],[]]
 	sim_mvel = [[],[],[]]
-
+	sim_jpos = [[],[],[]]
+	
 	i = 0
 	past_line = ''
 	for l in reader:
@@ -108,6 +109,7 @@ def parse_latest_run(reader):
 					for j in range(0,3):
 						sim_mpos[j].append(float(line[sim_index+indices[j]]))
 						sim_mvel[j].append(float(line[sim_index+3+indices[j]]))
+						sim_jpos[j].append(float(line[sim_index+6+indices[j]]))
 				except:
 					pass
 				try:			
@@ -121,7 +123,7 @@ def parse_latest_run(reader):
 		i = i + 1;
 	print len(est_mvel[0])
 	print len(est_mpos[0])
-	return est_mpos, est_mvel, est_dac, est_jpos, est_pos, sim_mpos, sim_mvel, err_msg, packet_nums, time 	
+	return est_mpos, est_mvel, est_dac, est_jpos, est_pos, sim_mpos, sim_mvel, sim_jpos, err_msg, packet_nums, time 	
 
 #Obselete
 def parse_input_data(in_file):
@@ -163,7 +165,7 @@ def plot_mpos(m, gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mve
 		axarr1[j, 0].plot(gold_mpos[j], 'g')
 		axarr1[j, 0].plot(mpos[j], 'r')
 		if j < 3 and not(all(v == 0 for v in sim_mpos[j])):	
-			axarr1[j, 0].plot(sim_mpos[j], 'b')
+			axarr1[j, 0].plot(sim_mpos[j], 'b')	
 		if j < 3 and mpos_detect: # and not(all(v == 0 for v in mpos_detect[j])):	
 			mpos_vline = min(mpos_detect)# min([i for i, e in enumerate(mpos_detect[j]) if e != 0])
 			axarr1[j, 0].axvline(x = mpos_vline, color = 'k', ls = 'dashed')
@@ -209,7 +211,7 @@ def plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t):
 	#plt.show()
 	return f2
 
-def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t, jpos_detect):
+def plot_jpos(gold_jpos, orig_jpos, jpos, sim_jpos, gold_t, orig_t, t, jpos_detect):
 	indices = [0,1,2,4,5,6,7]
 	f3, axarr3 = plt.subplots(7, 1, sharex=True)
 	plt.tight_layout()
@@ -218,6 +220,8 @@ def plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t, jpos_detect):
 		axarr3[j].plot(orig_jpos[j], 'k')
 		axarr3[j].plot(gold_jpos[j], 'g')
 		axarr3[j].plot(jpos[j], 'r')
+		if j < 3 and not(all(v == 0 for v in sim_jpos[j])):	
+			axarr3[j].plot(sim_jpos[j], 'b')			
 		if j < 3 and jpos_detect: #and not(all(v == 0 for v in jpos_detect[j])):	
 			jpos_vline = min(jpos_detect)#min([i for i, e in enumerate(jpos_detect[j]) if e != 0]) 
 			axarr3[j].axvline(x = jpos_vline, color = 'k', ls = 'dashed')
@@ -264,6 +268,8 @@ except:
     print "Error: missing parameters"
     print 'python plot2.py 0|1 inj_num traj_name'
     sys.exit(2)
+    
+print 'Mode = '+str(pmode)
 
 # Open Log files
 csvfile1 = open(raven_home+'/robot_run.csv')
@@ -272,15 +278,15 @@ csvfile2 = open(raven_home+'/golden_run/'+traj+'.csv')
 reader2 = csv.reader(x.replace('\0', '') for x in csvfile2)
 
 # Parse the robot run
-orig_mpos, orig_mvel, orig_dac, orig_jpos, orig_pos, orig_sim_mpos, orig_sim_mvel,orig_err, orig_packets, orig_t = parse_latest_run(reader1)
+orig_mpos, orig_mvel, orig_dac, orig_jpos, orig_pos, orig_sim_mpos, orig_sim_mvel, orig_sim_jpos,orig_err, orig_packets, orig_t = parse_latest_run(reader1)
 # Parse the golden simulator run
-gold_mpos, gold_mvel, gold_dac, gold_jpos, gold_pos, gold_sim_mpos, gold_sim_mvel, gold_err, gold_packets, gold_t = parse_latest_run(reader2)
+gold_mpos, gold_mvel, gold_dac, gold_jpos, gold_pos, gold_sim_mpos, gold_sim_mvel, gold_sim_jpos,gold_err, gold_packets, gold_t = parse_latest_run(reader2)
 #orig_mpos, orig_mvel, orig_dac, orig_jpos, orig_pos = parse_input_data(in_file)
 
 # Parse the latest run of simulator
 csvfile3 = open(raven_home+'/latest_run.csv')
 reader3 = csv.reader(x.replace('\0', '') for x in csvfile3)
-mpos, mvel, dac, jpos, pos, sim_mpos, sim_mvel, err, packets, t = parse_latest_run(reader3)
+mpos, mvel, dac, jpos, pos, sim_mpos, sim_mvel, sim_jpos, err, packets, t = parse_latest_run(reader3)
 
 # Close files
 csvfile1.close()
@@ -321,6 +327,7 @@ if not(os.path.isfile(output_file)):
 # Write the rows
 csvfile4 = open(output_file,'a')
 writer4 = csv.writer(csvfile4,delimiter=',') 
+
 
 # For faulty run, write Injection parameters
 if str(pmode) == '1':
@@ -572,5 +579,35 @@ cmd = 'mkdir -p ' + raven_home+'/figures'
 os.system(cmd)
 plot_dacs(gold_dac, orig_dac, dac, gold_t, orig_t, t).savefig(raven_home+'/figures/dac.png')
 plot_mpos(pmode,gold_mpos, orig_mpos, mpos, sim_mpos, gold_mvel, orig_mvel, mvel, sim_mvel, gold_t, orig_t, t,true_mpos, true_mvel).savefig(raven_home+'/figures/mpos_mvel.png')
-plot_jpos(gold_jpos, orig_jpos, jpos, gold_t, orig_t, t,true_jpos).savefig(raven_home+'/figures/jpos.png')
+plot_jpos(gold_jpos, orig_jpos, jpos, sim_jpos, gold_t, orig_t, t,true_jpos).savefig(raven_home+'/figures/jpos.png')
 plot_pos(gold_pos, orig_pos, pos, gold_t, orig_t, t,pos_detect).savefig(raven_home+'/figures/pos.png')
+
+# Difference between robot and model
+# Write the rows
+if not(os.path.isfile('./sim_robot_results.csv')):
+	csvfile7 = open('./sim_robot_results.csv','w')
+	writer7 = csv.writer(csvfile7,delimiter=',') 
+	writer7.writerow(['mpos_err0','mvel_err0','jpos_err0','mpos_err1','mvel_err1','jpos_err1','mpos_err2','mvel_err2','jpos_err2'])  
+	csvfile7.close()
+
+csvfile7 = open('./sim_robot_results.csv','a')
+writer7 = csv.writer(csvfile7,delimiter=',') 
+mpos_rob_err = [[],[],[]]
+mvel_rob_err = [[],[],[]]
+jpos_rob_err = [[],[],[]]
+outline = []
+for j in range(0,3):
+	if not(all(v == 0 for v in sim_mpos[j])):	
+		traj_len = min(len(mpos[j]),len(sim_mpos[j]))
+		mpos_rob_err[j].append(sum(list(abs(np.array(mpos[j][1:traj_len])-np.array(sim_mpos[j][1:traj_len]))))/traj_len)
+	if not(all(v == 0 for v in sim_mvel[j])):
+		traj_len = min(len(mvel[j]),len(sim_mvel[j]))
+		mvel_rob_err[j].append(sum(list(abs(np.array(mvel[j][1:traj_len])-np.array(sim_mvel[j][1:traj_len]))))/traj_len)
+	if not(all(v == 0 for v in sim_jpos[j])):
+		traj_len = min(len(jpos[j]),len(sim_jpos[j]))
+		jpos_rob_err[j].append(sum(list(abs(np.array(jpos[j][1:traj_len])-np.array(sim_jpos[j][1:traj_len]))))/traj_len)
+for j in range(0,3):
+	for i in range(0,len(mpos_rob_err[j])):
+		outline.extend([mpos_rob_err[j][i],mvel_rob_err[j][i],jpos_rob_err[j][i]])    
+writer7.writerow(outline)
+csvfile7.close()
