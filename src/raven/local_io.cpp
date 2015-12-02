@@ -574,11 +574,10 @@ void publish_ravenstate_ros(struct robot_device *dev,struct param_pass *currPara
 	{
 		msg_ravenstate.sim_mpos[i] = sim_mpos[i] RAD2DEG;
 		msg_ravenstate.sim_mvel[i] = sim_mvel[i] RAD2DEG;
-		if (i == 2)
-      		msg_ravenstate.sim_jpos[i] = sim_jpos[i]*1000;
-    	else
-    	    msg_ravenstate.sim_jpos[i] = (sim_jpos[i]+M_PI) RAD2DEG;
-	}
+    }
+    msg_ravenstate.sim_jpos[0] = (sim_jpos[0]+M_PI) RAD2DEG;
+    msg_ravenstate.sim_jpos[1] = (sim_jpos[1]+M_PI) RAD2DEG;
+	msg_ravenstate.sim_jpos[2] = sim_jpos[2]*1000;
 #endif
     // Publish the raven data to ROS
     pub_ravenstate.publish(msg_ravenstate);
