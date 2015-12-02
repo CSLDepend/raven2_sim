@@ -363,7 +363,7 @@ static void *rt_process(void* )
           log_file("ERROR: soft_estopped = %d\n",soft_estopped);
 		  logging = 0;
 #endif
-          printf("ERROR: soft_estopped = %d\n",soft_estopped);
+          //printf("ERROR: soft_estopped = %d\n",soft_estopped);
           device0.runlevel = 0;
 		  //r2_kill = 1;
 		  //if (ros::ok()) ros::shutdown();
@@ -498,7 +498,7 @@ static void *rt_process(void* )
         int i = 0;
         if (((runlevel == 3)) && (packet_num != 111))
 		{
-				printf("\nPacket %d = mpos/mvel/DACs \n%f,%f,%f,\n%f,%f,%f,\n%d,%d,%d\n",
+				/*printf("\nPacket %d = mpos/mvel/DACs \n%f,%f,%f,\n%f,%f,%f,\n%d,%d,%d\n",
 				   packet_num,
           (float)device0.mech[0].joint[SHOULDER].mpos,
 				  (float)device0.mech[0].joint[ELBOW].mpos,
@@ -508,7 +508,7 @@ static void *rt_process(void* )
 				  (float)device0.mech[0].joint[Z_INS].mvel,
 				  (int)device0.mech[0].joint[SHOULDER].current_cmd,
 				  (s_16)device0.mech[0].joint[ELBOW].current_cmd,
-				  (s_16)device0.mech[0].joint[Z_INS].current_cmd);
+				  (s_16)device0.mech[0].joint[Z_INS].current_cmd);*/
 //HOOK
 //Start at packet S and continue for L packets:
 //if ((u.sequence >= 10) && (u.sequence < 20)) => S random, between 10 and 15000, L between 1 to 50
