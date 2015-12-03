@@ -433,10 +433,11 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	mvel_all_d = list(np.array(mvel_detect[0])|np.array(mvel_detect[1])|np.array(mvel_detect[2]))
 	jpos_all_d = list(np.array(jpos_detect[0])|np.array(jpos_detect[1])|np.array(jpos_detect[2]))
 	pos_all_d_pre = list(np.array(pos_detect[0])|np.array(pos_detect[1])|np.array(pos_detect[2]))
-	# If Ecludian distance more than 1mm
+	# If Ecludian distance more than ?mm
+        pos_threshold = 0.5
 	pos_all_d = [0]*len(pos[0])
 	for i in range(0,len(pos_all_d)-1):
-		if (eclud_dist(pos[0][i],pos[1][i],pos[2][i], pos[0][i+1],pos[1][i+1],pos[2][i+1]) > 1):
+		if (eclud_dist(pos[0][i],pos[1][i],pos[2][i], pos[0][i+1],pos[1][i+1],pos[2][i+1]) > pos_threshold):
 			pos_all_d[i] = 1
 	
 			
@@ -597,7 +598,7 @@ if __name__ == '__main__':
     param_file = []
     for root, dirs, files in os.walk(sys.argv[1]):
         for f in files:
-            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('traj') and os.stat(os.path.join(root,f)).st_size > 23000*1024:
+            if f.endswith('csv') and not f.startswith('mfi2') and not f.startswith('traj') and not f.startswith('error_log') and (os.stat(os.path.join(root,f)).st_size > 0):
                 all_files.append(os.path.join(root,f))
             if f.endswith('trj'):
                golden_file.append(os.path.join(root,f))
@@ -611,6 +612,7 @@ if __name__ == '__main__':
         g_file = ''
         for g in golden_file:
             bname = os.path.basename(g)
+            print bname
             key = bname.split('.')[0]
             if key in f:
                 g_file = g
