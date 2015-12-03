@@ -230,7 +230,7 @@ def _get_distance(l,m):
     traj_len = min(len(l),len(m))
     result = map(abs,(map(sub,l[1:traj_len],m[1:traj_len])))
     if max(result) > 1000:
-        plot_list(result)
+        #plot_list(result)
         return []
     else:
         return result
@@ -239,6 +239,7 @@ def _get_traj_err(l,m):
     traj_len = min(len(l),len(m))
     result = sum(map(abs,(map(sub,l[1:traj_len],m[1:traj_len]))))/traj_len 
     if result > 1000:
+        #plot_list(result)
         sys.exit(0)
     else:
         return result
@@ -246,7 +247,7 @@ def _get_traj_err(l,m):
 def _get_stats(l):
     return min(l), max(l), mean(l), stdev(l)
 
-def compute_stats():
+def compute_stats(curr_folder):
     global mpos_delta
     global mvel_delta
     global jpos_delta
@@ -262,7 +263,7 @@ def compute_stats():
     global jpos_traj_err
     global pos_traj_err  
 
-    with open('stats', 'w') as outfile:
+    with open(curr_folder+'stats', 'w') as outfile:
         outfile.write('min, max, mean, stdev\n')
         for i in range(0,3):
             lmin, lmax, lmean, lstdev = _get_stats(mpos_delta[i])
@@ -426,4 +427,4 @@ if __name__ == '__main__':
             if f.endswith('trj'):
                golden_file.append(os.path.join(root,f))
     compute_delta_t(golden_file,all_files)    
-    compute_stats()
+    compute_stats(sys.argv[1])
