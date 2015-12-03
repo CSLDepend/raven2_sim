@@ -32,6 +32,10 @@ from statistics import mean, stdev
 from operator import add, sub, mul, abs
 from franges import frange
 
+def eclud_dist(x1,y1,z1, x2,y2,z2):
+	dist = math.sqrt(pow((x1-x2),2)+pow((y1-y2),2)+pow((z1-z2),2))
+	return dist
+
 def parse_latest_run(reader):
 	indices = [0,1,2,4,5,6,7]
 	runlevel = 0
@@ -322,7 +326,8 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 		#print err_pack_nums
 		#print iESTOP
 		# First time software detected something
-		iSWDetect = str(min(err_pack_nums))		
+                if err_pack_nums:
+		    iSWDetect = str(min(err_pack_nums))		
 		#print iSWDetect
 	output_line = output_line +  ','
 
@@ -411,8 +416,8 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 
 	for i in range(0,3):
 		for j in range(0,len(pos_error[i])):
-			#if (abs(pos_error[i][j]) > 1*float(pos_lim[i][1])):
-			if (abs(pos_error[i][j]) > cf*float(pos_lim[i][2])+sd*float(pos_lim[i][3])):
+			if (abs(pos_error[i][j]) > 1*float(pos_lim[i][1])):
+			#if (abs(pos_error[i][j]) > cf*float(pos_lim[i][2])+sd*float(pos_lim[i][3])):
 				error_line = error_line + str(j) + '-' 
 				#print 'pos'+str(indices[i])
 				#print j
@@ -427,30 +432,37 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	mpos_all_d = list(np.array(mpos_detect[0])|np.array(mpos_detect[1])|np.array(mpos_detect[2]))
 	mvel_all_d = list(np.array(mvel_detect[0])|np.array(mvel_detect[1])|np.array(mvel_detect[2]))
 	jpos_all_d = list(np.array(jpos_detect[0])|np.array(jpos_detect[1])|np.array(jpos_detect[2]))
-	pos_all_d = list(np.array(pos_detect[0])|np.array(pos_detect[1])|np.array(pos_detect[2]))
+	pos_all_d_pre = list(np.array(pos_detect[0])|np.array(pos_detect[1])|np.array(pos_detect[2]))
+	# If Ecludian distance more than 1mm
+	pos_all_d = [0]*len(pos[0])
+	for i in range(0,len(pos_all_d)-1):
+		if (eclud_dist(pos[0][i],pos[1][i],pos[2][i], pos[0][i+1],pos[1][i+1],pos[2][i+1]) > 1):
+			pos_all_d[i] = 1
+	
+			
 	# MVEL Detect
 	i = 0	
 	while i < len(mvel_all_d):
 		if mvel_all_d[i]:
-			if (istart <= i) and (i <= istart + iduration + 1):
+			if (istart <= i) and (i <= istart + iduration):
 				true_detect[0].append(i)	
 				i = istart+iduration+2
 			else:
 				false_detect[0].append(i)
-				while mvel_all_d[i]:	
-					i = i + 1	
+				while i < len(mvel_all_d) and mvel_all_d[i]:	
+					i = i + 1
 		else:
 			i = i + 1
 	#MPOS Detect		
 	i = 0
 	while i < len(mpos_all_d):
 		if mpos_all_d[i]:
-			if (istart <= i) and (i <= istart + iduration + 1):
+			if (istart <= i) and (i <= istart + iduration):
 				true_detect[1].append(i)	
 				i = istart+iduration+2
 			else:
 				false_detect[1].append(i)
-				while mpos_all_d[i]:		
+				while i < len(mpos_all_d) and mpos_all_d[i]:		
 					i = i + 1
 		else:
 			i = i + 1
@@ -458,12 +470,12 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	i = 0
 	while i < len(jpos_all_d):
 		if jpos_all_d[i]:
-			if (istart <= i) and (i <= istart + iduration + 1):
+			if (istart <= i) and (i <= istart + iduration):
 				true_detect[2].append(i)	
 				i = istart+iduration+2
 			else:
 				false_detect[2].append(i)
-				while jpos_all_d[i]:	
+				while i < len(jpos_all_d) and jpos_all_d[i]:	
 					i = i + 1			
 		else:
 			i = i + 1	
@@ -471,12 +483,12 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	i = 0
 	while i < len(pos_all_d):
 		if pos_all_d[i]:
-			if (istart <= i) and (i <= istart + iduration + 1):
+			if (istart <= i) and (i <= istart + iduration):
 				true_detect[3].append(i)	
 				i = istart+iduration+2
 			else:
 				false_detect[3].append(i)
-				while pos_all_d[i]:	
+				while i < len(pos_all_d) and pos_all_d[i]:	
 					i = i + 1			
 		else:
 			i = i + 1	
