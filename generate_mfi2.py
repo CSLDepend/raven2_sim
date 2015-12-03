@@ -318,7 +318,7 @@ def generate_rt_process_once_faults():
     # Injection parameters
     for var in variable:
         for t1 in range(1000,3000,1000):
-            for dt in range(1,20):
+            for dt in range(1,30):
                 for val in [100, 1000, 2000, 3000, 5000, 10000, 100000, 200000, 400000,800000]:#range(-12000, 15000, 1000):
                     t2 = t1 + dt
                     code.append(_generate_add_once_code(pre_trig, trigger,t1, t2, vtype, var, [val]))
@@ -328,8 +328,8 @@ def generate_rt_process_once_faults():
     _write_to_file(code, param, 'mfi2_rt_process_once_faults', 
             'rt_process_preempt.cpp://HOOK')
 def generate_empty_test():
-    code = [';']*20
-    param = [','.join(['none','0','0','0'])]*20
+    code = [';']*10
+    param = [','.join(['none','0','0','0'])]*10
     _write_to_file(code, param, 'mfi2_empty_test', 
             'rt_process_preempt.cpp://HOOK')
 
