@@ -303,7 +303,7 @@ csvfile3.close()
 indices = [0,1,2,4,5,6,7]
 posi = ['X','Y','Z']
 
-# For faulty run, write Injection parameters First
+'''# For faulty run, write Injection parameters First
 if str(pmode) == '1':
 	start = 0
 	duration = 0
@@ -403,11 +403,12 @@ for i in range(0,3):
 			#print j
 			pos_detect[i].append(1)
 		else:
-			pos_detect[i].append(0)
+			pos_detect[i].append(0)'''
 
 # Detector: mvel, mpos, jpos
 true_detect = [[],[],[],[]]
 false_detect = [[],[],[],[]]
+'''
 if str(pmode) == '1':
 	mpos_all_d = list(np.array(mpos_detect[0])|np.array(mpos_detect[1])|np.array(mpos_detect[2]))
 	mvel_all_d = list(np.array(mvel_detect[0])|np.array(mvel_detect[1])|np.array(mvel_detect[2]))
@@ -467,7 +468,7 @@ if str(pmode) == '1':
 			i = i + 1	
 			
 	print true_detect
-	print false_detect
+	print false_detect'''
 
 # Plot the graphs
 cmd = 'mkdir -p ' + raven_home+'/figures'
