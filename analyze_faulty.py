@@ -285,8 +285,8 @@ def plot_diff_pos(pos):
 	axarr4[4].plot(pos_diff, 'r')
 	axarr4[5].plot(pos_diff2, 'b')
 	pos_vline = ([pos_diff2.index(v) for v in pos_diff2 if v > 0.05])
-	print pos_vline
-	axarr4[5].axvline(x = min(pos_vline), color = 'k', ls = 'solid')	
+	if pos_vline:
+		axarr4[5].axvline(x = min(pos_vline), color = 'k', ls = 'solid')	
 	axarr4[5].set_ylabel('Diff Ecludian Dist')
 	axarr4[5].set_xlabel('Packet No. (ms)')
 	#plt.show()
