@@ -218,7 +218,7 @@ def compute_by_packet(all_files):
     plot_mpos(all_mpos_stdev, all_mpos_mean)
 
 def _get_delta(l):
-    result = map(sub,l[1:],l[:-1])
+    result = map(abs,map(sub,l[1:],l[:-1]))
     #print max(result)
     if max(result) > 1000:
         #plot_list(result)
