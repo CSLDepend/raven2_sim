@@ -264,6 +264,33 @@ def plot_pos(gold_pos, pos, gold_t, t,pos_detect):
 	#plt.show()
 	return f4
 
+def plot_diff_pos(pos):
+	pos_dist= []
+	pos_diff= []
+	for i in range(0,len(pos[0])-1):
+		pos_dist.append(eclud_dist(pos[0][i],pos[1][i],pos[2][i], pos[0][i+1],pos[1][i+1],pos[2][i+1]))
+	pos_diff = list(np.array(pos_dist[1:])-np.array(pos_dist[:-1]))
+	pos_diff2 = list(np.array(pos_diff[1:])-np.array(pos_diff[:-1]))		
+    
+	indices = [0,1,2,4,5,6,7]
+	f4, axarr4 = plt.subplots(6, 1, sharex=True)
+	axarr4[0].set_title("End-Effector Positions (Gold Arm)")
+	pos_labels = ['X Pos(mm)','Y Pos(mm)','Z Pos(mm)']
+	for j in range(0,3):
+		axarr4[j].plot(pos[j], 'r')
+		axarr4[j].set_ylabel(pos_labels[j])
+		axarr4[j].tick_params(axis = 'both', labelsize=10)
+	axarr4[3].plot(pos_dist, 'r')
+	axarr4[3].set_ylabel('Ecludian Dist')
+	axarr4[4].plot(pos_diff, 'r')
+	axarr4[5].plot(pos_diff2, 'b')
+	pos_vline = ([pos_diff2.index(v) for v in pos_diff2 if v > 0.05])
+	print pos_vline
+	axarr4[5].axvline(x = min(pos_vline), color = 'k', ls = 'solid')	
+	axarr4[5].set_ylabel('Diff Ecludian Dist')
+	axarr4[5].set_xlabel('Packet No. (ms)')
+	#plt.show()
+	return f4
 
 # Process each file
 def parse_plot(golden_file, run_file, mfi2_param, inj_num): 
@@ -541,7 +568,7 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 		else:
 			output_line = output_line +','	
 	
-        """
+       
 	# Update the graphs is they exist
 	curr_folder = run_file.split(str(inj_num))[0]
 	cmd = 'mkdir -p '+ curr_folder + inj_num + '_fig' 
@@ -550,8 +577,8 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	plot_mpos(gold_mpos, mpos, sim_mpos, gold_mvel, mvel, sim_mvel, gold_t, t,true_detect[1], true_detect[0]).savefig(curr_folder + inj_num +'_fig/mpos_mvel.png')
 	plot_jpos(gold_jpos, jpos, sim_jpos, gold_t, t,true_detect[2]).savefig(curr_folder + inj_num +'_fig/jpos.png')
 	plot_pos(gold_pos, pos, gold_t, t,true_detect[3]).savefig(curr_folder + inj_num +'_fig/pos.png')
-	plt.close("all")
-        """
+	plot_diff_pos(pos).savefig(curr_folder + inj_num +'_fig/pos_dist.png')
+	plt.close("all")       
 	return param_line, output_line, error_line
 
 
