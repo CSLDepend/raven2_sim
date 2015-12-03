@@ -8,6 +8,13 @@
 
 #define MAX_BUF 4096
 
+#define EULER_INT
+//#define UPDATE_MODEL
+//#define UPDATE_FREQ 20
+//Integration steps in msec
+double RK_STEP = 0.001;
+double EULER_STEP = 0.001;
+
 int iter_time_gold, iter_time_green=0;
 double DACs[3];
 
@@ -45,7 +52,11 @@ int main()
 	    if (arm_type == 0)
 		{
 			// initial state
+#ifdef UPDATE_MODEL
+		    if (iter_time_gold % UPDATE_FREQ == 0)
+#else
 		    if (iter_time_gold == 0)
+#endif
 			{
 				for (int i = 0; i < 3; i++)
 				{
@@ -76,7 +87,11 @@ int main()
 			}
 
 			t_start = clock();
-			integrate_adaptive(rk4(), sys_dyn_gold, r_state, 0.0, 0.001, 0.001);
+#ifdef EULER_INT
+				sys_dyn_gold_euler(r_state, EULER_STEP*1000);
+#else
+				integrate_adaptive(rk4(), sys_dyn_gold, r_state, 0.0, 0.001, RK_STEP);
+#endif		
 			t_end = clock();
 
 			iter_time_gold=iter_time_gold+1;
@@ -105,8 +120,14 @@ int main()
 	}
     //write_sys(x);
 	//cout << "Average Gold Arm Dynamics Calculation:" << sum_d/iter_time_green << " ms\n";
-
-    /* remove the FIFO */
+    FILE *f = fopen("results", "a");
+#ifdef EULER_INT
+	fprintf(f,"Average Calculation Time for Euler %f = %f\n", EULER_STEP, sum_d/iter_time_gold);
+#else
+	fprintf(f,"Average Calculation Time for RK4 %f = %f\n", RK_STEP, sum_d/iter_time_gold);
+#endif	
+    
+	/* remove the FIFO */
     unlink(wrfifo);
     close(fd1);
     close(fd2);

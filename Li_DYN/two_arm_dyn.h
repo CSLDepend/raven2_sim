@@ -25,4 +25,5 @@ const double PI= 3.141592654;
 
 void sys_states(const state_type &x);
 void sys_dyn_gold(const state_type &x, state_type &dxdt, double t);
+void sys_dyn_gold_euler(state_type &x, double dt);
 #endif
