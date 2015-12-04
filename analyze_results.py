@@ -31,8 +31,15 @@ import shelve
 from statistics import mean, stdev
 from operator import add, sub, mul, abs
 from franges import frange
+import pandas as pd
+
 
 results_file = './error_log.csv'
+
+df = pd.read_csv()
+print df.head()
+Start_1000 = df.ix[df['Start']==1000]
+print Start_1000
 # Read the rows
 csvfile = open(results_file,'r')
 reader = csv.reader(csvfile,delimiter=',') 
@@ -58,28 +65,29 @@ experiment_hash = []
 fig1 = plt.figure()
 ax = fig1.add_subplot(111)
 for line in reader:
+	data_vec = []
 	exp_str  = str(','.join(line[0:5]))
 	print exp_str
-	if not(exp_str in experiment_hash):
-		experiment_hash.append(exp_str)
 		
-		Starts.append(int(line[start_index]))
-		Variables.append(line[variable_index])
-		Values.append(float(line[value_index]))
-		Durations.append(int(line[duration_index]))	
-		
-		for i in range(0,6):	
-			if line[T_index+i] and (line[start_index] == '1000'):
-				print line[T_index + i]			
-				Time[i].append(int(line[T_index+i]))	
-				Latency[i].append(int(line[L_index+i]))
-			else:
-				Time[i].append(None)	
-				Latency[i].append(None)	
-cmap = plt.get_cmap('gnuplot')
-colors = [cmap(i) for i in np.linspace(0,1,7)]
-for i in range(0,6):		
-	print Latency[i]
-	ax.scatter(Values, Latency[i],label = str(headers[L_index+i]),color = colors[i])
+	Durations.append(int(line[duration_index]))
+	Values.append(int(line[value_index]))
+	for i in range(0,6):	
+		if line[T_index+i]:
+			print line[T_index + i]			
+			Time[i].append(int(line[T_index+i]))	
+			Latency[i].append(int(line[L_index+i]))
+
+		else:
+			Time[i].append(None)	
+			Latency[i].append(None)	
+			data_vec.append(None)
+	val_vec = [Values[-1]]*6
+	print data_vec
+	ax.plot(Durations, data_vec)
+	'''cmap = plt.get_cmap('gnuplot')
+	colors = [cmap(i) for i in np.linspace(0,1,7)]
+	for i in range(0,6):		
+		ax.plot(Values, Latency[i],label = str(headers[L_index+i]),color = colors[i])'''
+	
 fig1.savefig('./results.png')
 csvfile.close()
