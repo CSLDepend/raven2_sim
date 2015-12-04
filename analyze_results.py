@@ -69,7 +69,7 @@ for line in reader:
 		Durations.append(int(line[duration_index]))	
 		
 		for i in range(0,6):	
-			if line[T_index+i]:
+			if line[T_index+i] and (line[start_index] == '1000'):
 				print line[T_index + i]			
 				Time[i].append(int(line[T_index+i]))	
 				Latency[i].append(int(line[L_index+i]))

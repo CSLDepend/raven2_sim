@@ -125,11 +125,11 @@ def parse_latest_run(reader):
 				except:
 					pass
 			line = l
-			packet_no = int(line[packet_index])
+			packet_no = int(l[packet_index])
 		else:
 			t0 = float(line[0])
 		i = i + 1;
-	
+
 	for j in range(0,3):
 		if not(all(v == 0 for v in sim_jpos[j])):
 			init_diff = float(est_jpos[j][0]) - float(sim_jpos[j][0])
@@ -218,7 +218,6 @@ def plot_dacs(gold_dac, dac, gold_t, t):
 		axarr2[j].tick_params(axis = 'both', labelsize=10)
 	axarr2[j].set_xlabel('Packet No. (ms)')
 	plt.tight_layout()
-	#plt.show()
 	return f2
 
 def plot_jpos(gold_jpos, jpos, sim_jpos, gold_t, t, jpos_detect):
@@ -279,6 +278,11 @@ def plot_dist(pos, pos_ecludian, pos_detect):
 		pos_vline = min(pos_detect)
 		axarr4[3].axvline(x = pos_vline, color = 'k', ls = 'dashed')
 	axarr4[3].set_xlabel('Packet No. (ms)')
+	
+	'''f4 = plt.figure()
+	ax = f4.add_subplot(111)
+	ax.plot(pos_ecludian[990:1010], 'r')
+	ax.locator_params(axis = 'x', nbins = len(pos_ecludian[990:1010]))'''
 	#plt.show()
 	return f4
 
@@ -306,6 +310,15 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	indices = [0,1,2,4,5,6,7]
 	posi = ['X','Y','Z']
 
+	# Find dropped packets
+	dropped = []
+	for i in range(0, len(packets)-1):
+		if not(int(packets[i]) == int(packets[i+1]) -1):
+			for j in range(int(packets[i])+1,int(packets[i+1])):
+				dropped.append(j)
+	print 'Dropped Packets = '+str(dropped)
+	
+	output_line = ''
 	
 	# For faulty run, write Injection parameters First
 	start = 0
@@ -316,14 +329,47 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 		#print line
 		if (int(line[0]) == int(inj_num)):
 			param_line = line
-			print param_line
-			istart = int(line[2])
+			print 'Inj Params = '+str(param_line)
+			# Fix duration when dropped packets in the duration
 			iduration = int(line[3])
+			for d in dropped:
+				if (int(line[2]) <= d and d < int(line[2]) + int(line[3])):
+					iduration = iduration - 1 			
+			# Fix iStart when Dropped packets
+			if int(int(line[2])) in packets:
+				istart = int(packets.index(int(line[2])))
+				print "iStart verify = " + str(packets.index(int(line[2])))			
+			# If injected packet is not in the packets
+			else:
+				# injection packet dropped
+				if int(line[2]) <= max(packets):				
+					istart = int(line[2]) 					
+					for d in dropped:
+						if (int(line[2]) >= d):
+							istart = istart - 1
+				# file corrupted: injection beyond packets in the file
+				else:
+					print 'ERROR: File probably corrupted. Injection beyond trajectory length\n'
+					return '','',''
+			# If the duration of attack is within the trajectory
+			if istart+iduration < len(packets):
+				for i in range(istart-3,istart+iduration):
+					print str(i)+'='+str(packets[i])+':'+str(dac[0][i])			
+			else:
+				print 'ERROR: File probably corrupted. Injection beyond trajectory length\n'
+				return '','',''
+			# Write output
+			if not(istart == int(line[2])):
+				print 'Injection Start Fixed = '+str(istart)
+			output_line = output_line + str(istart)+','	
+			if not(iduration == int(line[3])):
+				print 'Injection Duration Fixed = '+str(iduration)
+			output_line = output_line + str(iduration)+','					
 			break 
 	csvfile5.close()
-
+		
 	# Write Len of Trajectory
-	output_line = str(len(mpos[0])) + ','
+	output_line = output_line + str(len(mpos[0])) + ','
 
 	# For faulty run, write error messages and see if a jump happened
 	iSWDetect = ''
@@ -403,7 +449,7 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	for i in range(0,3):		
 		for j in range(0,len(mpos_error[i])):
 			#if (abs(mpos_error[i][j]) > 1*float(mpos_lim[i][1])):
-			if (abs(mpos_error[i][j]) > cf*float(mpos_lim[i][2])+sd*float(mpos_lim[i][3])):
+			if (abs(mpos_error[i][j]) > cf*float(mpos_lim[i][2])+sd*float(mpos_lim[i][3])) or (abs(mpos_error[i][j]) < cf*float(mpos_lim[i][2])-sd*float(mpos_lim[i][3])):
 				error_line = error_line + str(j) + '-'
 				#print 'mpos'+str(indices[i])
 				#print j
@@ -413,7 +459,7 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 		error_line = error_line + ','
 		for j in range(0,len(mvel_error[i])):
 			#if (abs(mvel_error[i][j]) > 1*float(mvel_lim[i][1])): 
-			if (abs(mvel_error[i][j]) > cf*float(mvel_lim[i][2])+sd*float(mvel_lim[i][3])):
+			if (abs(mvel_error[i][j]) > cf*float(mvel_lim[i][2])+sd*float(mvel_lim[i][3])) or (abs(mvel_error[i][j]) < cf*float(mvel_lim[i][2])-sd*float(mvel_lim[i][3])):
 				error_line = error_line + str(j) +  '-'
 				#print 'mvel'+str(indices[i])
 				#print j
@@ -423,7 +469,7 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 		error_line = error_line + ','
 		for j in range(0,len(jpos_error[i])):				
 			#if (abs(jpos_error[i][j]) > 1*float(jpos_lim[i][1])): 
-			if (abs(jpos_error[i][j]) > cf*float(jpos_lim[i][2])+sd*float(jpos_lim[i][3])):
+			if (abs(jpos_error[i][j]) > cf*float(jpos_lim[i][2])+sd*float(jpos_lim[i][3])) or (abs(jpos_error[i][j]) < cf*float(jpos_lim[i][2])-sd*float(jpos_lim[i][3])):
 				error_line = error_line + str(j) + '-'
 				#print 'jpos'+str(indices[i])+','+str(jpos_error[i][j])+','+str(jpos_lim[i][0])+'|'+str(jpos_lim[i][1])
 				#print j 
@@ -456,17 +502,22 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	jpos_all_d = list(np.array(jpos_detect[0])|np.array(jpos_detect[1])|np.array(jpos_detect[2]))
 	pos_all_d_pre = list(np.array(pos_detect[0])|np.array(pos_detect[1])|np.array(pos_detect[2]))
 	# If Ecludian distance more than ?mm
-	pos_threshold = 0.1
+	pos_threshold = 0.3
 	pos_all_d = [0]*len(pos_ecludian)
 	for i in range(0,len(pos_all_d)):
-		if (pos_ecludian > pos_threshold):
+		if (pos_ecludian[i] > pos_threshold): # pos_all_d_pre[i]:
 			pos_all_d[i] = 1
-	
+	'''if int(inj_num) == 531:
+		print pos_ecludian[990:1010]
+		print pos_ecludian[1000]
+		print pos_ecludian[1001]
+		print dac[0][990:1010]
+		print gold_dac[0][990:1010]'''
 			
 	# MVEL Detect
 	i = 0	
 	while i < len(mvel_all_d):
-		if mvel_all_d[i]:
+		if mvel_all_d[i]:# and ((mpos_all_d[i-2] or mpos_all_d[i-1] or mpos_all_d[i])):
 			if (istart <= i) and (i <= istart + iduration):
 				true_detect[0].append(i)	
 				i = istart+iduration+2
@@ -479,7 +530,7 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	#MPOS Detect		
 	i = 0
 	while i < len(mpos_all_d):
-		if mpos_all_d[i]:
+		if mpos_all_d[i]:# and ((mvel_all_d[i-2] or mvel_all_d[i-1] or mvel_all_d[i])):
 			if (istart <= i) and (i <= istart + iduration):
 				true_detect[1].append(i)	
 				i = istart+iduration+2
@@ -492,7 +543,7 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	# JPOS Detect
 	i = 0
 	while i < len(jpos_all_d):
-		if jpos_all_d[i]:
+		if jpos_all_d[i]:# and ((mpos_all_d[i-2] or mpos_all_d[i-1] or mpos_all_d[i])):
 			if (istart <= i) and (i <= istart + iduration):
 				true_detect[2].append(i)	
 				i = istart+iduration+2
@@ -506,7 +557,7 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	# Pos Detect		
 	i = 0
 	while i < len(pos_all_d):
-		if pos_all_d[i] and (jpos_all_d[i-2] or jpos_all_d[i-1] or jpos_all_d[i]) and (mpos_all_d[i-2] or mpos_all_d[i-1] or mpos_all_d[i]):
+		if (pos_all_d[i] == 1):# and ((jpos_all_d[i-2] or jpos_all_d[i-1] or jpos_all_d[i])):
 			if (istart <= i) and (i <= istart + iduration):
 				true_detect[3].append(i)	
 				i = istart+iduration+2
@@ -516,7 +567,11 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 					i = i + 1			
 		else:
 			i = i + 1	
-
+	
+	'''if int(inj_num) == 531:
+		print 'detected at'+str(true_detect[3])
+		print 'detected: '+str(pos_ecludian[min(true_detect[3])])'''
+		
 	#print true_detect
 	#print false_detect
 	# Write Detections
@@ -559,14 +614,16 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 
 	# Write Miss Detections
 	#print false_detect
-	for i in range(0, 3):
+	for i in range(0, 4):
 		if false_detect[i]:
 			output_line = output_line + str('-'.join(map(str,false_detect[i])))+','
 		else:
 			output_line = output_line +','	
 	
 	# Update the graphs is they exist
-	'''curr_folder = run_file.split(str(inj_num))[0]
+	curr_folder = run_file.split(str(inj_num)+'.csv')[0]
+	print run_file
+	print str(inj_num)
 	print curr_folder
 	fig_folder = [curr_folder+f for f in os.listdir(curr_folder) if f.startswith('inj'+str(int(inj_num))+'_')]
 	fig_folder = fig_folder[0]+'/'
@@ -577,7 +634,7 @@ def parse_plot(golden_file, run_file, mfi2_param, inj_num):
 	plot_jpos(gold_jpos, jpos, sim_jpos, gold_t, t,true_detect[2]).savefig(fig_folder + 'jpos.png')
 	plot_pos(gold_pos, pos, gold_t, t,true_detect[3]).savefig(fig_folder + 'pos.png')
 	plot_dist(pos, pos_ecludian, true_detect[3]).savefig(fig_folder + 'pos_dist.png')
-	plt.close("all")      '''
+	plt.close("all")
 	return param_line, output_line, error_line
 
 
@@ -599,8 +656,8 @@ if __name__ == '__main__':
     if not(os.path.isfile(output_file)):
         csvfile4 = open(output_file,'w')
         writer4 = csv.writer(csvfile4,delimiter=',') 
-        output_line = 'InjNum,Variable,Start,Duration,Value,Num_Packets,Errors,'
-        output_line = output_line + 'T1(mvel),T2(mpos),T3(jpos),T4(pos),T5(SW-Detect),T6(E-STOP),L1(mvel),L2(mpos),L3(jpos),L4(pos),L5(SW-Detect),L6(E-STOP),F1(mvel),F2(mpos),F3(jpos), '
+        output_line = 'InjNum,Variable,Start,Duration,Value,FixedStart,FixedDuration,Num_Packets,Errors,'
+        output_line = output_line + 'T1(mvel),T2(mpos),T3(jpos),T4(pos),T5(SW-Detect),T6(E-STOP),L1(mvel),L2(mpos),L3(jpos),L4(pos),L5(SW-Detect),L6(E-STOP),F1(mvel),F2(mpos),F3(jpos),F4(pos),'
         for i in range(0,3):
             output_line = output_line + 'err_mpos' + str(indices[i]) + ','
             output_line = output_line + 'err_mvel' + str(indices[i]) + ','
@@ -658,8 +715,8 @@ if __name__ == '__main__':
             sys.exit(0)
 
     	param_line, output_line, error_line = parse_plot(g_file, f, p_file, inj_num)
-    
-        # Write to CSV file	
-        output_line = output_line.rstrip(',')
-        writer4.writerow(param_line+output_line.split(',')+error_line.split(','))    
+    	if param_line:
+			# Write to CSV file	
+			output_line = output_line.rstrip(',')
+			writer4.writerow(param_line+output_line.split(',')+error_line.split(','))    
     csvfile4.close()
