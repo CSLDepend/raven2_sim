@@ -51,7 +51,7 @@ void getStateLPF(struct DOF *joint);
 extern int runlevel;
 extern int packet_num;
 extern int wrfd,rdfd;
-extern char sim_buf[4096];
+extern char sim_buf[1024];
 #endif
 
 /*

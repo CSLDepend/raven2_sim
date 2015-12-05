@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <string>
 
-#define MAX_BUF 4096
+#define MAX_BUF 1024
 
 //#define LOGGING
 //#define EULER_INT
