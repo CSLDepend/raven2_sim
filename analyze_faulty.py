@@ -324,8 +324,9 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 					return '','',''
 			# If the duration of attack is within the trajectory
 			if istart+iduration < len(packets):
-				for i in range(istart-3,istart+iduration):
-					print str(i)+'='+str(packets[i])+':'+str(dac[0][i])			
+				pass				
+				#for i in range(istart-3,istart+iduration):
+				#	print str(i)+'='+str(packets[i])+':'+str(dac[0][i])			
 			else:
 				print 'ERROR: File probably corrupted. Injection beyond trajectory length\n'
 				return '','',''
@@ -593,9 +594,9 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 	
 	# Update the graphs is they exist
 	curr_folder = run_file.split(str(inj_num)+'.csv')[0]
-	print run_file
-	print str(inj_num)
-	print curr_folder
+	#print run_file
+	#print str(inj_num)
+	#print curr_folder
 	fig_folder = [curr_folder+f for f in os.listdir(curr_folder) if f.startswith('inj'+str(int(inj_num))+'_')]
 	fig_folder = fig_folder[0]+'/'
 	cmd = 'mkdir -p '+ fig_folder
