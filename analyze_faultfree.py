@@ -263,7 +263,7 @@ def compute_stats(curr_folder):
     global jpos_traj_err
     global pos_traj_err  
 
-    with open(curr_folder+'stats', 'w') as outfile:
+    with open(curr_folder+'/stats', 'w') as outfile:
         outfile.write('min, max, mean, stdev\n')
         for i in range(0,3):
             lmin, lmax, lmean, lstdev = _get_stats(mpos_delta[i])
