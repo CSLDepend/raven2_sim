@@ -275,6 +275,8 @@ class Raven():
         os.system("killall roslaunch > /dev/null 2>&1")
         os.system("killall rostopic > /dev/null 2>&1")
         os.system("killall r2_control > /dev/null 2>&1")
+        os.system("killall roscore > /dev/null 2>&1")
+        os.system("killall rosmaster > /dev/null 2>&1")
         if self.rviz_enabled:
             os.system("killall rviz > /dev/null 2>&1")
         os.system("killall xterm > /dev/null 2>&1")
@@ -316,7 +318,7 @@ class Raven():
         sock.bind((UDP_IP,UDP_PORT))
 
         # Setup Variables
-        ravenTask = 'roslaunch raven_2 raven_2.launch'
+        ravenTask = 'xterm -e roslaunch raven_2 raven_2.launch'
         visTask = 'xterm -e roslaunch raven_visualization raven_visualization.launch'
         pubTask = 'roslaunch raven_visualization raven_state_publisher.launch'
         dynSimTask = 'xterm -e "cd ./Li_DYN && make -j && ./two_arm_dyn"'
@@ -328,11 +330,12 @@ class Raven():
             packetTask = 'xterm -e python '+self.raven_home+'/Packet_Generator.py'
 
         # Call publisher, visualization, packet generator, and Raven II software
-       	pub_proc = subprocess.Popen(pubTask, env=env, shell=True, preexec_fn=os.setsid)
         if self.rviz_enabled:
         	vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
         	time.sleep(2) 
-        	
+        else:
+       		pub_proc = subprocess.Popen(pubTask, env=env, shell=True, preexec_fn=os.setsid)                
+        	time.sleep(1) 
         if self.packet_gen == "1":
                 self.packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
                 print "Using the packet generator.."
