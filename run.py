@@ -316,19 +316,24 @@ class Raven():
         sock.bind((UDP_IP,UDP_PORT))
 
         # Setup Variables
-        ravenTask = 'xterm -hold -e roslaunch raven_2 raven_2.launch'
-        visTask = 'xterm -hold -e roslaunch raven_visualization raven_visualization.launch'
+        ravenTask = 'roslaunch raven_2 raven_2.launch'
+        visTask = 'xterm -e roslaunch raven_visualization raven_visualization.launch'
+        pubTask = 'roslaunch raven_visualization raven_state_publisher.launch'
         dynSimTask = 'xterm -e "cd ./Li_DYN && make -j && ./two_arm_dyn"'
         rostopicTask = 'rostopic echo -p ravenstate >'+self.raven_home+'/latest_run.csv'
         if (self.surgeon_simulator == 1):
-            packetTask = 'xterm -hold -e python '+self.raven_home+'/Real_Packet_Generator_Surgeon.py '+ self.mode + ' '+ self.traj 
+            packetTask = 'xterm -e python '+self.raven_home+'/Real_Packet_Generator_Surgeon.py '+ self.mode + ' '+ self.traj 
             #print(packetTask)
         else:
             packetTask = 'xterm -e python '+self.raven_home+'/Packet_Generator.py'
 
         # Call visualization, packet generator, and Raven II software
-        vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
-        time.sleep(2)  
+        if self.rviz_enabled:
+        	vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
+        	time.sleep(2)  
+        else:
+        	pub_proc = subprocess.Popen(pubTask, env=env, shell=True, preexec_fn=os.setsid)
+        	time.sleep(1)
         if self.packet_gen == "1":
                 self.packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
                 print "Using the packet generator.."

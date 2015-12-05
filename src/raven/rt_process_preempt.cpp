@@ -112,7 +112,7 @@ std::ofstream WriteUSBfile;
 
 #ifdef dyn_simulator
 int wrfd,rdfd;
-char sim_buf[4096];
+char sim_buf[1024];
 int first_run = 0;
 int runlevel = 0;
 int packet_num = 111;
@@ -381,10 +381,9 @@ static void *rt_process(void* )
         runlevel = currParams.runlevel;
         packet_num = currParams.last_sequence;
 	    //Send the DACs, mvel, and mpos to the simulator
-	    for (int i = 0; i < NUM_MECH; i++)
+		int i = 0;
+	    if (((runlevel == 3)) && (packet_num != 111))
 	    {
-			    if ((i == 0) && ((runlevel == 3)) && (packet_num != 111))
-			    {
 #ifdef mfi
 /*				if ((packet_num >= 1000) && (packet_num <= 1020))
 				printf("\nPacket %d = mpos/mvel/DACs \n%f,%f,%f,\n%f,%f,%f,\n%d,%d,%d\n",
@@ -466,7 +465,6 @@ static void *rt_process(void* )
 						device0.mech[i].joint[Z_INS].current_cmd,
 						soft_estopped);
 #endif
-			}
 	   }
     //For debugging
 	  /*if ((packet_num < 2991) && (packet_num > 2970))

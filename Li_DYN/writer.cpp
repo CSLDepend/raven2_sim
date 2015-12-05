@@ -10,7 +10,7 @@
 #include <sstream>
 #include "cmath"
 
-#define MAX_BUF 4096
+#define MAX_BUF 1024
 
 using namespace std;
 
