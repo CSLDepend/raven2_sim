@@ -8,7 +8,7 @@
 
 #define MAX_BUF 4096
 
-#define EULER_INT
+//#define EULER_INT
 //#define UPDATE_MODEL
 //#define UPDATE_FREQ 20
 //Integration steps in msec
@@ -88,10 +88,15 @@ int main()
 
 			t_start = clock();
 #ifdef EULER_INT
-				sys_dyn_gold_euler(r_state, EULER_STEP*1000);
+				//sys_dyn_gold_euler(r_state, EULER_STEP*1000);
+				int detect = sys_dyn_gold_euler_detect(r_state, EULER_STEP*1000,iter_time_gold);
+				if (detect!=0)
+				{
+					cout<<detect<<endl;
+				}
 #else
 				integrate_adaptive(rk4(), sys_dyn_gold, r_state, 0.0, 0.001, RK_STEP);
-#endif		
+#endif
 			t_end = clock();
 
 			iter_time_gold=iter_time_gold+1;
@@ -120,13 +125,14 @@ int main()
 	}
     //write_sys(x);
 	//cout << "Average Gold Arm Dynamics Calculation:" << sum_d/iter_time_green << " ms\n";
+/*
     FILE *f = fopen("results", "a");
 #ifdef EULER_INT
 	fprintf(f,"Average Calculation Time for Euler %f = %f\n", EULER_STEP, sum_d/iter_time_gold);
 #else
 	fprintf(f,"Average Calculation Time for RK4 %f = %f\n", RK_STEP, sum_d/iter_time_gold);
-#endif	
-    
+#endif
+*/
 	/* remove the FIFO */
     unlink(wrfifo);
     close(fd1);
