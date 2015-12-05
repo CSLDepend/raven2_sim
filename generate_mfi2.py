@@ -315,21 +315,24 @@ def generate_rt_process_once_faults():
             val = [randint(-15000, 15000)]
             code.append(_generate_ow_code(pre_trig, trigger, 
                     t1, t2, var, val))'''
-    # Injection parameters
-    for var in variable:
-        for t1 in range(1000,3000,1000):
-            for dt in range(1,30):
-                for val in [100, 1000, 2000, 3000, 5000, 10000, 100000, 200000, 400000,800000]:#range(-12000, 15000, 1000):
-                    t2 = t1 + dt
-                    code.append(_generate_add_once_code(pre_trig, trigger,t1, t2, vtype, var, [val]))
-                    param.append(','.join([str(var),str(t1),str(dt),str(val)]))
+    num_samples = 10
+    for n in range(0,num_samples):
+		# Injection parameters
+		for var in variable:
+			for t1 in range(1000,2000,1000):
+				for dt in [1,2,4,8,16,32,64,128]:
+					for val in [100, 1000, 2000, 5000, 10000, 100000, 400000,800000]:#range(-12000, 15000, 1000):
+						t2 = t1 + dt
+						code.append(_generate_add_once_code(pre_trig, trigger,t1, t2, vtype, var, [val]))
+						param.append(','.join([str(var),str(t1),str(dt),str(val)]))
                             
     pprint(code)
     _write_to_file(code, param, 'mfi2_rt_process_once_faults', 
             'rt_process_preempt.cpp://HOOK')
+            
 def generate_empty_test():
-    code = [';']*10
-    param = [','.join(['none','0','0','0'])]*10
+    code = [';']*300
+    param = [','.join(['none','0','0','0'])]*300
     _write_to_file(code, param, 'mfi2_empty_test', 
             'rt_process_preempt.cpp://HOOK')
 
@@ -398,10 +401,10 @@ def generate_test():
 
 #generate_network_layer_skip()
 #generate_network_layer_delay()
-generate_xyz_dist_faults()
+#generate_xyz_dist_faults()
 #generate_u_R_l_faults()
 #generate_rt_process_faults()
-#generate_rt_process_once_faults()
+generate_rt_process_once_faults()
 #generate_toggle_surgeon_mode()
 #generate_empty_test()
 #generate_r_faults()
