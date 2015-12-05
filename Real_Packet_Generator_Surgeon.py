@@ -146,9 +146,9 @@ def sendPackets():
 		runlevel = int(line[runlevel_index])
 		# If robot is ready and not sent all the packets yet
 		if (robot_state == 1) and (seq < MAX_PACKETS): #(runlevel == 3):
-			writer.writerow(line);	
+			writer.writerow(line);
 			# If a new packet is seen, then process and send it
-			if not(int(line[packet_index]) == packet_num):		
+			if not(int(line[packet_index]) == packet_num):			
 				packet_num = int(line[packet_index])		
 				# Print the mpos and mvel and write to the file for comparison
 				print_line = ''

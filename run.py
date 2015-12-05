@@ -316,10 +316,9 @@ class Raven():
         sock.bind((UDP_IP,UDP_PORT))
 
         # Setup Variables
-        goldenRavenTask= 'xterm -e roslaunch raven_2 raven_2.launch'
         ravenTask = 'xterm -hold -e roslaunch raven_2 raven_2.launch'
         visTask = 'xterm -hold -e roslaunch raven_visualization raven_visualization.launch'
-        dynSimTask = 'xterm -hold -e "cd ./Li_DYN && make -j && ./two_arm_dyn"'
+        dynSimTask = 'xterm -e "cd ./Li_DYN && make -j && ./two_arm_dyn"'
         rostopicTask = 'rostopic echo -p ravenstate >'+self.raven_home+'/latest_run.csv'
         if (self.surgeon_simulator == 1):
             packetTask = 'xterm -hold -e python '+self.raven_home+'/Real_Packet_Generator_Surgeon.py '+ self.mode + ' '+ self.traj 
