@@ -8,7 +8,8 @@
 
 #define MAX_BUF 4096
 
-#define EULER_INT
+//#define LOGGING
+//#define EULER_INT
 //#define UPDATE_MODEL
 //#define UPDATE_FREQ 20
 //Integration steps in msec
@@ -120,13 +121,14 @@ int main()
 	}
     //write_sys(x);
 	//cout << "Average Gold Arm Dynamics Calculation:" << sum_d/iter_time_green << " ms\n";
+#ifdef LOGGING
     FILE *f = fopen("results", "a");
 #ifdef EULER_INT
 	fprintf(f,"Average Calculation Time for Euler %f = %f\n", EULER_STEP, sum_d/iter_time_gold);
 #else
 	fprintf(f,"Average Calculation Time for RK4 %f = %f\n", RK_STEP, sum_d/iter_time_gold);
 #endif
-
+#endif
 	/* remove the FIFO */
     unlink(wrfifo);
     close(fd1);

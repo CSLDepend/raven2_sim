@@ -48,6 +48,7 @@ elif mode == "rob":
 else:
     print "Usage: python Real_Packet_Generator_Surgoen <sim|rob>"
     sys.exit(2)
+print "Trajectory: "+str(traj)
 
 fast_surgeon = 1
 if fast_surgeon:
