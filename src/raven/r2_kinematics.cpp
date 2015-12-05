@@ -942,54 +942,70 @@ int apply_joint_limits(double *Js, double *Js_sat){
 	{
 		Js_sat[0] = DOF_types[SHOULDER].min_limit;
 		limited = 1;
+#ifndef no_logging
 		std::cout<<"eblow min limit reached  = "<<Js_sat[0]<<std::endl;
+#endif
 	}
 	else if(Js[0] >= DOF_types[SHOULDER].max_limit)
 	{
 		Js_sat[0] = DOF_types[SHOULDER].max_limit;
 		limited = 1;
+#ifndef no_logging
 		std::cout<<"eblow max limit reached  = "<<Js_sat[0]<<std::endl;
+#endif
 	}
 
 	if (Js[1] <= ELBOW_MIN_LIMIT)
 	{
 		Js_sat[1] = ELBOW_MIN_LIMIT;
 		limited = 1;
+#ifndef no_logging
 		std::cout<<"eblow min limit reached  = "<<Js_sat[1]<<std::endl;
+#endif
 	}
 
 	else if(Js[1] >= ELBOW_MAX_LIMIT)
 	{
 		Js_sat[1] = ELBOW_MAX_LIMIT;
 		limited = 1;
+#ifndef no_logging
 		std::cout<<"eblow max limit reached  = "<<Js_sat[1]<<std::endl;
+#endif
 	}
 
 	if (Js[2] <= DOF_types[Z_INS].min_limit)
 	{
 		Js_sat[2] = DOF_types[Z_INS].min_limit;
 		limited = 1;
+#ifndef no_logging
 		std::cout<<"z min limit reached  = "<<Js_sat[2]<<std::endl;
+#endif
 	}
 	else if(Js[2] >= DOF_types[Z_INS].max_limit)
 	{
 		Js_sat[2] = DOF_types[Z_INS].max_limit;
 		limited = 1;
+#ifndef no_logging
 		std::cout<<"z max limit reached  = "<<Js_sat[2]<<std::endl;
+#endif
 	}
 
 	if (Js[3] <= -150.0 DEG2RAD)
 	{
 		Js_sat[3] = -150.0 DEG2RAD;
 		limited = 1;
+#ifndef no_logging
 		std::cout<<"rot min limit reached  = "<<Js_sat[3]<<std::endl;
+#endif
 	}
 
 	else if(Js[3] >= 150.0 DEG2RAD)
 	{
 		Js_sat[3] = 150.0 DEG2RAD;
 		limited = 1;
+#ifndef no_logging
 		std::cout<<"rot max limit reached  = "<<Js_sat[3]<<std::endl;
+#endif
 	}
 
 
@@ -997,13 +1013,17 @@ int apply_joint_limits(double *Js, double *Js_sat){
 	{
 		Js_sat[4] = DOF_types[WRIST].min_limit;
 		limited = 1;
+#ifndef no_logging
 		std::cout<<"wrist min limit reached  = "<<Js_sat[4]<<std::endl;
+#endif
 	}
 	else if(Js[4] >= DOF_types[WRIST].max_limit)
 	{
 		Js_sat[4] = DOF_types[WRIST].max_limit;
 		limited = 1;
+#ifndef no_logging
 		std::cout<<"wrist max limit reached  = "<<Js_sat[4]<<std::endl;
+#endif
 	}
 
 	//Js_sat[5] = Js[5];
