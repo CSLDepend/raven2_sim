@@ -89,6 +89,11 @@ int main()
 			t_start = clock();
 #ifdef EULER_INT
 				sys_dyn_gold_euler(r_state, EULER_STEP*1000);
+				//int detect = sys_dyn_gold_euler_detect(r_state, EULER_STEP*1000,iter_time_gold);
+				//if (detect!=0)
+				//{
+					//cout<<detect<<endl;
+				//}
 #else
 				integrate_adaptive(rk4(), sys_dyn_gold, r_state, 0.0, 0.001, RK_STEP);
 #endif		
