@@ -278,7 +278,6 @@ def plot_dist(pos, pos_ecludian, pos_detect):
 	#plt.show()
 	return f4
 
-
 # Main Code Starts Here
 print "\nPlotting the results.."
 # Get raven_home directory
@@ -291,7 +290,7 @@ try:
     script, pmode, inj_num, traj  = argv
 except:
     print "Error: missing parameters"
-    print 'python plot2.py 0|1 inj_num traj_name'
+    print 'python parse_plot.py 0|1 inj_num traj_name'
     sys.exit(2)
 print 'Mode = '+str(pmode)
 

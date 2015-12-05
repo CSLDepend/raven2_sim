@@ -223,7 +223,8 @@ class Raven():
             os.system(cmd)
             cmd = 'cp mfi2_params.csv ' + self.result_folder + '/' + self.param_name     
             os.system(cmd)     
-            cmd = 'mv ./robot_run.csv ' + self.result_folder + '/' + self.traj_name
+            #cmd = 'mv ./robot_run.csv ' + self.result_folder + '/' + self.traj_name
+            cmd = 'cp ./golden_run/traj2.csv ' + self.result_folder + '/' + self.traj_name
             os.system(cmd)
             
     def __quit(self): 
@@ -326,13 +327,12 @@ class Raven():
         else:
             packetTask = 'xterm -e python '+self.raven_home+'/Packet_Generator.py'
 
-        # Call visualization, packet generator, and Raven II software
+        # Call publisher, visualization, packet generator, and Raven II software
+       	pub_proc = subprocess.Popen(pubTask, env=env, shell=True, preexec_fn=os.setsid)
         if self.rviz_enabled:
         	vis_proc = subprocess.Popen(visTask, env=env, shell=True, preexec_fn=os.setsid)
-        	time.sleep(2)  
-        else:
-        	pub_proc = subprocess.Popen(pubTask, env=env, shell=True, preexec_fn=os.setsid)
-        	time.sleep(1)
+        	time.sleep(2) 
+        	
         if self.packet_gen == "1":
                 self.packet_proc = subprocess.Popen(packetTask, shell=True, preexec_fn=os.setsid)
                 print "Using the packet generator.."
