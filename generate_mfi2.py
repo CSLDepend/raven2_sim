@@ -331,7 +331,6 @@ def generate_rt_process_once_faults():
     _write_to_file(code, param, 'mfi2_rt_process_once_faults', 
             'rt_process_preempt.cpp://HOOK')
             
-
 def generate_empty_test():
     code = [';']*10
     param = [','.join(['none','0','0','0'])]*10
@@ -406,8 +405,8 @@ def generate_test():
 #generate_xyz_dist_faults()
 #generate_u_R_l_faults()
 #generate_rt_process_faults()
-#generate_rt_process_once_faults()
+generate_rt_process_once_faults()
 #generate_toggle_surgeon_mode()
-generate_empty_test()
+#generate_empty_test()
 #generate_r_faults()
 #generate_test()
