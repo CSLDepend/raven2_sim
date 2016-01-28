@@ -175,22 +175,24 @@ def generate_xyz_dist_faults():
     pre_trig = ''
     trigger = 'u.sequence'
     dist = ('250', '500', '1000', '2000', '4000','8000')
+    num_samples = 20
     code = []
     param = []
     variable = ['u.delx[0]', 'u.dely[0]','u.delz[0]']
-    for d in dist:
-        for t1 in range(1000,3000,1000):#(10,3000,1000):
-            for dt in range(1,50,1):#(1,15):
-                t2 = t1 + dt
-                delta = str(float(d)/sqrt(3))
-                code.append(_generate_add_code(pre_trig, trigger,
-                        t1, t2, variable, [delta, delta, delta]))
-                param.append(','.join(['distance',str(t1),str(dt),str(delta)]))
+    for n in range(0,num_samples):
+		for t1 in range(1000,2000,1000):
+			for d in dist:
+				for dt in [1,2,4,8,16,32,64,128]:
+					t2 = t1 + dt
+					delta = str(float(d)/sqrt(3))
+					code.append(_generate_add_code(pre_trig, trigger,
+							t1, t2, variable, [delta, delta, delta]))
+					param.append(','.join(['distance',str(t1),str(dt),str(delta)]))
     pprint(code)
     print(len(code))
     _write_to_file(code, param, 'mfi2_xyz_dist_faults', 
             'network_layer.cpp://MFI_HOOK')
-
+           
 def generate_toggle_surgeon_mode():
     code = []
     param = []
@@ -321,18 +323,18 @@ def generate_rt_process_once_faults():
 		for var in variable:
 			for t1 in range(1000,2000,1000):
 				for dt in [1,2,4,8,16,32,64,128]:
-					for val in [200, 400, 800, 4000, 8000, 20000, 40000, 80000, 200000]:#range(-12000, 15000, 1000):
+					#for val in [200, 400, 800, 4000, 8000, 20000, 40000, 80000, 200000]:#range(-12000, 15000, 1000):
+					for val in [100, 1000, 2000, 5000, 10000, 100000, 400000, 800000]:#range(-12000, 15000, 1000):
 						t2 = t1 + dt
 						code.append(_generate_add_once_code(pre_trig, trigger,t1, t2, vtype, var, [val]))
-						param.append(','.join([str(var),str(t1),str(dt),str(val)]))
-                            
+						param.append(','.join([str(var),str(t1),str(dt),str(val)]))                           
     pprint(code)
     _write_to_file(code, param, 'mfi2_rt_process_once_faults', 
             'rt_process_preempt.cpp://HOOK')
             
 def generate_empty_test():
-    code = [';']*300
-    param = [','.join(['none','0','0','0'])]*300
+    code = [';']*10
+    param = [','.join(['none','0','0','0'])]*10
     _write_to_file(code, param, 'mfi2_empty_test', 
             'rt_process_preempt.cpp://HOOK')
 

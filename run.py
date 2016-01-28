@@ -216,7 +216,7 @@ class Raven():
     def __copy_files(self):
         # Save latest_run.csv to result_folder for faultfree run
         if self.injection == 'mfi2' and self.exp_status == 'done':
-            cmd = 'mv latest_run.csv ' + self.result_folder + '/' + \
+            cmd = 'cp latest_run.csv ' + self.result_folder + '/' + \
                     str(self.curr_inj).zfill(4) + '.csv'
             os.system(cmd)
             cmd = 'cp mfi2.txt ' + self.result_folder

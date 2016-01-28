@@ -161,13 +161,16 @@ def parse_input_data(in_file):
 
 def plot_mpos(m, gold_mpos, mpos, sim_mpos, gold_mvel, mvel, sim_mvel, gold_t, t, mpos_detect, mvel_detect):
 	indices = [0,1,2,4,5,6,7]	
-	f1, axarr1 = plt.subplots(7, 2, sharex=True)
+	# How many joints to plot
+	k = 3
+	f1, axarr1 = plt.subplots(k, 2, sharex=True)
 	plt.tight_layout()
 	axarr1[0,0].set_title("Motor Positions (Gold Arm)")
 	axarr1[0,1].set_title("Motor Velocities (Gold Arm)")
-	for j in range(0,7):
+	for j in range(0,k):
 		axarr1[j, 0].plot(gold_mpos[j], 'g')
 		axarr1[j, 0].plot(mpos[j], 'r')
+		#axarr1[j, 0].plot(list(np.array(mpos[j][1:])-np.array(mpos[j][:-1])), 'r')
 		if j < 3 and not(all(v == 0 for v in sim_mpos[j])):	
 			axarr1[j, 0].plot(sim_mpos[j], 'b')	
 		if j < 3 and mpos_detect: # and not(all(v == 0 for v in mpos_detect[j])):	
@@ -176,6 +179,7 @@ def plot_mpos(m, gold_mpos, mpos, sim_mpos, gold_mvel, mvel, sim_mvel, gold_t, t
 			#axarr1[j, 0].axvline(x = max(mpos_vlines[j]), color = 'k', ls = 'dashed')
 		axarr1[j, 1].plot(gold_mvel[j], 'g')
 		axarr1[j, 1].plot(mvel[j], 'r')
+		#axarr1[j, 1].plot(list(np.array(mvel[j][1:])-np.array(mvel[j][:-1])), 'r')
 		if j < 3 and not(all(v == 0 for v in sim_mvel[j])):	
 			axarr1[j, 1].plot(sim_mvel[j], 'b')
 		if j < 3 and mvel_detect: #and not(all(v == 0 for v in mvel_detect[j])):	
@@ -199,9 +203,10 @@ def plot_mpos(m, gold_mpos, mpos, sim_mpos, gold_mvel, mvel, sim_mvel, gold_t, t
   
 def plot_dacs(gold_dac, dac, gold_t, t):
 	indices = [0,1,2,4,5,6,7]
-	f2, axarr2 = plt.subplots(7, 1, sharex=True)
+	k = 3
+	f2, axarr2 = plt.subplots(k, 1, sharex=True)
 	axarr2[0].set_title("DAC Values (Gold Arm)")
-	for j in range(0,7):
+	for j in range(0,k):
 		axarr2[j].plot(gold_dac[j], 'g')
 		axarr2[j].plot(dac[j], 'r')
 		axarr2[j].set_ylabel('Joint '+str(indices[j]))
@@ -214,12 +219,14 @@ def plot_dacs(gold_dac, dac, gold_t, t):
 
 def plot_jpos(gold_jpos, jpos, sim_jpos, gold_t, t, jpos_detect):
 	indices = [0,1,2,4,5,6,7]
-	f3, axarr3 = plt.subplots(7, 1, sharex=True)
+	k = 3
+	f3, axarr3 = plt.subplots(k, 1, sharex=True)
 	plt.tight_layout()
 	axarr3[0].set_title("Joint Positions (Gold Arm)")
-	for j in range(0,7):
+	for j in range(0,k):
 		axarr3[j].plot(gold_jpos[j], 'g')
 		axarr3[j].plot(jpos[j], 'r')
+		#axarr3[j].plot(list(np.array(jpos[j][1:])-np.array(jpos[j][:-1])), 'r')
 		if j < 3 and not(all(v == 0 for v in sim_jpos[j])):	
 			axarr3[j].plot(sim_jpos[j], 'b')			
 		if j < 3 and jpos_detect: #and not(all(v == 0 for v in jpos_detect[j])):	
@@ -331,9 +338,9 @@ if str(pmode) == '0':
 	if not(os.path.isfile('./sim_robot_results.csv')):
 		csvfile7 = open('./sim_robot_results.csv','w')
 		writer7 = csv.writer(csvfile7,delimiter=',') 
-		writer7.writerow(['mpos_err0','mvel_err0','jpos_err0','mpos_err1','mvel_err1','jpos_err1','mpos_err2','mvel_err2','jpos_err2'])  
+		#writer7.writerow(['mpos_err0','mvel_err0','jpos_err0','mpos_err1','mvel_err1','jpos_err1','mpos_err2','mvel_err2','jpos_err2'])  
+		writer7.writerow(['mpos_err0','jpos_err0','mpos_err1','jpos_err1','mpos_err2','jpos_err2'])  
 		csvfile7.close()
-
 	mpos_rob_err = [[],[],[]]
 	mvel_rob_err = [[],[],[]]
 	jpos_rob_err = [[],[],[]]
@@ -341,16 +348,42 @@ if str(pmode) == '0':
 	for j in range(0,3):
 		if not(all(v == 0 for v in sim_mpos[j])):	
 			traj_len = min(len(mpos[j]),len(sim_mpos[j]))
-			mpos_rob_err[j].append(sum(list(abs(np.array(mpos[j][1:traj_len])-np.array(sim_mpos[j][1:traj_len]))))/traj_len)
+			mpos_diff = list(np.array(mpos[j][0:traj_len])-np.array(sim_mpos[j][0:traj_len]))
+			#print 'mpos:'
+			#print mpos_diff[1:20]
+			for i in range(0, traj_len):
+				mpos_diff[i] = abs(mpos_diff[i]/np.array(mpos[j][i]))
+			#print mpos_diff[1:20]
+			mpos_rob_err[j].append(sum(mpos_diff)/traj_len)
+			#print mpos_rob_err[j]
 		if not(all(v == 0 for v in sim_mvel[j])):
 			traj_len = min(len(mvel[j]),len(sim_mvel[j]))
-			mvel_rob_err[j].append(sum(list(abs(np.array(mvel[j][1:traj_len])-np.array(sim_mvel[j][1:traj_len]))))/traj_len)
+
+			#mvel_diff = list(np.array(mvel[j][0:traj_len])-np.array(sim_mvel[j][0:traj_len]))
+			#print 'mvel:'
+			#print mvel_diff[1:20]
+			#for i in range(0, traj_len):
+			#	mvel_diff[i] = abs(mvel_diff[i]/np.array(mvel[j][i]))
+			#print mvel_diff[1:20]
+			#mvel_rob_err[j].append(sum(mvel_diff)/traj_len)	
+			#print mvel_rob_err[j]
+		
 		if not(all(v == 0 for v in sim_jpos[j])):
 			traj_len = min(len(jpos[j]),len(sim_jpos[j]))
-			jpos_rob_err[j].append(sum(list(abs(np.array(jpos[j][1:traj_len])-np.array(sim_jpos[j][1:traj_len]))))/traj_len)
+			jpos_diff = list(np.array(jpos[j][0:traj_len])-np.array(sim_jpos[j][0:traj_len]))
+		#	print 'jpos:'
+		#	print jpos_diff[1:20]
+			for i in range(0, traj_len):
+				jpos_diff[i] = abs(jpos_diff[i]/np.array(jpos[j][i]))
+			#print jpos_diff[1:20]
+			jpos_rob_err[j].append(sum(jpos_diff)/traj_len)	
+			#print jpos_rob_err[j]
+	
 	for j in range(0,3):
 		for i in range(0,len(mpos_rob_err[j])):
-			outline.extend([mpos_rob_err[j][i],mvel_rob_err[j][i],jpos_rob_err[j][i]])    
+			#outline.extend([mpos_rob_err[j][i],mvel_rob_err[j][i],jpos_rob_err[j][i]])    
+			outline.extend([mpos_rob_err[j][i],jpos_rob_err[j][i]])    
+	print outline
 	if len(outline) > 0:
 		csvfile7 = open('./sim_robot_results.csv','a')
 		writer7 = csv.writer(csvfile7,delimiter=',') 

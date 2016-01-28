@@ -10,7 +10,7 @@
 
 
 //#define LOGGING
-//#define EULER_INT
+#define EULER_INT
 //#define UPDATE_MODEL
 //#define UPDATE_FREQ 20
 //Integration steps in msec
