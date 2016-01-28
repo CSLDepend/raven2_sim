@@ -3,12 +3,14 @@ import os
 import csv
 import math
 import shelve
-from statistics import mean, stdev
+from statistics import median, mean, stdev
 from operator import add, sub, mul, abs
 from franges import frange
 import matplotlib.pyplot as plt
+import numpy as np
 
 shelve_file = 'faultfree.shelve'
+
 # Main Code Starts Here
 def parse_latest_run(reader):
 
@@ -244,10 +246,10 @@ def _get_traj_err(l,m):
     else:
         return result
     
-def _get_stats(l):
-    return min(l), max(l), mean(l), stdev(l)
+def _get_stats(l, perc):
+    return min(l), np.percentile(np.array(l), perc), median(l), stdev(l)
 
-def compute_stats(curr_folder):
+def compute_stats(curr_folder, perc):
     global mpos_delta
     global mvel_delta
     global jpos_delta
@@ -263,47 +265,48 @@ def compute_stats(curr_folder):
     global jpos_traj_err
     global pos_traj_err  
 
-    with open(curr_folder+'/stats', 'w') as outfile:
-        outfile.write('min, max, mean, stdev\n')
+    #with open(curr_folder+'/stats', 'w') as outfile:
+    with open('./stats_'+str(perc), 'w') as outfile:
+        outfile.write('min, '+str(perc)+'-percentile, mean, stdev\n')
         for i in range(0,3):
-            lmin, lmax, lmean, lstdev = _get_stats(mpos_delta[i])
+            lmin, lmax, lmean, lstdev = _get_stats(mpos_delta[i],perc)
             outfile.write('mpos_delta%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
-            lmin, lmax, lmean, lstdev = _get_stats(mvel_delta[i])
+            lmin, lmax, lmean, lstdev = _get_stats(mvel_delta[i],perc)
             outfile.write('mvel_delta%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
-            lmin, lmax, lmean, lstdev = _get_stats(jpos_delta[i])
+            lmin, lmax, lmean, lstdev = _get_stats(jpos_delta[i],perc)
             outfile.write('jpos_delta%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
-            lmin, lmax, lmean, lstdev = _get_stats(pos_delta[i])
+            lmin, lmax, lmean, lstdev = _get_stats(pos_delta[i],perc)
             outfile.write('pos_delta%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
 
 
-            lmin, lmax, lmean, lstdev = _get_stats(mpos_distance[i])
+            lmin, lmax, lmean, lstdev = _get_stats(mpos_distance[i],perc)
             outfile.write('mpos_distance%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
-            lmin, lmax, lmean, lstdev = _get_stats(mvel_distance[i])
+            lmin, lmax, lmean, lstdev = _get_stats(mvel_distance[i],perc)
             outfile.write('mvel_distance%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
-            lmin, lmax, lmean, lstdev = _get_stats(jpos_distance[i])
+            lmin, lmax, lmean, lstdev = _get_stats(jpos_distance[i],perc)
             outfile.write('jpos_distance%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
-            lmin, lmax, lmean, lstdev = _get_stats(pos_distance[i])
+            lmin, lmax, lmean, lstdev = _get_stats(pos_distance[i],perc)
             outfile.write('pos_distance%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
 
 
-            lmin, lmax, lmean, lstdev = _get_stats(mpos_traj_err[i])
+            lmin, lmax, lmean, lstdev = _get_stats(mpos_traj_err[i],perc)
             outfile.write('mpos_traj_err%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
-            lmin, lmax, lmean, lstdev = _get_stats(mvel_traj_err[i])
+            lmin, lmax, lmean, lstdev = _get_stats(mvel_traj_err[i],perc)
             outfile.write('mvel_traj_err%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
-            lmin, lmax, lmean, lstdev = _get_stats(jpos_traj_err[i])
+            lmin, lmax, lmean, lstdev = _get_stats(jpos_traj_err[i],perc)
             outfile.write('jpos_traj_err%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))
-            lmin, lmax, lmean, lstdev = _get_stats(pos_traj_err[i])
+            lmin, lmax, lmean, lstdev = _get_stats(pos_traj_err[i],perc)
             outfile.write('pos_traj_err%d, %f, %f, %f, %f\n' % 
                     (i, lmin, lmax, lmean, lstdev))                    
             """
@@ -411,12 +414,13 @@ pos_traj_err  = [[],[],[]]
 # Main starts here
 if __name__ == '__main__':
 
-    usage = 'Usage: python ' + sys.argv[0] + ' <dir>' 
+    usage = 'Usage: python ' + sys.argv[0] + ' <dir> <perc>' 
 
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         print(usage)
         sys.exit(0)
 
+    print 'Threshold set at '+ str(float(sys.argv[2])) + ' percentile of data'    
     # Get all csv files in current directory and subdirectories
     all_files = []
     golden_file = []
@@ -427,4 +431,4 @@ if __name__ == '__main__':
             if f.endswith('trj'):
                golden_file.append(os.path.join(root,f))
     compute_delta_t(golden_file,all_files)    
-    compute_stats(sys.argv[1])
+    compute_stats(sys.argv[1], float(sys.argv[2]))

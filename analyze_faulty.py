@@ -36,6 +36,33 @@ def eclud_dist(x1,y1,z1, x2,y2,z2):
 	dist = math.sqrt(pow((x1-x2),2)+pow((y1-y2),2)+pow((z1-z2),2))
 	return dist
 
+def accuracy_metrics(golden, alarms):
+    TP = 0;
+    FP = 0;
+    TN = 0;
+    FN = 0;
+    for i in range(0,golden):
+        if (golden[i]): 
+            if (alarms[i]):
+                TP = TP + 1;
+            else:
+                FN = FN + 1; 
+        else:
+            if (alarms[i]):
+                FP = FP + 1;
+            else:
+                TN = TN + 1;
+    #True positive rate (sensitivity)
+    TPR = TP/(TP + FN);
+    # Specificity
+    SPC = TN/(TN + FP);
+    # False Positive Rate
+    FPR = 1 - SPC;
+    # 3F1 Score
+    F1 = 2*TP/(2*TP + FP + FN);
+    # Accuracy
+    ACC = (TP + TN)/(TP+TN+FP+FN)
+    
 def parse_latest_run(reader):
 	indices = [0,1,2,4,5,6,7]
 	runlevel = 0
@@ -258,12 +285,11 @@ def plot_dist(pos, pos_ecludian, pos_detect):
 	return f4
 	
 # Process each file
-def parse_results(golden_file, run_file, mfi2_param, inj_num): 
+def parse_results(golden_file, run_file, mfi2_param, inj_num, mean_th, sd_th, pos_th, perc): 
 	print run_file
 	# Open Log files
 	csvfile2 = open(golden_file)
 	reader2 = csv.reader(x.replace('\0', '') for x in csvfile2)
-
 	# Parse the golden simulator run
 	gold_mpos, gold_mvel, gold_dac, gold_jpos, gold_pos, gold_sim_mpos, gold_sim_mvel, gold_sim_jpos,gold_err, gold_packets, gold_t = parse_latest_run(reader2)
 	#orig_mpos, orig_mvel, orig_dac, orig_jpos, orig_pos = parse_input_data(in_file)
@@ -281,17 +307,10 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 	indices = [0,1,2,4,5,6,7]
 	posi = ['X','Y','Z']
 
-	# Find dropped packets
-	dropped = []
-	for i in range(0, len(packets)-1):
-		if not(int(packets[i]) == int(packets[i+1]) -1):
-			for j in range(int(packets[i])+1,int(packets[i+1])):
-				dropped.append(j)
-	print 'Dropped Packets = '+str(dropped)
-	
 	output_line = ''
 	
 	# For faulty run, write Injection parameters First
+	# Fix the start and duration parameters when there were dropped packets
 	start = 0
 	duration = 0
 	csvfile5 = open(mfi2_param,'r')
@@ -301,16 +320,36 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 		if (int(line[0]) == int(inj_num)):
 			param_line = line
 			print 'Inj Params = '+str(param_line)
-			# Fix duration when dropped packets in the duration
+			
+			# Find dropped packets and injected packets
+			dropped = []
+			injected = []
+			for i in range(0, len(packets)-1):
+				# If two consequative packets do not have consequative packet numbers
+				if not(int(packets[i]) == int(packets[i+1]) -1):
+					# Dropped packets = all the packet numbers (indices) between elements i and i+1 in the packets list		
+					for j in range(int(packets[i])+1,int(packets[i+1])):
+						dropped.append(j)
+				if (int(line[2]) <= packets[i]) and (packets[i] < int(line[2]) + int(line[3])):
+					injected.append(packets[i])
+			# Check the last element
+			i = len(packets)-1
+			if (int(line[2]) <= packets[i]) and (packets[i] < int(line[2]) + int(line[3])):
+				injected.append(packets[i])
+			print 'Dropped Packets = '+str(dropped)			
+			print 'Injected Packets = '+str(injected)
+			
+			'''# Fix duration when there are any dropped packets after start and before start + duration
 			iduration = int(line[3])
 			for d in dropped:
 				if (int(line[2]) <= d and d < int(line[2]) + int(line[3])):
 					iduration = iduration - 1 			
-			# Fix iStart when Dropped packets
-			if int(int(line[2])) in packets:
+			# Get the index of starting packet (When no packet drops, index = packet number)
+			# If the start packet exists in the packet numbers list, just get the index as istart
+			if int(line[2]) in packets:
 				istart = int(packets.index(int(line[2])))
 				print "iStart verify = " + str(packets.index(int(line[2])))			
-			# If injected packet is not in the packets
+			# If injected packet is not in the packet numbers list
 			else:
 				# injection packet dropped
 				if int(line[2]) <= max(packets):				
@@ -322,20 +361,29 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 				else:
 					print 'ERROR: File probably corrupted. Injection beyond trajectory length\n'
 					return '','',''
-			# If the duration of attack is within the trajectory
-			if istart+iduration < len(packets):
-				for i in range(istart-3,istart+iduration):
-					print str(i)+'='+str(packets[i])+':'+str(dac[0][i])			
-			else:
+			'''
+			# file corrupted: injection beyond packets in the file
+			if int(line[2]) > max(packets):
 				print 'ERROR: File probably corrupted. Injection beyond trajectory length\n'
-				return '','',''
+				return '','',''			
+			# Get the index of first injection
+			istart = int(packets.index(min(injected)))
+			# Get the true duration of injection
+			iduration = len(injected)
+			
+			# no injection happened, all dropped?
+			if iduration == 0:
+				print 'ERROR: No Injection: All packets dropped!'
+				return '','',''			
+
 			# Write output
 			if not(istart == int(line[2])):
-				print 'Injection Start Fixed = '+str(istart)
+				print 'Injection Start Index = '+str(istart)
 			output_line = output_line + str(istart)+','	
 			if not(iduration == int(line[3])):
 				print 'Injection Duration Fixed = '+str(iduration)
-			output_line = output_line + str(iduration)+','					
+			output_line = output_line + str(iduration)+','	
+			
 			break 
 	csvfile5.close()
 		
@@ -355,24 +403,35 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 		for e in set(err_msgs):
 			#print '#Packet ' + str(packets[err.index(e)]) +': ' + e	
 			output_line = output_line + '#Packet ' + str(packets[err.index(e)]) +': ' + e
-			err_pack_nums.append(packets[err.index(e)])
+			# Add index of the packet first time an error e happened, as the index for that error
+			err_pack_nums.append(err.index(e))
 			if 'STOP' in e:
-				iESTOP = str(packets[err.index(e)])	
+				iESTOP = str(err.index(e))	
 		#print err_pack_nums
-		#print iESTOP
-		# First time software detected something
-                if err_pack_nums:
-		    iSWDetect = str(min(err_pack_nums))		
+		#print iESTOP		
+	# First time software detected something = the minimum error index which is between istart and istart + iduration
+        if err_pack_nums:
+        	#print min(err_pack_nums)
+        	if (istart <= min(err_pack_nums)) and (min(err_pack_nums) <= istart + iduration + 1):
+		    	iSWDetect = str(min(err_pack_nums))		
 		#print iSWDetect
 	output_line = output_line +  ','
+
+	# If the duration of attack is not within the trajectory and no E-STOP
+	if istart+iduration > len(packets):
+		if iESTOP == '':
+			print 'ERROR: File probably corrupted. Injection beyond trajectory length\n'
+			return '','',''	
+		else:
+			print 'E-STOP !!!!\n'		
 
 	mpos_detect = [[],[],[]]
 	mvel_detect = [[],[],[]]
 	jpos_detect = [[],[],[]]
 	pos_detect = [[],[],[]]
 
-	# Get the bounds to see if a jump happened
-	csvfile6 = open('./stats','rU')
+	# Get the stats (mean, srd, perc) from training (fault-free run)
+	csvfile6 = open('./stats_'+str(perc),'rU')
 	range_reader = csv.reader(csvfile6)
 	mpos_lim = []
 	mvel_lim = []
@@ -406,21 +465,23 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 	mvel_error = [[],[],[]];
 	jpos_error = [[],[],[]];
 	pos_error = [[],[],[]];
+	# Get the instant error between sample j and j+1
 	for i in range(0,len(mpos_error)):		
-		mpos_error[i]=(list(np.array(mpos[i][1:])-np.array(mpos[i][:-1])))
-		mvel_error[i]=(list(np.array(mvel[i][1:] )-np.array(mvel[i][:-1])))
-		jpos_error[i]=(list(np.array(jpos[i][1:])-np.array(jpos[i][:-1])))
+		mpos_error[i]=list(abs(np.array(mpos[i][1:])-np.array(mpos[i][:-1])))
+		mvel_error[i]=list(abs(np.array(mvel[i][1:] )-np.array(mvel[i][:-1])))
+		jpos_error[i]=list(abs(np.array(jpos[i][1:])-np.array(jpos[i][:-1])))
 	for i in range(0,len(pos_error)):    
-		pos_error[i]=(list(np.array(pos[i][1:])-np.array(pos[i][:-1])))	
+		pos_error[i]=list(abs(np.array(pos[i][1:])-np.array(pos[i][:-1])))	
 
 	# Find jumps in delta
 	error_line = ''
 	cf = 1      #coefficient
-	sd = 2.58   #standard deviation
-	for i in range(0,3):		
-		for j in range(0,len(mpos_error[i])):
-			#if (abs(mpos_error[i][j]) > 1*float(mpos_lim[i][1])):
-			if (abs(mpos_error[i][j]) > cf*float(mpos_lim[i][2])+sd*float(mpos_lim[i][3])) or (abs(mpos_error[i][j]) < cf*float(mpos_lim[i][2])-sd*float(mpos_lim[i][3])):
+	sd = sd_th#2.58   #standard deviation
+	mu = mean_th
+	for i in range(0,3):	
+		for j in range(1,len(mpos_error[i])):
+			if ((mpos_error[i][j]) > 1*float(mpos_lim[i][1])):
+			#if ((abs(mpos_error[i][j]   - cf*float(mpos_lim[i][2])) > sd*float(mpos_lim[i][3])) and (abs(mpos_error[i][j-1] - cf*float(mpos_lim[i][2])) > sd*float(mpos_lim[i][3]))):
 				error_line = error_line + str(j) + '-'
 				#print 'mpos'+str(indices[i])
 				#print j
@@ -428,9 +489,10 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 			else:
 				mpos_detect[i].append(0)
 		error_line = error_line + ','
-		for j in range(0,len(mvel_error[i])):
-			#if (abs(mvel_error[i][j]) > 1*float(mvel_lim[i][1])): 
-			if (abs(mvel_error[i][j]) > cf*float(mvel_lim[i][2])+sd*float(mvel_lim[i][3])) or (abs(mvel_error[i][j]) < cf*float(mvel_lim[i][2])-sd*float(mvel_lim[i][3])):
+		
+		for j in range(1,len(mvel_error[i])):
+			if ((mvel_error[i][j]) > 1*float(mvel_lim[i][1]) and (mvel_error[i][j-1]) > 1*float(mvel_lim[i][1])): 
+			#if ((abs(mvel_error[i][j] - cf*float(mvel_lim[i][2])) > sd*float(mvel_lim[i][3])) and (abs(mvel_error[i][j-1] - cf*float(mvel_lim[i][2])) > sd*float(mvel_lim[i][3]))):
 				error_line = error_line + str(j) +  '-'
 				#print 'mvel'+str(indices[i])
 				#print j
@@ -438,9 +500,11 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 			else:
 				mvel_detect[i].append(0)
 		error_line = error_line + ','
-		for j in range(0,len(jpos_error[i])):				
-			#if (abs(jpos_error[i][j]) > 1*float(jpos_lim[i][1])): 
-			if (abs(jpos_error[i][j]) > cf*float(jpos_lim[i][2])+sd*float(jpos_lim[i][3])) or (abs(jpos_error[i][j]) < cf*float(jpos_lim[i][2])-sd*float(jpos_lim[i][3])):
+		
+		
+		for j in range(1,len(jpos_error[i])):				
+			if ((jpos_error[i][j]) > 1*float(jpos_lim[i][1])): 
+			#if ((abs(jpos_error[i][j] - cf*float(jpos_lim[i][2])) > sd*float(jpos_lim[i][3])) and (abs(jpos_error[i][j-1] - cf*float(jpos_lim[i][2])) > sd*float(jpos_lim[i][3]))): 
 				error_line = error_line + str(j) + '-'
 				#print 'jpos'+str(indices[i])+','+str(jpos_error[i][j])+','+str(jpos_lim[i][0])+'|'+str(jpos_lim[i][1])
 				#print j 
@@ -450,9 +514,9 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 		error_line = error_line + ','
 
 	for i in range(0,3):
-		for j in range(0,len(pos_error[i])):
-			if (abs(pos_error[i][j]) > 1*float(pos_lim[i][1])):
-			#if (abs(pos_error[i][j]) > cf*float(pos_lim[i][2])+sd*float(pos_lim[i][3])):
+		for j in range(1,len(pos_error[i])):
+			#if ((pos_error[i][j]) > 1*float(pos_lim[i][1])):
+			if ((abs(pos_error[i][j] - cf*float(pos_lim[i][2])) > sd*float(pos_lim[i][3])) and (abs(pos_error[i][j-1] - cf*float(pos_lim[i][2])) > sd*float(pos_lim[i][3]))):
 				error_line = error_line + str(j) + '-' 
 				#print 'pos'+str(indices[i])
 				#print j
@@ -460,40 +524,75 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 			else:
 				pos_detect[i].append(0)
 		error_line = error_line + ','
-	# Ecludian distance
+		
+	# Ecludian distance between two consequative end-effector positions
 	pos_ecludian = []
+	gpos_ecludian = []
 	for i in range(0,len(pos[0])-1):
 		pos_ecludian.append(eclud_dist(pos[0][i],pos[1][i],pos[2][i], pos[0][i+1],pos[1][i+1],pos[2][i+1]))
+	for i in range(0,len(gold_pos[0])-1):
+		gpos_ecludian.append(eclud_dist(gold_pos[0][i],gold_pos[1][i],gold_pos[2][i], gold_pos[0][i+1],gold_pos[1][i+1],gold_pos[2][i+1]))
+	# Differentiate again
+	#pos_ecludian = list(abs(np.array(pos_ecludian[1:])-np.array(pos_ecludian[:-1])))
 
-	# Detector: mvel, mpos, jpos
+
+	# Detectors for each mvel, mpos, jpos (Union of the alarms on 3 joints)
 	true_detect = [[],[],[],[]]
 	false_detect = [[],[],[],[]]
 	mpos_all_d = list(np.array(mpos_detect[0])|np.array(mpos_detect[1])|np.array(mpos_detect[2]))
 	mvel_all_d = list(np.array(mvel_detect[0])|np.array(mvel_detect[1])|np.array(mvel_detect[2]))
 	jpos_all_d = list(np.array(jpos_detect[0])|np.array(jpos_detect[1])|np.array(jpos_detect[2]))
+	# Obselete
 	pos_all_d_pre = list(np.array(pos_detect[0])|np.array(pos_detect[1])|np.array(pos_detect[2]))
+	
+	# Online detection: Fusion of detections based on all three mvel, mpos, jpos
+	fused_all_d = list(np.array(mvel_all_d)&np.array(mpos_all_d)&np.array(jpos_all_d))
+	online_detect1 = []
+	online_detect2 = []
+	for i in range(0,len(fused_all_d)):
+		if fused_all_d[i]:
+			# If detected within the attack period until 1 packets after it is done, then it inside_detection (true)
+			if (istart <= i) and (i <= istart + iduration + 1):
+				online_detect1.append(i)
+			# If detected outside the attack period
+			else:
+				online_detect2.append(i)
+	# Golden Alarms: pos
 	# If Ecludian distance more than ?mm
-	pos_threshold = 0.3
+	pos_threshold = pos_th #0.3
 	pos_all_d = [0]*len(pos_ecludian)
-	for i in range(0,len(pos_all_d)):
-		if (pos_ecludian[i] > pos_threshold): # pos_all_d_pre[i]:
-			pos_all_d[i] = 1
-	'''if int(inj_num) == 531:
+	golden_detect = []
+	# If an instant velocity of more than pos_th is seen on the estimated pos, but not on fault-free (golden) pos
+	# If a bump due to fault injection not due to natural bumps in data
+	# We declare it as a real jump situation
+	for i in range(0,len(pos_all_d)-1):
+		if (pos_ecludian[i] > pos_threshold) and (pos_ecludian[i+1] > pos_threshold):
+			if not(gpos_ecludian[i] > pos_threshold) and not(gpos_ecludian[i+1] > pos_threshold):
+				pos_all_d[i] = 1
+				golden_detect.append(i)	
+			
+	'''if int(inj_num) == 413:
 		print pos_ecludian[990:1010]
 		print pos_ecludian[1000]
 		print pos_ecludian[1001]
 		print dac[0][990:1010]
 		print gold_dac[0][990:1010]'''
+	print 'mpos alarms = ' + str(len([d for d in mpos_all_d if d == 1]))
+	print 'mvel alarms = ' + str(len([d for d in mvel_all_d if d == 1]))
+	print 'jpos alarms = ' + str(len([d for d in jpos_all_d if d == 1]))
+	print len(online_detect1)
 			
+	# Attack Impact Detects are only true detection if it is within fault activation period			
 	# MVEL Detect
 	i = 0	
 	while i < len(mvel_all_d):
 		if mvel_all_d[i]:# and ((mpos_all_d[i-2] or mpos_all_d[i-1] or mpos_all_d[i])):
-			if (istart <= i) and (i <= istart + iduration):
+			if (istart <= i) and (i <= istart + iduration+1):
 				true_detect[0].append(i)	
 				i = istart+iduration+2
 			else:
 				false_detect[0].append(i)
+				# Skip over a burst of false alarms
 				while i < len(mvel_all_d) and mvel_all_d[i]:	
 					i = i + 1
 		else:
@@ -502,43 +601,31 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 	i = 0
 	while i < len(mpos_all_d):
 		if mpos_all_d[i]:# and ((mvel_all_d[i-2] or mvel_all_d[i-1] or mvel_all_d[i])):
-			if (istart <= i) and (i <= istart + iduration):
+			if (istart <= i) and (i <= istart + iduration+1):
 				true_detect[1].append(i)	
-				i = istart+iduration+2
 			else:
 				false_detect[1].append(i)
-				while i < len(mpos_all_d) and mpos_all_d[i]:		
-					i = i + 1
-		else:
-			i = i + 1
+		i = i + 1
 	# JPOS Detect
 	i = 0
 	while i < len(jpos_all_d):
 		if jpos_all_d[i]:# and ((mpos_all_d[i-2] or mpos_all_d[i-1] or mpos_all_d[i])):
-			if (istart <= i) and (i <= istart + iduration):
+			if (istart <= i) and (i <= istart + iduration+1):
 				true_detect[2].append(i)	
-				i = istart+iduration+2
 			else:
 				false_detect[2].append(i)
-				while i < len(jpos_all_d) and jpos_all_d[i]:	
-					i = i + 1			
-		else:
-			i = i + 1	
-	# POS Detect is only true detection if it is within fault activation period and all others also detecte
-	# Pos Detect		
+		i = i + 1	
+	
+	# Pos Detect is the Golden for online detection
 	i = 0
 	while i < len(pos_all_d):
-		if (pos_all_d[i] == 1):# and ((jpos_all_d[i-2] or jpos_all_d[i-1] or jpos_all_d[i])):
-			if (istart <= i) and (i <= istart + iduration):
+		if (pos_all_d[i] == 1):
+			if (istart <= i) and (i <= istart + iduration+1):
 				true_detect[3].append(i)	
-				i = istart+iduration+2
 			else:
-				false_detect[3].append(i)
-				while i < len(pos_all_d) and pos_all_d[i]:	
-					i = i + 1			
-		else:
-			i = i + 1	
-	
+				false_detect[3].append(i)	
+		i = i + 1	
+	print len(true_detect[3]) 
 	'''if int(inj_num) == 531:
 		print 'detected at'+str(true_detect[3])
 		print 'detected: '+str(pos_ecludian[min(true_detect[3])])'''
@@ -551,13 +638,11 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 			output_line = output_line + str(min(true_detect[i]))+','
 		else:
 			output_line = output_line +','
-
 	# SW_Detect
 	if (iSWDetect == ''):
 		output_line = output_line +','
 	else:
 		output_line = output_line + str(iSWDetect) +','
-
 	# E-STOP
 	if (iESTOP == ''):
 		output_line = output_line +','
@@ -570,18 +655,42 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 			output_line = output_line + str(int(min(true_detect[i]))-istart)+','
 		else:
 			output_line = output_line +','	
-
-	# SW_Detect
+	# SW_Detect_Latency
 	if (iSWDetect == ''):
 		output_line = output_line +','
 	else:
-		output_line = output_line + str(int(iSWDetect)-istart) +','
-		
-	# E-STOP
+		output_line = output_line + str(int(iSWDetect)-istart) +','	
+	# E-STOP_Latency
 	if (iESTOP == ''):
 		output_line = output_line +','
 	else:
 		output_line = output_line + str(int(iESTOP)-istart) +','			
+	
+	# Online Detections Inside
+	if online_detect1:
+		output_line = output_line + str('-'.join(map(str,online_detect1)))+','
+	else:
+		output_line = output_line +','
+	# Online Detections Outside
+	if online_detect2:
+		output_line = output_line + str('-'.join(map(str,online_detect2)))+','
+	else:
+		output_line = output_line +','		
+	# Golden Detections
+	if golden_detect:
+		output_line = output_line + str('-'.join(map(str,golden_detect)))+','
+	else:
+		output_line = output_line +','	
+	# Online Detections Inside Latency
+	if online_detect1:
+		output_line = output_line + str(int(min(online_detect1)))+','#-istart
+	else:
+		output_line = output_line +','
+	# Online Detections Outside Latency
+	if online_detect2:
+		output_line = output_line + str(int(min(online_detect2)))+','#-istart
+	else:
+		output_line = output_line +','		
 
 	# Write Miss Detections
 	#print false_detect
@@ -590,45 +699,55 @@ def parse_results(golden_file, run_file, mfi2_param, inj_num):
 			output_line = output_line + str('-'.join(map(str,false_detect[i])))+','
 		else:
 			output_line = output_line +','	
-	
-	# Update the graphs is they exist
+
+	'''# Update the graphs is they exist
 	curr_folder = run_file.split(str(inj_num)+'.csv')[0]
-	print run_file
-	print str(inj_num)
-	print curr_folder
+	#print run_file
+	#print str(inj_num)
+	#print curr_folder
 	fig_folder = [curr_folder+f for f in os.listdir(curr_folder) if f.startswith('inj'+str(int(inj_num))+'_')]
 	fig_folder = fig_folder[0]+'/'
 	cmd = 'mkdir -p '+ fig_folder
 	os.system(cmd)
 	plot_dacs(gold_dac, dac, gold_t, t).savefig(fig_folder + 'dac.png')
-	plot_mpos('1',gold_mpos, mpos, sim_mpos, gold_mvel, mvel, sim_mvel, gold_t, t,true_detect[1], true_detect[0]).savefig(fig_folder + 'mpos_mvel.png')
+	plot_mpos('1',gold_mpos, mpos, sim_mpos, gold_mvel, mvel, sim_mvel, gold_t, t,true_detect[0], true_detect[1]).savefig(fig_folder + 'mpos_mvel.png')
 	plot_jpos(gold_jpos, jpos, sim_jpos, gold_t, t,true_detect[2]).savefig(fig_folder + 'jpos.png')
 	plot_pos(gold_pos, pos, gold_t, t,true_detect[3]).savefig(fig_folder + 'pos.png')
 	plot_dist(pos, pos_ecludian, true_detect[3]).savefig(fig_folder + 'pos_dist.png')
-	plt.close("all")
+	plt.close("all")'''
 	return param_line, output_line, error_line
 
 
 # Main starts here
 if __name__ == '__main__':
-    usage = 'Usage: python ' + sys.argv[0] + ' <dir>' 
-    print 'HERE'
-    if len(sys.argv) != 2:
+    usage = 'Usage: python ' + sys.argv[0] + ' <dir> <percentile>'
+
+    if len(sys.argv) != 3:
         print(usage)
         sys.exit(0)
 
+    # Detection thresholds
+    mean_th = 10
+    sd_th = 3.5
+    pos_th = 0.1     
+    perc = sys.argv[2]
+    
     # Log the results
     indices = [0,1,2,4,5,6,7]
     posi = ['X','Y','Z']
-    output_file = './error_log.csv'
-
+    if sys.argv[1].find('xyz') > -1:
+        output_file = './error_log_'+'xyz_dist'+'_all_max_'+str(perc)+'.csv'
+    elif sys.argv[1].find('rt_process') > -1:
+        output_file = './error_log_'+'rt_process'+'_all_max_'+str(perc)+'.csv'
+    print 'Output file = ' + output_file + '\n'
+        
     # Write the headers for new file
-    if not(os.path.isfile(output_file)):
+    if 1:#not(os.path.isfile(output_file)):
         csvfile4 = open(output_file,'w')
         writer4 = csv.writer(csvfile4,delimiter=',') 
         output_line = 'InjNum,Variable,Start,Duration,Value,FixedStart,FixedDuration,Num_Packets,Errors,'
-        output_line = output_line + 'T1(mvel),T2(mpos),T3(jpos),T4(pos),T5(SW-Detect),T6(E-STOP),L1(mvel),L2(mpos),L3(jpos),L4(pos),L5(SW-Detect),L6(E-STOP),F1(mvel),F2(mpos),F3(jpos),F4(pos),'
-        for i in range(0,3):
+        output_line = output_line + 'T1(mvel),T2(mpos),T3(jpos),T4(pos),T5(SW-Detect),T6(E-STOP),L1(mvel),L2(mpos),L3(jpos),L4(pos),L5(SW-Detect),L6(E-STOP),Detect1,Detect2,Golden,L_Detect1,L_Detect2,F1(mvel),F2(mpos),F3(jpos),F4(pos),'
+        '''for i in range(0,3):
             output_line = output_line + 'err_mpos' + str(indices[i]) + ','
             output_line = output_line + 'err_mvel' + str(indices[i]) + ','
             output_line = output_line + 'err_jpos' + str(indices[i]) + ','
@@ -636,8 +755,9 @@ if __name__ == '__main__':
             if (i == 2):
                 output_line = output_line + 'err_pos' + str(posi[i])
             else:
-                output_line = output_line + 'err_pos' + str(posi[i]) + ','
-        writer4.writerow(output_line.split(',')) 
+                output_line = output_line + 'err_pos' + str(posi[i]) + ','''
+    	#print '=======> output len = ' + str(len(output_line.split(',')))  
+    	writer4.writerow(output_line.split(',')) 
         csvfile4.close()
 
     # Write the rows
@@ -684,9 +804,11 @@ if __name__ == '__main__':
             print "Cannot find matching param file"
             sys.exit(0)
     
-    	param_line, output_line, error_line = parse_results(g_file, f, p_file, inj_num)
+    	param_line, output_line, error_line = parse_results(g_file, f, p_file, inj_num, mean_th, sd_th, pos_th, perc)
+ 
+        #print '=======> output len = ' + str(len(output_line.split(',')))  
+        #print '=======> param len = ' + str(len(param_line)) 
     	if param_line:
-			# Write to CSV file	
-			output_line = output_line.rstrip(',')
-			writer4.writerow(param_line+output_line.split(',')+error_line.split(','))    
+	    # Write to CSV file	
+	    writer4.writerow(param_line+output_line.split(','))#+error_line.split(','))   
     csvfile4.close()

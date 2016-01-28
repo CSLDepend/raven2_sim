@@ -324,8 +324,8 @@ def generate_rt_process_once_faults():
 		for var in variable:
 			for t1 in range(1000,2000,1000):
 				for dt in [1,2,4,8,16,32,64,128]:
-					for val in [200, 400, 800, 4000, 8000, 20000, 40000, 80000, 200000]:
-					#for val in [100, 1000, 2000, 5000, 10000, 100000, 400000, 800000]:#range(-12000, 15000, 1000):
+					#for val in [200, 400, 800, 4000, 8000, 20000, 40000, 80000, 200000]:#range(-12000, 15000, 1000):
+					for val in [100, 1000, 2000, 5000, 10000, 100000, 400000, 800000]:#range(-12000, 15000, 1000):
 						t2 = t1 + dt
 						code.append(_generate_add_once_code(pre_trig, trigger,t1, t2, vtype, var, [val]))
 						param.append(','.join([str(var),str(t1),str(dt),str(val)]))                           

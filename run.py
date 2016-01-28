@@ -223,8 +223,8 @@ class Raven():
             os.system(cmd)
             cmd = 'cp mfi2_params.csv ' + self.result_folder + '/' + self.param_name     
             os.system(cmd)     
-            #cmd = 'mv ./robot_run.csv ' + self.result_folder + '/' + self.traj_name
-            cmd = 'cp ./golden_run/traj2.csv ' + self.result_folder + '/' + self.traj_name
+            cmd = 'cp ./robot_run.csv ' + self.result_folder + '/' + self.traj_name
+            #cmd = 'cp ./golden_run/traj2.csv ' + self.result_folder + '/' + self.traj_name
             os.system(cmd)
             
     def __quit(self): 
