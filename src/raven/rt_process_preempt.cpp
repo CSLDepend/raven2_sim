@@ -108,6 +108,7 @@ int serial_fd = -1;
 #ifdef log_USB
 std::ofstream ReadUSBfile;
 std::ofstream WriteUSBfile;
+std::ofstream NetworkPacketfile;
 #endif
 
 #ifdef dyn_simulator
@@ -621,7 +622,6 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef save_logs
-#ifndef no_logging
   char* ROS_PACKAGE_PATH;
   ROS_PACKAGE_PATH = getenv("ROS_PACKAGE_PATH");
   if (ROS_PACKAGE_PATH!= NULL)
@@ -637,6 +637,7 @@ int main(int argc, char **argv)
   }
   log_msg("%s\n",raven_path);
 
+#ifndef no_logging
   std::ofstream logfile;
   log_msg("************** Inject mode = %d\n",inject_mode);
 
@@ -647,12 +648,17 @@ int main(int argc, char **argv)
       sprintf(buff,"%s/fault_log_%d.txt", raven_path, inject_mode);
   logfile.open(buff,std::ofstream::out);
 #endif
+
 #ifdef log_USB
+  char buff[100];
   sprintf(buff,"%s/readUSB_log.txt", raven_path);
   ReadUSBfile.open(buff,std::ofstream::out);
 
   sprintf(buff,"%s/writeUSB_log.txt", raven_path);
   WriteUSBfile.open(buff,std::ofstream::out);
+
+  sprintf(buff,"%s/networkPackets_log.txt", raven_path);
+  NetworkPacketfile.open(buff,std::ofstream::out);
 #endif
 #endif
 
@@ -690,6 +696,7 @@ int main(int argc, char **argv)
 #ifdef log_USB
   WriteUSBfile.close();
   ReadUSBfile.close();
+  NetworkPacketfile.close();
 #endif
 
 #ifdef dyn_simulator
