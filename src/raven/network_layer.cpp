@@ -78,8 +78,14 @@ extern struct device device0;
 #define RUN_PY_PORT  "34000"
 #define HOST_ADDR  "127.0.0.1"    // used only if the robot needs to send data to the server
 #endif
+
 #ifdef save_logs
 extern int logging;
+#endif
+
+#ifdef log_USB
+#include <fstream>
+extern std::ofstream NetworkPacketfile;
 #endif
 
 extern int receiveUserspace(void *u,int size);  // Defined in the local_io.cpp
@@ -277,7 +283,7 @@ void* network_process(void* param1)
 #endif
 			}
 
-			if ((first == 1) && (device0.runlevel == 2)) 
+			if ((first == 1) && (device0.runlevel == 2))
 			{
     			char v[6] = "Done!";
 				clientName.sin_port = htons((u_short)atoi(RUN_PY_PORT));
@@ -313,6 +319,15 @@ void* network_process(void* param1)
                                  0,
                                  NULL,
                                  NULL);
+#ifdef log_USB
+        	for (int k = 0; k < uSize; k++)
+        	{
+        	    printf("%d ",(unsigned int)*((unsigned char*)(&u)+k));
+        	    NetworkPacketfile << (unsigned int)*((unsigned char*)(&u)+k) << " ";
+        	}
+        	printf("\n");
+        	NetworkPacketfile << "\n";
+#endif
 
 #ifdef mfi
 //MFI_HOOK
@@ -395,7 +410,7 @@ void* network_process(void* param1)
                 log_msg("NETWORK) Receieved Valid Packet # %d\n", u.sequence);
                 //log_file("NETWORK) Receieved Valid Packet # %d\n", u.sequence);
 #endif
-		seq = u.sequence;
+				seq = u.sequence;
                 receiveUserspace(&u,uSize);   // coordinates transform from ITP frame to robot 0 frame
             }
 
