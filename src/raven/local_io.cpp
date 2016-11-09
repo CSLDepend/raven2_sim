@@ -215,7 +215,7 @@ void teleopIntoDS1(struct u_struct *us_t)
 	else if(data1.rd[i].grasp<graspmin) data1.rd[i].grasp=graspmin;
 #else
 	// Set Position command
-    data1.xd[i].x = us_t->delx[armidx];
+  data1.xd[i].x = us_t->delx[armidx];
 	data1.xd[i].y = us_t->dely[armidx];
 	data1.xd[i].z = us_t->delz[armidx];
 

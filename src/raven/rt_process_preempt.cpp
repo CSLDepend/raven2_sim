@@ -110,6 +110,12 @@ std::ofstream ReadUSBfile;
 std::ofstream WriteUSBfile;
 #endif
 
+#ifdef log_syscall
+std::ofstream SysCallTiming;
+int WriteSyscallfp;
+struct timespec t1, t2;
+#endif
+
 #ifdef dyn_simulator
 int wrfd,rdfd;
 char sim_buf[1024];
@@ -522,6 +528,34 @@ static void *rt_process(void* )
 #ifndef simulator
       //Fill USB Packet and send it out
       putUSBPackets(&device0); //disable usb for par port test
+#else
+    // Nothing
+#ifdef log_syscall
+    // Prepare data to write (copied from putUSBPacket)
+    int i = 0;
+    unsigned char buffer_out[MAX_OUT_LENGTH];
+    buffer_out[0]= DAC;        //Type of USB packet
+    buffer_out[1]= MAX_DOF_PER_MECH; //Number of DAC channels
+    for (i = 0; i < MAX_DOF_PER_MECH; i++)
+    {
+        //Factor in offset since we are in midrange operation
+        device0.mech[0].joint[i].current_cmd += DAC_OFFSET;
+        buffer_out[2*i+2] = (char)(device0.mech[0].joint[i].current_cmd);
+        buffer_out[2*i+3] = (char)(device0.mech[0].joint[i].current_cmd >> 8);
+        //Remove offset
+        device0.mech[0].joint[i].current_cmd -= DAC_OFFSET;
+    }
+    // Set PortF outputs
+    buffer_out[OUT_LENGTH-1] = device0.mech[0].outputs;
+    // write to simulated board - just a file
+    //printf("&&&& WriteSyscallfp = %d\n", WriteSyscallfp); 
+    clock_gettime(CLOCK_REALTIME,&t1);
+    int ret2 = write(WriteSyscallfp, &buffer_out, OUT_LENGTH);
+    clock_gettime(CLOCK_REALTIME,&t2);
+    // Log the system call time
+   	if (ret2 == OUT_LENGTH)
+     SysCallTiming << double((double)t2.tv_nsec/1000 - (double)t1.tv_nsec/1000) << "\n";    
+#endif
 #endif
       //Publish current raven state
       publish_ravenstate_ros(&device0,&currParams);   // from local_io
@@ -654,7 +688,14 @@ int main(int argc, char **argv)
   sprintf(buff,"%s/writeUSB_log.txt", raven_path);
   WriteUSBfile.open(buff,std::ofstream::out);
 #endif
+#ifdef log_syscall
+  sprintf(buff,"%s/SysCall_Time.txt", raven_path);
+  SysCallTiming.open(buff,std::ofstream::out);
+  sprintf(buff,"%s/SysCall_Logging.txt", raven_path);
+  WriteSyscallfp = open(buff, O_RDWR|O_NONBLOCK); 
 #endif
+#endif 
+
 
 #ifdef dyn_simulator
     char wrfifo[20] = "/tmp/dac_fifo";
@@ -687,9 +728,15 @@ int main(int argc, char **argv)
 #ifndef simulator
   USBShutdown();
 #endif
+
 #ifdef log_USB
   WriteUSBfile.close();
   ReadUSBfile.close();
+#endif
+
+#ifdef log_syscall
+  SysCallTiming.close();
+  close(WriteSyscallfp);
 #endif
 
 #ifdef dyn_simulator

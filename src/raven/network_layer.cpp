@@ -243,7 +243,6 @@ void* network_process(void* param1)
         // wait for i/o lines to change state //
         // Select() examines the I/O descriptor sets whose addresses are passed in fe_sets and returns the total number of ready descriptors in all the sets
         nfound = select(maxfd+1, &rmask, (fd_set *)0, (fd_set *)0, &timeout);
-
         // Select error
         if (nfound < 0)
         {
@@ -300,8 +299,9 @@ void* network_process(void* param1)
             continue;
         }
 #ifdef packetgen
-        else
+        else {
             first = 1;
+        }
 #endif
 
         // Select: data on socket

@@ -32,10 +32,6 @@
 #include <iostream>
 #include <stdio.h>
 #include <ros/console.h>
-#include <fstream>
-#include <sys/time.h> // needed for getrusage
-#include "utils.h"
-
 #include "USB_init.h"
 #include "parallel.h"
 
@@ -47,6 +43,12 @@
 #define BRL_RESET_BOARD     10
 #define BRL_START_READ      4
 
+#ifdef log_syscall
+#include <fstream>
+extern std::ofstream SysCallTiming;
+extern struct timespec t1, t2;
+#endif
+
 // Keep board information
 std::vector<int> boardFile;
 std::map<int,int> boardFPs;
@@ -56,91 +58,6 @@ extern int NUM_MECH;
 
 using namespace std;
 
-#ifdef skip_init_button
-int openSerialPort(void)
-{
-    int serialFileDescriptor = -1;
-    struct termios options;
-    // open the serial like POSIX C
-    serialFileDescriptor = open("/dev/ttyACM0", O_RDWR | O_NOCTTY | O_NONBLOCK );
-
-    if (serialFileDescriptor == -1)
-    {
-        cout << "Error opening serial port" << endl;
-    	return -1;
-    }
-
-    // block non-root users from using this port
-    if (ioctl(serialFileDescriptor, TIOCEXCL) == -1)
-    {    
-	cout << "Error setting TIOCEXCL" << endl;
-    	return -1;
-    }
-    
-    // clear the O_NONBLOCK flag, so that read() will
-    //   block and wait for data.
-    if (fcntl(serialFileDescriptor, F_SETFL, 0) == -1)
-    {
-        cout << "Error Clearing O_NONBLOCK" << endl;
-    	return -1;
-    }
-
-    //int iFlags = TIOCM_DTR;
-    //ioctl(serialFileDescriptor, TIOCMBIC, &iFlags);
-
-    // grab the options for the serial port
-    if (tcgetattr(serialFileDescriptor, &gOriginalTTYAttrs) == -1)
-    {
-        cout << "Error getting tty attributes" << endl;
-    	return -1;
-    }
-
-    // setting raw-mode allows the use of tcsetattr() and ioctl()
-    options = gOriginalTTYAttrs;
-    cfmakeraw(&options);
-    options.c_cc[VMIN] = 0;
-    options.c_cc[VTIME] = 10;
-
-    // specify any arbitrary baud rate
-    speed_t baudRate = 9600;
-    cfsetospeed(&options, B9600);
-    /*if (ioctl(serialFileDescriptor, IOSSIOSPEED, &baudRate) ==1)
-    {
-        cout << "Error calling ioctl" << endl;
-    	return -1;
-    }*/
-
-    //cout << "Opened connection to Arduino" << endl;
-    return serialFileDescriptor;
-}
-
-int writeSerialPort(int serialFileDescriptor, void *buffer)
-{
-    ssize_t numBytes;
-    numBytes = write(serialFileDescriptor, buffer, sizeof(buffer));
-    //cout << "Wrote " << numBytes << " bytes to Arduino" << endl;
-    cout << "Sent the start signal through Arduino.."<< endl;
-    return numBytes;
-}
-
-void closeSerialPort(int serialFileDescriptor)
-{
-    if (tcdrain(serialFileDescriptor) == -1) {
-       cout<< "Error waiting for drain" << endl;
-    }
-  
-    // Traditionally it is good practice to reset a serial port back to
-    // the state in which you found it. This is why the original termios struct
-    // was saved.
-    gOriginalTTYAttrs.c_cflag &= ~HUPCL; // disable hang-up-on-close to avoid reset
-    if (tcsetattr(serialFileDescriptor, TCSANOW, &gOriginalTTYAttrs) == -1) {
-        cout << "Error resetting tty attributes"<< endl;
-    }
-
-    close(serialFileDescriptor);
-    //cout << "Closed connection to Arduino" << endl;
-}
-#endif
 /**\fn int getdir(string dir, vector<string> &files)
  * \brief List directory contents matching BOARD_FILE_STR
  * \param dir - directory name of interest
@@ -227,7 +144,7 @@ int USBInit(struct device *device0)
     vector<string> files = vector<string>();
     getdir(BRL_USB_DEV_DIR, files);
 	sort(files.begin(), files.end());
-    //reverse(files.begin(),files.end());
+reverse(files.begin(),files.end());
 
     log_msg("  Found board files::");
     for (unsigned int i = 0;i < files.size();i++) {
@@ -271,7 +188,6 @@ int USBInit(struct device *device0)
 	            okboards++;
 	            log_msg("  Green Arm on board #%d.",boardid);
 	            device0->mech[mechcounter].type = GREEN_ARM;
-				log_msg("Mech Num for board %d = %d\n",boardid, mechcounter);
 				mechcounter++;
 	        }
 	        else if (boardid == GOLD_ARM_SERIAL)
@@ -279,7 +195,6 @@ int USBInit(struct device *device0)
 	            okboards++;
 	            log_msg("  Gold Arm on board #%d.",boardid);
 	            device0->mech[mechcounter].type = GOLD_ARM;
-				log_msg("Mech Num for board %d = %d\n",boardid, mechcounter);
 				mechcounter++;
 	        }
 	        else
@@ -290,7 +205,7 @@ int USBInit(struct device *device0)
 	        // Store usb dev parameters
 	        boardFile.push_back(tmp_fileHandle);  // Store file handle
 	        USBBoards.boards.push_back(boardid);  // Store board array index
-            boardFPs[boardid] = tmp_fileHandle;   // Map serial (i) to fileHandle (tmp_fileHandle)
+	        boardFPs[boardid] = tmp_fileHandle;   // Map serial (i) to fileHandle (tmp_fileHandle)
 	        USBBoards.activeAtStart++;            // Increment board count
 	
 	        log_msg("board FPs ---> %i", boardFPs[boardid]);
@@ -358,6 +273,7 @@ int startUSBRead(int id)
   return ret;
 }
 
+
 /**\fn int usb_read(int id, void *buffer, size_t len)
  * \brief read from usb board with serial number id
  * \param id - serial number of board to read
@@ -370,7 +286,6 @@ int usb_read(int id, void *buffer, size_t len)
 {
   int fp = boardFPs[id]; // file pointer
   int ret = read(fp, buffer, len);
-
   if (ret<0)
     {
       ret = -errno;
@@ -389,9 +304,18 @@ int usb_read(int id, void *buffer, size_t len)
  */
 int usb_write(int id, void *buffer, size_t len)
 {
+#ifndef log_syscall    
     // write to board
     int ret = write(boardFPs[id], buffer, len);
-
+#else 
+    clock_gettime(CLOCK_REALTIME,&t1);
+    // write to board
+    int ret = write(boardFPs[id], buffer, len);
+    clock_gettime(CLOCK_REALTIME,&t2);
+    //Only log Syscall time for the first board
+    if (id == GREEN_ARM_SERIAL)
+    	SysCallTiming << double((double)t2.tv_nsec/1000 - (double)t1.tv_nsec/1000) << "\n";
+#endif     
     if (ret < 0)
       ret = -errno;
     return ret;

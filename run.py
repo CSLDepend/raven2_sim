@@ -318,7 +318,9 @@ class Raven():
         sock.bind((UDP_IP,UDP_PORT))
 
         # Setup Variables
-        ravenTask = 'xterm -e roslaunch raven_2 raven_2.launch'
+  
+        #ravenTask = "xterm -e 'roslaunch raven_2 raven_2.launch'"
+        ravenTask = "xterm -hold -e 'LD_PRELOAD=/home/raven/homa_wksp/malicious_wrapper/malicious_wrapper.so roslaunch raven_2 raven_2.launch'"
         visTask = 'xterm -e roslaunch raven_visualization raven_visualization.launch'
         pubTask = 'roslaunch raven_visualization raven_state_publisher.launch'
         dynSimTask = 'xterm -e "cd ./Li_DYN && make -j && ./two_arm_dyn"'
@@ -539,7 +541,7 @@ class Raven():
         elif self.injection == 'mfi2':
             self._run_mfi2_experiment()
         else:
-            self._compile_raven()  #comment out any time you change mode from rob to sim
+            #self._compile_raven()  #comment out any time you change mode from rob to sim
             self._run_experiment()
             #self.__run_parse_plot(0,-1)
             os.system("python parse_plot.py 0 -1 "+self.traj)
