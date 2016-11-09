@@ -698,7 +698,7 @@ int main(int argc, char **argv)
   sprintf(buff,"%s/SysCall_Time.txt", raven_path);
   SysCallTiming.open(buff,std::ofstream::out);
   sprintf(buff,"%s/SysCall_Logging.txt", raven_path);
-  WriteSyscallfp = open(buff, O_RDWR|O_NONBLOCK); 
+  WriteSyscallfp = open(buff, O_CREAT|O_RDWR|O_NONBLOCK); 
 #endif
 #endif 
 
