@@ -27,8 +27,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 How to run
 ======================================
 Setting up the repository:
-1. After downloading the repository, rename the folder to "raven_2"
-2. Change the ROS_PACKAGE_PATH environment variable to the location of raven_2 folder
+0. Clone the repository:
+   "git clone https://github.com/CSLDepend/raven2_sim.git"
+1. Rename the folder name from "raven2_sim" to "raven_2"
+2. Change the ROS_PACKAGE_PATH environment variable to the location of raven_2 folder. For example:
+   "export ROS_PACKAGE_PATH=/home/raven/raven_2:/home/raven/raven_2/raven_visualization:/opt/ros/indigo/share:/opt/ros/indigo/stacks"
+   To test if the change was made successfully, run "roscd raven_2" and you should be relocated to the raven_2 folder.
 4. Run "tar zxvf ./teleop_data/new_test_data.tgz" to unzip the datafiles used by the packet generator
 
 Running RAVEN simulator
