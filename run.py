@@ -319,8 +319,8 @@ class Raven():
 
         # Setup Variables
   
-        #ravenTask = "xterm -e 'roslaunch raven_2 raven_2.launch'"
-        ravenTask = "xterm -hold -e 'LD_PRELOAD=/home/raven/homa_wksp/malicious_wrapper/malicious_wrapper.so roslaunch raven_2 raven_2.launch'"
+        ravenTask = "xterm -e 'roslaunch raven_2 raven_2.launch'"
+        #ravenTask = "xterm -hold -e 'LD_PRELOAD=/home/raven/homa_wksp/malicious_wrapper/malicious_wrapper.so roslaunch raven_2 raven_2.launch'"
         visTask = 'xterm -e roslaunch raven_visualization raven_visualization.launch'
         pubTask = 'roslaunch raven_visualization raven_state_publisher.launch'
         dynSimTask = 'xterm -e "cd ./Li_DYN && make -j && ./two_arm_dyn"'
