@@ -35,9 +35,9 @@ Setting up the repository:
    To test if the change was made successfully, run "roscd raven_2" and you should be relocated to the raven_2 folder.
 4. Run "tar zxvf ./teleop_data/new_test_data.tgz" to unzip the datafiles used by the packet generator
 
-Running RAVEN simulator
+Running RAVEN simulator using trajectory 2:
 1. Goto raven_2 folder:  "roscd raven_2"
-2. Simple simulator:     "python run.py sim 1 none"
-   Dynamic simulator:    "python run.py dyn_sim 1 none"
-   Robot /w packet-gen:  "python run.py rob 1 none"
-   Robot /w surgeon-gui: "python run.py rob 0 none" 
+2. Simple  simulator /w packet-gen: "python run.py sim 1 none traj2"
+   Dynamic simulator /w packet-gen: "python run.py dyn_sim 1 none traj2"
+   Robot /w packet-gen:  "python run.py rob 1 none traj2"
+   Robot /w surgeon-gui: "python run.py rob 0 none traj2" 
