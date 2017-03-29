@@ -50,6 +50,13 @@ else:
     sys.exit(2)
 print "Trajectory: "+str(traj)
 
+# Get raven_home directory
+env = os.environ.copy()
+splits = env['ROS_PACKAGE_PATH'].split(':')
+raven_home = splits[0]
+teleop_home = raven_home+'/teleop_data'
+print '\nRaven Home Found to be: '+ raven_home
+
 fast_surgeon = 1
 if fast_surgeon:
    MAX_PACKETS = 3000
@@ -98,7 +105,7 @@ def readSignals():
 
 def sendPackets():
     global seq
-    csvfile = open('./teleop_data/new_test_'+str(traj.split('traj')[1])+'.csv','r');    
+    csvfile = open(teleop_home+'/new_test_'+str(traj.split('traj')[1])+'.csv','r');    
     outfile = open('./robot_run.csv','w');
     reader = csv.reader(csvfile)
     writer = csv.writer(outfile,delimiter=',')
